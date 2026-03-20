@@ -604,13 +604,14 @@
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-content">
+        <h4 style="color:#fff;font-size:1.05rem;margin:0 0 8px;">Claude Code 설치</h4>
         <p>터미널을 열고, 아래를 <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong></p>
-        <p style="font-size: 0.85rem; color: #D1D5DB; margin-bottom: 6px;">🍎 Mac / Linux:</p>
+        <p style="font-size: 0.85rem; color: #D1D5DB; margin: 10px 0 6px;">🍎 Mac / Linux:</p>
         <div class="code-wrap">
           <code id="cmd1">curl -fsSL https://claude.ai/install.sh | bash</code>
           <button class="copy-btn" onclick="copyCmd('cmd1', this)">복사</button>
         </div>
-        <p style="font-size: 0.85rem; color: #D1D5DB; margin-top: 10px; margin-bottom: 6px;">🪟 Windows PowerShell:</p>
+        <p style="font-size: 0.85rem; color: #D1D5DB; margin: 10px 0 6px;">🪟 Windows PowerShell:</p>
         <div class="code-wrap">
           <code id="cmd1w">irm https://claude.ai/install.ps1 | iex</code>
           <button class="copy-btn" onclick="copyCmd('cmd1w', this)">복사</button>
@@ -620,7 +621,8 @@
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-content">
-        <p>캠프 프로젝트를 내 컴퓨터로 가져와. <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong></p>
+        <h4 style="color:#fff;font-size:1.05rem;margin:0 0 8px;">캠프 저장소 다운로드</h4>
+        <p>캠프 교안과 실습 파일을 내 컴퓨터로 가져와. <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong></p>
         <div class="code-wrap">
           <code id="cmd2">git clone https://github.com/sangshin-ablelabs/able-native-camp.git</code>
           <button class="copy-btn" onclick="copyCmd('cmd2', this)">복사</button>
@@ -631,7 +633,8 @@
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-content">
-        <p>프로젝트 폴더로 들어가서 Claude Code 시작! <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong></p>
+        <h4 style="color:#fff;font-size:1.05rem;margin:0 0 8px;">Claude Code 실행 + 로그인</h4>
+        <p>캠프 폴더로 들어가서 Claude를 시작해. <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong></p>
         <div class="code-wrap">
           <code id="cmd3">cd able-native-camp && claude</code>
           <button class="copy-btn" onclick="copyCmd('cmd3', this)">복사</button>
@@ -647,7 +650,8 @@
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-content">
-        <p>Claude가 뜨면, Day 0 스킬을 실행해봐! <strong style="color: var(--green);">아래를 입력 → Enter</strong></p>
+        <h4 style="color:#fff;font-size:1.05rem;margin:0 0 8px;">Day 0 캠프 시작!</h4>
+        <p>Claude가 뜨면 아래를 입력해. <strong style="color: var(--green);">입력 → Enter</strong></p>
         <div class="code-wrap">
           <code id="cmd4">/day0-why</code>
           <button class="copy-btn" onclick="copyCmd('cmd4', this)">복사</button>
