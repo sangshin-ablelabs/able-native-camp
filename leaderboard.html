@@ -239,12 +239,12 @@
     <div class="label">참가자</div>
   </div>
   <div class="stat-card">
-    <div class="num" id="stat-tokens">$0</div>
-    <div class="label">총 토큰 사용량</div>
+    <div class="num" id="stat-tokens">0</div>
+    <div class="label">총 토큰</div>
   </div>
   <div class="stat-card">
-    <div class="num" id="stat-completed">0</div>
-    <div class="label">총 토큰</div>
+    <div class="num" id="stat-completed">$0</div>
+    <div class="label">총 비용</div>
   </div>
   <div class="stat-card">
     <div class="num" id="stat-avg-level">-</div>
@@ -507,6 +507,25 @@ function getMonthCost(member) {
   const monthStr = monthAgo.toISOString().split('T')[0];
   return Object.entries(member.tokenLog).reduce((s, [date, val]) => date >= monthStr ? s + val : s, 0);
 }
+// Token-based getters for ranking
+function getTodayTokens(member) {
+  if (!member.tokenCountLog) return 0;
+  return member.tokenCountLog[today()] || 0;
+}
+function getWeekTokens(member) {
+  if (!member.tokenCountLog) return 0;
+  const now = new Date();
+  const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
+  const weekStr = weekAgo.toISOString().split('T')[0];
+  return Object.entries(member.tokenCountLog).reduce((s, [date, val]) => date >= weekStr ? s + val : s, 0);
+}
+function getMonthTokens(member) {
+  if (!member.tokenCountLog) return 0;
+  const now = new Date();
+  const monthAgo = new Date(now); monthAgo.setDate(now.getDate() - 30);
+  const monthStr = monthAgo.toISOString().split('T')[0];
+  return Object.entries(member.tokenCountLog).reduce((s, [date, val]) => date >= monthStr ? s + val : s, 0);
+}
 
 // ─── VIEW TOGGLE ───
 function setView(view) {
@@ -532,8 +551,8 @@ function renderStats(data) {
   const totalTk = data.reduce((s, m) => s + getTotalTokenCount(m), 0);
   const activeDays = data.reduce((s, m) => s + (m.activeDays || 0), 0);
   document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-tokens').textContent = '$' + totalCost.toFixed(2);
-  document.getElementById('stat-completed').textContent = formatTokenCount(totalTk);
+  document.getElementById('stat-tokens').textContent = formatTokenCount(totalTk);
+  document.getElementById('stat-completed').textContent = '$' + totalCost.toFixed(0);
   document.getElementById('stat-avg-level').textContent = activeDays;
 }
 
@@ -590,23 +609,26 @@ function renderBoard(data) {
     return;
   }
 
-  const tokenFns = { cumulative: getTotalCost, daily: getTodayCost, weekly: getWeekCost, monthly: getMonthCost };
-  const getTokens = tokenFns[currentView] || getTotalCost;
-  const viewLabels = { cumulative: '누적 비용', daily: '오늘 비용', weekly: '주간 비용', monthly: '월간 비용' };
+  const tokenFns = { cumulative: getTotalTokens, daily: getTodayTokens, weekly: getWeekTokens, monthly: getMonthTokens };
+  const costFns = { cumulative: getTotalCost, daily: getTodayCost, weekly: getWeekCost, monthly: getMonthCost };
+  const getViewTokens = tokenFns[currentView] || getTotalTokens;
+  const getViewCost = costFns[currentView] || getTotalCost;
+  const viewLabels = { cumulative: '누적 토탈', daily: '오늘 토탈', weekly: '주간 토탈', monthly: '월간 토탈' };
   const sorted = [...data].sort((a, b) => {
-    const diff = getTokens(b) - getTokens(a);
+    const diff = getViewTokens(b) - getViewTokens(a);
     if (diff !== 0) return diff;
     return (b.level || 0) - (a.level || 0) || a.name.localeCompare(b.name, 'ko');
   });
 
   let html = `<div class="board-table-wrap"><table class="board-table"><thead><tr>
     <th>#</th><th>이름</th><th>등급</th>
-    <th>${viewLabels[currentView]}</th><th>입출력</th><th>캐시</th><th>캐시율</th><th>활성일</th>
+    <th>${viewLabels[currentView]}</th><th>입출력</th><th>캐시</th><th>캐시율</th><th>비용</th><th>활성일</th>
   </tr></thead><tbody>`;
 
   sorted.forEach((member, idx) => {
     const rank = idx + 1;
-    const tokens = getTokens(member);
+    const viewTokenCount = getViewTokens(member);
+    const viewCost = getViewCost(member);
     const tier = getTier(member);
     const rankClass = rank <= 3 ? ' rank-' + rank : '';
 
@@ -622,9 +644,9 @@ function renderBoard(data) {
       html += `<td><span class="tier-badge badge-none">—</span></td>`;
     }
 
-    // Cost
-    const costStyle = currentView === 'cumulative' ? 'font-size:0.88rem;color:var(--gray-500);' : 'font-size:1rem;font-weight:800;color:var(--navy);';
-    html += `<td><span style="${costStyle}">$${tokens.toFixed(2)}</span></td>`;
+    // Total tokens (primary metric, bold)
+    const tokenStyle = currentView === 'cumulative' ? 'font-size:0.88rem;color:var(--gray-500);' : 'font-size:1rem;font-weight:800;color:var(--navy);';
+    html += `<td><span style="${tokenStyle}">${viewTokenCount > 0 ? formatTokenCount(viewTokenCount) : '-'}</span></td>`;
 
     // Input + Output tokens
     const io = (member.totalInput || 0) + (member.totalOutput || 0);
@@ -639,6 +661,9 @@ function renderBoard(data) {
     const cacheRate = totalAll > 0 ? Math.round((cache / totalAll) * 100) : 0;
     const cacheColor = cacheRate >= 80 ? 'var(--green)' : cacheRate >= 50 ? '#FBBF24' : 'var(--gray-400)';
     html += `<td><span style="font-size:0.8rem;font-weight:700;color:${cacheColor};">${totalAll > 0 ? cacheRate + '%' : '-'}</span></td>`;
+
+    // Cost (reference, subdued)
+    html += `<td><span style="font-size:0.8rem;color:var(--gray-500);">$${viewCost.toFixed(0)}</span></td>`;
 
     // Active days
     html += '<td><span style="font-size:0.8rem;color:var(--gray-500);">' + (member.activeDays || 0) + '일</span></td>';
