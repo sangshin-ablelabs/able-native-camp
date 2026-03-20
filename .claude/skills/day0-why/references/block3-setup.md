@@ -4,6 +4,16 @@
 
 Claude Code를 설치하고, 첫 실행까지 완료한다.
 
+### 사전 확인 (캠프 시작 전)
+
+아래 명령어를 터미널에서 실행해서 설치 여부를 확인해:
+
+| 확인 항목 | 명령어 | 없으면? |
+|----------|--------|--------|
+| Git | `git --version` | Mac: `xcode-select --install` / Windows: git-scm.com에서 설치 |
+| Node.js | `node --version` | https://nodejs.org 에서 LTS 설치 (Day 2 MCP 연결에 필요) |
+| Python3 | `python3 --version` | Mac: `brew install python3` / Windows: python.org에서 설치 (Day 2 다우오피스 연결에 필요) |
+
 ### 1. 터미널 열기
 
 | OS | 방법 |
@@ -55,9 +65,25 @@ code --install-extension anthropic.claude-code
 ```
 설치 후 사이드바 Claude 아이콘 클릭 → 채팅 패널에서 바로 사용 가능.
 
-### 5. 첫 실행 + 로그인
+### 5. Anthropic 계정 & 구독
 
-터미널에 `claude`를 입력한다. Anthropic 계정 로그인 후 Claude 구독(Pro, Max, Teams, Enterprise) 연결을 확인한다.
+#### 계정 만들기
+1. https://claude.ai 접속
+2. "Sign up" 클릭 → 이메일 또는 Google 계정으로 가입
+3. 이메일 인증 완료
+
+#### Claude 구독 (필수)
+Claude Code를 사용하려면 유료 구독이 필요해:
+- **Claude Pro** ($20/월) — 개인용, 기본 추천
+- **Claude Max** ($100/월) — 헤비 사용자용
+- **Claude Teams** ($30/인/월) — 팀 단위 사용
+
+> 회사에서 구독을 제공하는 경우: [진행자가 안내하는 초대 링크]로 참여
+> 개인 구독인 경우: claude.ai → Settings → Subscription에서 Pro 선택
+
+#### 첫 실행 + 로그인
+터미널에 `claude`를 입력한다. 브라우저가 열리면 로그인하면 구독 상태가 자동 확인된다.
+"Subscription required" 메시지가 뜨면 위 절차로 구독을 먼저 완료해.
 
 ### 6. Output Style 설정
 

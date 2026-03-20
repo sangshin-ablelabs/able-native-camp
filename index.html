@@ -342,7 +342,8 @@
 
   <div class="days">
     <!-- Day 0 -->
-    <div class="day-card">
+    <a href="day0.html" style="text-decoration:none;color:inherit;display:block;">
+    <div class="day-card" style="cursor:pointer;">
       <div class="day-num">
         <div class="num">0</div>
         <div class="label">DAY</div>
@@ -359,6 +360,7 @@
         </div>
       </div>
     </div>
+    </a>
 
     <!-- Day 1 -->
     <a href="day1.html" style="text-decoration: none; color: inherit;">
@@ -591,10 +593,11 @@
       </div>
       <div class="os-card">
         <h4>🪟 Windows</h4>
-        <div class="shortcut">Win + R → "cmd" 입력 → Enter</div>
-        <p>또는 시작 버튼 → "명령 프롬프트" 검색. PowerShell도 가능.</p>
+        <div class="shortcut">Win + X → "Windows PowerShell" 선택</div>
+        <p>또는 시작 버튼 → "PowerShell" 검색. (cmd가 아닌 PowerShell을 사용해야 해)</p>
       </div>
     </div>
+    <p style="font-size: 0.85rem; color: #9CA3AF; margin-top: 12px; text-align: center;">💡 터미널에 붙여넣기: Mac은 ⌘+V / Windows는 마우스 우클릭 또는 Ctrl+Shift+V</p>
   </div>
 
   <div class="setup-box">
@@ -602,9 +605,15 @@
       <div class="step-num">1</div>
       <div class="step-content">
         <p>터미널을 열고, 아래를 <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong></p>
+        <p style="font-size: 0.85rem; color: #D1D5DB; margin-bottom: 6px;">🍎 Mac / Linux:</p>
         <div class="code-wrap">
-          <code id="cmd1">npm install -g @anthropic-ai/claude-code</code>
+          <code id="cmd1">curl -fsSL https://claude.ai/install.sh | bash</code>
           <button class="copy-btn" onclick="copyCmd('cmd1', this)">복사</button>
+        </div>
+        <p style="font-size: 0.85rem; color: #D1D5DB; margin-top: 10px; margin-bottom: 6px;">🪟 Windows PowerShell:</p>
+        <div class="code-wrap">
+          <code id="cmd1w">irm https://claude.ai/install.ps1 | iex</code>
+          <button class="copy-btn" onclick="copyCmd('cmd1w', this)">복사</button>
         </div>
       </div>
     </div>
@@ -627,6 +636,12 @@
           <code id="cmd3">cd able-native-camp && claude</code>
           <button class="copy-btn" onclick="copyCmd('cmd3', this)">복사</button>
         </div>
+        <div style="background: #1E293B; border-radius: 8px; padding: 14px 16px; margin-top: 12px; font-size: 0.85rem; color: #D1D5DB; line-height: 1.6;">
+          🔑 <strong style="color: #fff;">처음 실행하면 로그인이 필요해:</strong><br>
+          • 브라우저가 자동으로 열리면 <strong>Anthropic 계정</strong>으로 로그인<br>
+          • 계정이 없으면 <a href="https://claude.ai" target="_blank" style="color: var(--sky);">claude.ai</a> 에서 먼저 가입<br>
+          • <strong>Claude Pro / Max / Teams 구독</strong>이 필요해 (회사에서 제공하는 경우 회사 안내를 따르면 돼)
+        </div>
       </div>
     </div>
     <div class="step">
@@ -643,7 +658,7 @@
   </div>
 
   <div style="text-align: center; margin-top: 40px;">
-    <a href="day1.html" style="display: inline-block; padding: 16px 40px; background: var(--sky); color: white; text-decoration: none; border-radius: 10px; font-size: 1.1rem; font-weight: 700; transition: background 0.2s;" onmouseover="this.style.background='#1E3A5F'" onmouseout="this.style.background='#4A90D9'">📖 웹으로 미리보기 (Day 1~6)</a>
+    <a href="day0.html" style="display: inline-block; padding: 16px 40px; background: var(--sky); color: white; text-decoration: none; border-radius: 10px; font-size: 1.1rem; font-weight: 700; transition: background 0.2s;" onmouseover="this.style.background='#1E3A5F'" onmouseout="this.style.background='#4A90D9'">📖 Day 0부터 웹으로 보기</a>
     <p style="color: #9CA3AF; font-size: 0.85rem; margin-top: 12px;">실습은 위 4단계로 터미널에서 <code style="background:#1E293B;padding:2px 6px;border-radius:4px;">/day0-why</code> 부터 시작하는 걸 추천!</p>
   </div>
 </section>

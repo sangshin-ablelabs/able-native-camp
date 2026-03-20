@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 0: Why — ABLE Native Camp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #1E3A5F;
+      --navy-deep: #0F1F35;
+      --sky: #4A90D9;
+      --sky-light: #E8F1FB;
+      --green: #10B981;
+      --green-light: #ECFDF5;
+      --white: #FFFFFF;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-800: #1F2937;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+      color: var(--gray-800); line-height: 1.7; background: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .nav-inner {
+      max-width: 800px; margin: 0 auto; padding: 0 24px;
+      height: 64px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { font-size: 1.1rem; font-weight: 800; color: var(--navy); text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--sky); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-right a { font-size: 0.85rem; font-weight: 500; color: var(--gray-600); text-decoration: none; }
+    .nav-right a:hover { color: var(--navy); }
+
+    /* HERO */
+    .day-hero {
+      padding: 100px 24px 48px; text-align: center;
+      background: linear-gradient(170deg, var(--white) 0%, var(--sky-light) 100%);
+    }
+    .day-hero .badge {
+      display: inline-block; padding: 4px 14px; border-radius: 20px;
+      background: #DBEAFE; color: #1E40AF; font-size: 0.75rem; font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .day-hero h1 { font-size: 2rem; font-weight: 900; color: var(--navy); margin-bottom: 8px; letter-spacing: -0.5px; }
+    .day-hero p { font-size: 1rem; color: var(--gray-600); max-width: 520px; margin: 0 auto; }
+
+    /* PROGRESS */
+    .progress-bar {
+      max-width: 800px; margin: 0 auto; padding: 24px 24px 0;
+      display: flex; gap: 8px;
+    }
+    .progress-step {
+      flex: 1; height: 6px; border-radius: 3px; background: var(--gray-200);
+      transition: background 0.3s;
+    }
+    .progress-step.done { background: var(--green); }
+    .progress-step.active { background: var(--sky); }
+    .progress-labels {
+      max-width: 800px; margin: 0 auto; padding: 8px 24px 24px;
+      display: flex; gap: 8px;
+    }
+    .progress-labels span {
+      flex: 1; font-size: 0.68rem; font-weight: 500; color: var(--gray-400); text-align: center;
+    }
+    .progress-labels span.active { color: var(--sky); font-weight: 700; }
+    .progress-labels span.done { color: var(--green); }
+
+    /* CONTENT */
+    .content { max-width: 800px; margin: 0 auto; padding: 0 24px 80px; }
+
+    /* BLOCK */
+    .block {
+      margin-bottom: 32px; border: 1px solid var(--gray-200);
+      border-radius: var(--radius); overflow: hidden; background: var(--white);
+    }
+    .block.locked { opacity: 0.5; pointer-events: none; }
+    .block-header {
+      padding: 20px 24px; cursor: pointer; display: flex; align-items: center;
+      justify-content: space-between; transition: background 0.2s;
+    }
+    .block-header:hover { background: var(--gray-50); }
+    .block-header h2 {
+      font-size: 1.1rem; font-weight: 700; color: var(--navy);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .block-header .block-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: 700;
+      background: var(--sky-light); color: var(--sky);
+    }
+    .block-header .block-num.done { background: var(--green-light); color: var(--green); }
+    .block-header .chevron {
+      font-size: 1.2rem; color: var(--gray-400); transition: transform 0.2s;
+    }
+    .block.open .block-header .chevron { transform: rotate(180deg); }
+    .block-body { display: none; padding: 0 24px 24px; }
+    .block.open .block-body { display: block; }
+
+    /* SECTION TABS */
+    .section-tabs {
+      display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--gray-100);
+    }
+    .section-tab {
+      padding: 10px 20px; font-size: 0.85rem; font-weight: 600;
+      color: var(--gray-400); cursor: pointer; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; transition: all 0.2s; background: none; border-top: 0; border-left: 0; border-right: 0;
+    }
+    .section-tab:hover { color: var(--gray-600); }
+    .section-tab.active { color: var(--sky); border-bottom-color: var(--sky); }
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+
+    /* EXPLAIN */
+    .explain h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin: 28px 0 10px; padding-top: 20px; border-top: 1px solid var(--gray-200); }
+    .explain h3:first-child, .explain p + h3:first-of-type { border-top: none; padding-top: 0; margin-top: 16px; }
+    .explain p { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 12px; line-height: 1.7; }
+    .explain ul { padding-left: 20px; margin-bottom: 12px; }
+    .explain li { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 4px; }
+    .explain .highlight {
+      background: var(--sky-light); border-radius: var(--radius-sm);
+      padding: 16px 20px; margin: 16px 0; border-left: 4px solid var(--sky);
+    }
+    .explain .highlight p { margin: 0; font-weight: 500; color: var(--navy); }
+    .explain code {
+      background: var(--gray-100); padding: 2px 8px; border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem;
+    }
+    .explain .code-block {
+      background: var(--navy-deep); border-radius: var(--radius-sm); padding: 16px 20px;
+      margin: 12px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem;
+      color: var(--green); line-height: 1.8; overflow-x: auto;
+    }
+    .explain table {
+      width: 100%; border-collapse: collapse; margin: 12px 0;
+    }
+    .explain th {
+      text-align: left; padding: 8px 12px; font-size: 0.8rem; font-weight: 600;
+      color: var(--gray-500); border-bottom: 2px solid var(--gray-200); background: var(--gray-50);
+    }
+    .explain td {
+      padding: 10px 12px; font-size: 0.85rem; border-bottom: 1px solid var(--gray-100);
+    }
+
+    /* EXECUTE */
+    .execute .step-list { list-style: none; padding: 0; }
+    .execute .step-item {
+      display: flex; gap: 14px; padding: 14px 0;
+      border-bottom: 1px solid var(--gray-100); align-items: flex-start;
+    }
+    .execute .step-item:last-child { border-bottom: none; }
+    .execute .step-num {
+      flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+      background: var(--sky); color: var(--white); display: flex;
+      align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; margin-top: 2px;
+    }
+    .execute .step-text { font-size: 0.9rem; color: var(--gray-600); line-height: 1.6; }
+    .execute .step-text code {
+      background: var(--gray-100); padding: 2px 8px; border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem;
+    }
+    .execute .tip {
+      background: var(--green-light); border-radius: var(--radius-sm);
+      padding: 14px 18px; margin-top: 16px; border-left: 4px solid var(--green);
+    }
+    .execute .tip p { font-size: 0.85rem; color: #065F46; margin: 0; }
+
+    /* QUIZ */
+    .quiz-question {
+      font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 16px;
+    }
+    .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-option {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px; border-radius: var(--radius-sm);
+      border: 2px solid var(--gray-200); cursor: pointer;
+      font-size: 0.9rem; color: var(--gray-600); transition: all 0.2s;
+      background: var(--white);
+    }
+    .quiz-option:hover { border-color: var(--sky); background: var(--sky-light); }
+    .quiz-option.selected { border-color: var(--sky); background: var(--sky-light); color: var(--navy); font-weight: 600; }
+    .quiz-option.correct { border-color: var(--green); background: var(--green-light); color: #065F46; }
+    .quiz-option.wrong { border-color: #EF4444; background: #FEF2F2; color: #991B1B; }
+    .quiz-option .letter {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--gray-100);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+    }
+    .quiz-option.correct .letter { background: var(--green); color: white; }
+    .quiz-option.wrong .letter { background: #EF4444; color: white; }
+    .quiz-answer {
+      display: none; margin-top: 16px; padding: 16px 20px;
+      background: var(--gray-50); border-radius: var(--radius-sm);
+      font-size: 0.88rem; color: var(--gray-600); line-height: 1.6;
+    }
+    .quiz-answer.show { display: block; }
+
+    /* COMPLETE BUTTON */
+    .complete-btn {
+      display: block; width: 100%; padding: 14px; margin-top: 20px;
+      background: var(--sky); color: white; border: none; border-radius: var(--radius-sm);
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+      font-family: inherit;
+    }
+    .complete-btn:hover { background: var(--navy); }
+    .complete-btn.completed { background: var(--green); cursor: default; }
+
+    /* FOOTER NAV */
+    .footer-nav {
+      max-width: 800px; margin: 0 auto; padding: 32px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid var(--gray-200);
+    }
+    .footer-nav a {
+      font-size: 0.9rem; font-weight: 600; color: var(--sky);
+      text-decoration: none; padding: 10px 20px; border-radius: var(--radius-sm);
+      transition: background 0.2s;
+    }
+    .footer-nav a:hover { background: var(--sky-light); }
+
+    /* LEVEL CARD */
+    .level-card {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: 16px 20px; border-radius: var(--radius-sm);
+      border: 1px solid var(--gray-200); margin-bottom: 12px;
+      transition: background 0.2s;
+    }
+    .level-card:hover { background: var(--gray-50); }
+    .level-badge {
+      flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; color: var(--white);
+    }
+    .level-card h4 { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+    .level-card p { font-size: 0.82rem; color: var(--gray-500); margin: 0; }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .section-tab { padding: 8px 12px; font-size: 0.78rem; }
+      .day-hero h1 { font-size: 1.6rem; }
+    }
+  </style>
+  <link rel="stylesheet" href="auth-styles.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span>ABLE</span> Native Camp</a>
+    <div class="nav-right">
+      <a href="index.html">← 홈</a>
+      <a href="skills.html">스킬 허브</a>
+      <a href="leaderboard.html">리더보드</a>
+      <a href="reference.html">레퍼런스</a>
+    </div>
+    <div id="auth-ui"></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="day-hero">
+  <div class="badge">🌅 Day 0: Why</div>
+  <h1>Day 0 — Why</h1>
+  <p>AI Native란 무엇인가<br>"AI를 도구로 쓰는 게 아니라, AI와 함께 일하는 방식 자체를 바꾸는 것."</p>
+</div>
+
+<!-- SKILL LAUNCH BANNER -->
+<div style="max-width:800px;margin:0 auto;padding:16px 24px 0;">
+  <div style="background:linear-gradient(135deg,#0F1F35 0%,#1E3A5F 100%);border-radius:14px;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <div>
+      <p style="color:#9CA3AF;font-size:0.75rem;font-weight:600;margin-bottom:4px;">INTERACTIVE MODE</p>
+      <p style="color:#fff;font-size:0.95rem;font-weight:700;">Claude Code에서 직접 실습하면 퀴즈+피드백이 포함된 인터랙티브 버전으로 진행돼.</p>
+      <p style="color:#9CA3AF;font-size:0.75rem;margin-top:4px;">먼저 <code style="background:#0F172A;padding:2px 6px;border-radius:4px;color:#10B981;">git clone</code> → <code style="background:#0F172A;padding:2px 6px;border-radius:4px;color:#10B981;">cd able-native-camp</code> → <code style="background:#0F172A;padding:2px 6px;border-radius:4px;color:#10B981;">claude</code> 한 다음 실행해.</p>
+    </div>
+    <div style="flex-shrink:0;text-align:center;">
+      <div style="background:#10B981;color:#fff;padding:10px 24px;border-radius:10px;font-family:'SF Mono','Fira Code',monospace;font-size:1rem;font-weight:700;cursor:default;user-select:all;">/day0-why</div>
+      <p style="color:#9CA3AF;font-size:0.7rem;margin-top:6px;">able-native-camp 폴더에서 실행</p>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar">
+  <div class="progress-step active" id="prog-0"></div>
+  <div class="progress-step" id="prog-1"></div>
+  <div class="progress-step" id="prog-2"></div>
+  <div class="progress-step" id="prog-3"></div>
+</div>
+<div class="progress-labels">
+  <span class="active" id="lbl-0">Context</span>
+  <span id="lbl-1">데모</span>
+  <span id="lbl-2">네이티브 레벨</span>
+  <span id="lbl-3">설치 & 첫 실행</span>
+</div>
+
+<div class="content">
+
+  <!-- BLOCK 0: AI Native란 무엇인가? -->
+  <div class="block open" id="block-0">
+    <div class="block-header" onclick="toggleBlock(0)">
+      <h2><span class="block-num" id="num-0">0</span> AI Native란 무엇인가? — 왜 지금 AI Native인가</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(0, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(0, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-0-explain">
+        <p>"AI 잘 쓰는 사람"과 "AI Native"는 다르다. AI Native는 <strong>일하는 방식 자체</strong>가 AI와 함께 설계된 것을 말해.</p>
+
+        <h3>기존 방식 vs AI Native 방식</h3>
+        <table>
+          <thead>
+            <tr><th>구분</th><th>기존 방식</th><th>AI Native 방식</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>문서 작성</td><td>빈 화면에서 시작</td><td>AI가 초안 → 사람이 다듬기</td></tr>
+            <tr><td>데이터 분석</td><td>엑셀 수식 직접 작성</td><td>"이 데이터 트렌드 분석해줘"</td></tr>
+            <tr><td>이메일 답장</td><td>처음부터 타이핑</td><td>AI 초안 → 톤/내용 조정</td></tr>
+            <tr><td>코드 작성</td><td>한 줄씩 직접 코딩</td><td>자연어로 설명 → AI가 구현</td></tr>
+            <tr><td>정보 검색</td><td>구글링 → 여러 페이지 읽기</td><td>"~에 대해 정리해줘"</td></tr>
+          </tbody>
+        </table>
+
+        <div class="highlight">
+          <p>핵심: AI Native는 "AI를 가끔 쓰는 것"이 아니라, "AI 없이는 일하지 않는 것"이야. 마치 이메일 없이 업무가 안 되듯이.</p>
+        </div>
+
+        <h3>왜 지금인가?</h3>
+        <ul>
+          <li><strong>2024~2025:</strong> AI가 "대화"에서 "실행"으로 진화했어. 파일을 읽고, 쓰고, 명령어를 실행할 수 있게 됐어.</li>
+          <li><strong>Claude Code:</strong> 터미널에서 AI가 직접 내 컴퓨터를 조작해. 채팅 AI와는 차원이 달라.</li>
+          <li><strong>MCP (Model Context Protocol):</strong> AI가 이메일, 캘린더, 노션, Teams 등에 직접 연결돼. 복사-붙여넣기가 사라져.</li>
+        </ul>
+
+        <h3>ABLE Labs는 왜 AI Native를 해야 하나?</h3>
+        <p>우리는 <strong>실험 자동화</strong> 회사야. 고객에게 "자동화하세요"라고 말하면서 정작 우리 업무는 수동이면 설득력이 없어. AI Native는 우리의 정체성에 맞는 일하는 방식이야.</p>
+        <ul>
+          <li>30명 규모의 스타트업 — 한 사람이 여러 역할을 해. AI가 배수기 역할을 해줘야 해.</li>
+          <li>글로벌 비즈니스 — 영어/일본어 커뮤니케이션을 AI가 자연스럽게 지원해.</li>
+          <li>기술 회사 — 코드, 문서, 데이터를 다루는 업무가 많아. AI가 가장 잘하는 영역이야.</li>
+        </ul>
+      </div>
+
+      <div class="section-content quiz" id="block-0-quiz">
+        <p class="quiz-question">"AI Native"의 핵심 정의로 가장 적절한 것은?</p>
+        <div class="quiz-options" id="quiz-0">
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'A')">
+            <span class="letter">A</span> ChatGPT를 매일 쓰는 것
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'B')">
+            <span class="letter">B</span> AI와 함께 일하는 방식 자체를 설계하는 것
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'C')">
+            <span class="letter">C</span> 코딩을 AI로 대체하는 것
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'D')">
+            <span class="letter">D</span> 모든 업무를 AI에게 맡기는 것
+          </div>
+        </div>
+        <div class="quiz-answer" id="answer-0">
+          ✅ <strong>정답: B.</strong> AI Native는 특정 도구를 쓰는 게 아니라, 업무 프로세스 자체를 AI와 협업하는 방식으로 재설계하는 것이야. "가끔 쓰는 도구"가 아니라 "기본 인프라"로 자리잡는 것.
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-0" onclick="completeBlock(0)">✅ Block 0 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 1: 데모 -->
+  <div class="block locked" id="block-1">
+    <div class="block-header" onclick="toggleBlock(1)">
+      <h2><span class="block-num" id="num-1">1</span> 데모 — Claude가 실제로 뭘 할 수 있는지</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(1, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(1, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-1-explain">
+        <p>백문이 불여일견. Claude Code가 실제로 어떤 일을 하는지 시나리오로 살펴보자.</p>
+
+        <h3>시나리오 1: 이메일 초안 작성</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># 사람이 하는 말:</span><br>
+          <span style="color: #fff;">"거래처 A사에 납품 일정 변경 안내 메일 초안 써줘.<br>
+          기존: 3/25 → 변경: 4/1. 사유는 원자재 수급 지연."</span><br><br>
+          <span style="color: #9CA3AF;"># Claude가 하는 일:</span><br>
+          → 메일 제목 + 본문 초안 작성 (HTML 파일로 저장)<br>
+          → 톤 조정 요청하면 즉시 수정<br>
+          → "영문 버전도 만들어줘" → 바로 번역
+        </div>
+
+        <h3>시나리오 2: 데이터 정리</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># 사람이 하는 말:</span><br>
+          <span style="color: #fff;">"이 CSV 파일 읽어서 월별 매출 요약표 만들어줘"</span><br><br>
+          <span style="color: #9CA3AF;"># Claude가 하는 일:</span><br>
+          → CSV 파일 직접 읽기 (Read 도구)<br>
+          → 데이터 분석 및 요약<br>
+          → 마크다운 표 또는 새 파일로 결과 저장 (Write 도구)
+        </div>
+
+        <h3>시나리오 3: 회의록 정리</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># 사람이 하는 말:</span><br>
+          <span style="color: #fff;">"아까 미팅 내용 정리해줘. 참석자는 A, B, C.<br>
+          논의 사항: 1) Q2 목표, 2) 신규 채용, 3) 제품 출시 일정"</span><br><br>
+          <span style="color: #9CA3AF;"># Claude가 하는 일:</span><br>
+          → 구조화된 회의록 작성<br>
+          → 액션 아이템 정리<br>
+          → 담당자별 할 일 리스트 생성
+        </div>
+
+        <h3>시나리오 4: MCP 연결 후</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># MCP로 다우오피스, Teams, Notion이 연결되면:</span><br><br>
+          <span style="color: #fff;">"오늘 메일 중 답장 안 한 거 있어?"</span><br>
+          → 다우오피스 메일함 직접 확인 → 미회신 메일 리스트 제공<br><br>
+          <span style="color: #fff;">"이번 주 일정 정리해줘"</span><br>
+          → 캘린더 직접 조회 → 일정표 생성<br><br>
+          <span style="color: #fff;">"Teams에서 나한테 멘션된 거 확인해줘"</span><br>
+          → Teams 멘션 조회 → 요약 제공
+        </div>
+
+        <div class="highlight">
+          <p>핵심: Claude Code는 "답변"만 하는 게 아니라, 내 컴퓨터에서 직접 "실행"한다. 파일을 읽고, 쓰고, 외부 서비스에 접근해.</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-1-quiz">
+        <p class="quiz-question">Claude Code가 일반 ChatGPT/웹 Claude와 가장 다른 점은?</p>
+        <div class="quiz-options" id="quiz-1">
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'A')">
+            <span class="letter">A</span> 더 긴 답변을 해준다
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'B')">
+            <span class="letter">B</span> 내 컴퓨터에서 파일을 읽고 쓰고 명령어를 실행할 수 있다
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'C')">
+            <span class="letter">C</span> 이미지를 생성할 수 있다
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'D')">
+            <span class="letter">D</span> 인터넷 검색을 할 수 있다
+          </div>
+        </div>
+        <div class="quiz-answer" id="answer-1">
+          ✅ <strong>정답: B.</strong> Claude Code는 터미널에서 실행되기 때문에 로컬 파일 시스템에 직접 접근할 수 있어. 채팅 AI는 대화만 하지만, Claude Code는 실제로 파일을 읽고, 수정하고, 새로 만들어.
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-1" onclick="completeBlock(1)">✅ Block 1 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 2: 네이티브 레벨 소개 -->
+  <div class="block locked" id="block-2">
+    <div class="block-header" onclick="toggleBlock(2)">
+      <h2><span class="block-num" id="num-2">2</span> 네이티브 레벨 — Lv.0 ~ Lv.4</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(2, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(2, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-2-explain">
+        <p>ABLE Native Camp은 6일간 레벨 0에서 레벨 4까지 올라가는 과정이야. 각 레벨이 뭘 의미하는지 알아보자.</p>
+
+        <div class="level-card">
+          <div class="level-badge" style="background:var(--gray-400);">Lv.0</div>
+          <div>
+            <h4>Aware — 인식</h4>
+            <p>AI가 뭘 할 수 있는지 안다. "이런 게 가능하구나"를 이해하는 단계. 오늘(Day 0)이 여기야.</p>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-badge" style="background:var(--sky);">Lv.1</div>
+          <div>
+            <h4>Operate — 조작</h4>
+            <p>Claude Code를 직접 실행하고, 기본 대화를 나눌 수 있다. CLAUDE.md를 만들고, 기본 도구(Read/Write/Edit/Bash)를 사용할 수 있다.</p>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-badge" style="background:#8B5CF6;">Lv.2</div>
+          <div>
+            <h4>Connect — 연결</h4>
+            <p>MCP로 외부 도구(다우오피스, Teams, Notion)를 연결할 수 있다. AI가 내 업무 환경에 직접 접근해.</p>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-badge" style="background:#F59E0B;">Lv.3</div>
+          <div>
+            <h4>Automate — 자동화</h4>
+            <p>반복 업무를 스킬(슬래시 커맨드)로 만들어서 한 번에 실행할 수 있다. 매일 하는 일을 자동화해.</p>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-badge" style="background:var(--green);">Lv.4</div>
+          <div>
+            <h4>Architect — 설계</h4>
+            <p>팀/조직 단위의 AI 워크플로우를 설계할 수 있다. 다른 에이블러에게 전파하고, 조직의 일하는 방식을 바꿀 수 있다.</p>
+          </div>
+        </div>
+
+        <h3>캠프 일정과 레벨 매핑</h3>
+        <table>
+          <thead>
+            <tr><th>Day</th><th>주제</th><th>레벨</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Day 0</td><td>Why — AI Native란 무엇인가</td><td>Lv.0 Aware</td></tr>
+            <tr><td>Day 1</td><td>Operate — 첫 대화</td><td>Lv.1 Operate</td></tr>
+            <tr><td>Day 2</td><td>Connect — MCP 연결</td><td>Lv.2 Connect</td></tr>
+            <tr><td>Day 3</td><td>Workflow — 실전 업무 흐름</td><td>Lv.2 Connect</td></tr>
+            <tr><td>Day 4</td><td>Skill — 나만의 스킬 만들기</td><td>Lv.3 Automate</td></tr>
+            <tr><td>Day 5</td><td>Team — 팀 협업</td><td>Lv.3 Automate</td></tr>
+            <tr><td>Day 6</td><td>Architect — 조직 설계</td><td>Lv.4 Architect</td></tr>
+          </tbody>
+        </table>
+
+        <div class="highlight">
+          <p>목표: 6일 후에 모든 에이블러가 최소 Lv.2 이상. AI 없이 일하는 게 오히려 어색해지는 수준.</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-2-quiz">
+        <p class="quiz-question">MCP를 활용해서 외부 도구(이메일, 캘린더)를 AI에 연결할 수 있는 레벨은?</p>
+        <div class="quiz-options" id="quiz-2">
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'A')">
+            <span class="letter">A</span> Lv.0 Aware
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'B')">
+            <span class="letter">B</span> Lv.1 Operate
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'C')">
+            <span class="letter">C</span> Lv.2 Connect
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'D')">
+            <span class="letter">D</span> Lv.4 Architect
+          </div>
+        </div>
+        <div class="quiz-answer" id="answer-2">
+          ✅ <strong>정답: C.</strong> Lv.2 Connect에서 MCP(Model Context Protocol)를 사용해 다우오피스, Teams, Notion 같은 외부 도구를 AI에 연결할 수 있어. Day 2에서 배울 내용이야.
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-2" onclick="completeBlock(2)">✅ Block 2 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 3: 설치 & 첫 실행 -->
+  <div class="block locked" id="block-3">
+    <div class="block-header" onclick="toggleBlock(3)">
+      <h2><span class="block-num" id="num-3">3</span> 설치 & 첫 실행 — Claude Code 시작하기</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(3, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(3, 'execute')">🏃 실습</button>
+      </div>
+
+      <div class="section-content active explain" id="block-3-explain">
+        <h3>Step 1: Node.js 설치 확인</h3>
+        <p>Claude Code는 Node.js 위에서 돌아가. 먼저 설치되어 있는지 확인하자.</p>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># 터미널에서 실행</span><br>
+          <span style="color: #fff;">node --version</span><br><br>
+          <span style="color: #9CA3AF;"># v18 이상이면 OK. 없으면 https://nodejs.org 에서 설치</span>
+        </div>
+
+        <h3>Step 2: Claude Code 설치</h3>
+        <div class="code-block">
+          <span style="color: #fff;">npm install -g @anthropic-ai/claude-code</span>
+        </div>
+        <p>이 한 줄이면 설치 완료.</p>
+
+        <h3>Step 3: 계정 연결</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># 아무 폴더에서</span><br>
+          <span style="color: #fff;">claude</span><br><br>
+          <span style="color: #9CA3AF;"># 처음 실행하면 Anthropic 계정 로그인 안내가 나와.</span><br>
+          <span style="color: #9CA3AF;"># 회사 계정으로 로그인하면 돼.</span>
+        </div>
+
+        <h3>Step 4: VS Code에서 터미널 열기</h3>
+        <p>VS Code를 쓰고 있다면, 내장 터미널이 가장 편해:</p>
+        <ul>
+          <li>Mac: <code>Ctrl + `</code> (백틱)</li>
+          <li>또는 메뉴 → 터미널 → 새 터미널</li>
+        </ul>
+
+        <div class="highlight">
+          <p>VS Code 터미널에서 <code>claude</code>를 실행하면, 현재 열려 있는 프로젝트 폴더가 자동으로 작업 디렉토리가 돼. 파일을 바로 읽고 수정할 수 있어서 가장 실용적인 조합이야.</p>
+        </div>
+
+        <h3>Step 5: 첫 대화</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># Claude Code가 실행되면</span><br>
+          <span style="color: #fff;">안녕! 나는 [이름]이야. 잘 부탁해.</span>
+        </div>
+        <p>축하해! 이게 AI Native의 첫 걸음이야. 내일(Day 1)부터 본격적으로 시작하자.</p>
+      </div>
+
+      <div class="section-content execute" id="block-3-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">터미널을 열어 (VS Code: <code>Ctrl + `</code>)</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><code>node --version</code> 으로 Node.js 확인. 없으면 <a href="https://nodejs.org" target="_blank" style="color:var(--sky);">nodejs.org</a>에서 설치</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><code>npm install -g @anthropic-ai/claude-code</code> 로 Claude Code 설치</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><code>claude</code> 를 입력해서 실행. 계정 연결이 필요하면 안내에 따라 로그인</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">5</div>
+            <div class="step-text">자기소개를 하고 간단한 질문 2~3개 해봐</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 설치가 안 되면 당황하지 말고, Teams #able-native-camp 채널에 물어봐. 누군가 바로 도와줄 거야.</p>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-3" onclick="completeDay()">🎓 Day 0 완료!</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER NAV -->
+<div class="footer-nav">
+  <a href="index.html">← 홈으로</a>
+  <a href="day1.html" id="next-day" style="opacity: 0.3; pointer-events: none;">Day 1: Operate →</a>
+</div>
+
+<script>
+const CORRECT = { 0: 'B', 1: 'B', 2: 'C' };
+const completed = [false, false, false, false];
+
+function toggleBlock(i) {
+  const block = document.getElementById('block-' + i);
+  if (block.classList.contains('locked')) return;
+  block.classList.toggle('open');
+}
+
+function showTab(block, tab) {
+  const container = document.getElementById(`block-${block}`) || document.querySelector(`[id^="block-${block}"]`);
+  const tabs = container.querySelectorAll('.section-tab');
+  const contents = container.querySelectorAll('.section-content');
+  tabs.forEach(t => { t.classList.remove('active'); if (t.getAttribute('onclick')?.includes(`'${tab}'`)) t.classList.add('active'); });
+  contents.forEach(c => c.classList.remove('active'));
+  document.getElementById(`block-${block}-${tab}`).classList.add('active');
+}
+
+function selectAnswer(quiz, el, answer) {
+  const options = document.querySelectorAll(`#quiz-${quiz} .quiz-option`);
+  const answerBox = document.getElementById('answer-' + quiz);
+  if (answerBox.classList.contains('show')) return;
+
+  options.forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+
+  if (answer === CORRECT[quiz]) {
+    el.classList.add('correct');
+  } else {
+    el.classList.add('wrong');
+    // Highlight correct
+    options.forEach(o => {
+      const letter = o.querySelector('.letter').textContent;
+      if (letter === CORRECT[quiz]) o.classList.add('correct');
+    });
+  }
+  answerBox.classList.add('show');
+}
+
+function completeBlock(i) {
+  completed[i] = true;
+  const btn = document.getElementById('btn-' + i);
+  btn.textContent = '✅ 완료!';
+  btn.classList.add('completed');
+
+  // Update progress
+  document.getElementById('prog-' + i).classList.add('done');
+  document.getElementById('prog-' + i).classList.remove('active');
+  document.getElementById('lbl-' + i).classList.add('done');
+  document.getElementById('lbl-' + i).classList.remove('active');
+  document.getElementById('num-' + i).classList.add('done');
+
+  // Unlock next
+  const next = i + 1;
+  if (next < 4) {
+    const nextBlock = document.getElementById('block-' + next);
+    nextBlock.classList.remove('locked');
+    nextBlock.classList.add('open');
+    document.getElementById('prog-' + next).classList.add('active');
+    document.getElementById('lbl-' + next).classList.add('active');
+
+    // Close current
+    document.getElementById('block-' + i).classList.remove('open');
+
+    // Scroll to next
+    setTimeout(() => {
+      nextBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  }
+}
+
+function completeDay() {
+  completed[3] = true;
+  localStorage.setItem('day0Complete', 'true');
+  const btn = document.getElementById('btn-3');
+  btn.textContent = '🎉 Day 0 수료 완료!';
+  btn.classList.add('completed');
+  document.getElementById('prog-3').classList.add('done');
+  document.getElementById('lbl-3').classList.add('done');
+  document.getElementById('num-3').classList.add('done');
+
+  // Enable next day link
+  const nextDay = document.getElementById('next-day');
+  nextDay.style.opacity = '1';
+  nextDay.style.pointerEvents = 'auto';
+}
+</script>
+
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>
