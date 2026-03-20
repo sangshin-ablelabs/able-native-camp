@@ -114,9 +114,23 @@
     .block-body { display: none; padding: 0 24px 24px; }
     .block.open .block-body { display: block; }
 
+    /* SECTION TABS */
+    .section-tabs {
+      display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--gray-100);
+    }
+    .section-tab {
+      padding: 10px 20px; font-size: 0.85rem; font-weight: 600;
+      color: var(--gray-400); cursor: pointer; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; transition: all 0.2s; background: none; border-top: 0; border-left: 0; border-right: 0;
+    }
+    .section-tab:hover { color: var(--gray-600); }
+    .section-tab.active { color: var(--sky); border-bottom-color: var(--sky); }
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+
     /* EXPLAIN */
-    .explain h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin: 24px 0 10px; padding-top: 16px; border-top: 1px solid var(--gray-200); }
-    .explain h3:first-child { border-top: none; padding-top: 0; margin-top: 8px; }
+    .explain h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin: 28px 0 10px; padding-top: 20px; border-top: 1px solid var(--gray-200); }
+    .explain h3:first-child, .explain p + h3:first-of-type { border-top: none; padding-top: 0; margin-top: 16px; }
     .explain p { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 12px; line-height: 1.7; }
     .explain ul { padding-left: 20px; margin-bottom: 12px; }
     .explain li { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 4px; }
@@ -169,6 +183,36 @@
     }
     .execute .tip p { font-size: 0.85rem; color: #065F46; margin: 0; }
 
+    /* QUIZ */
+    .quiz-question {
+      font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 16px;
+    }
+    .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-option {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px; border-radius: var(--radius-sm);
+      border: 2px solid var(--gray-200); cursor: pointer;
+      font-size: 0.9rem; color: var(--gray-600); transition: all 0.2s;
+      background: var(--white);
+    }
+    .quiz-option:hover { border-color: var(--sky); background: var(--sky-light); }
+    .quiz-option.selected { border-color: var(--sky); background: var(--sky-light); color: var(--navy); font-weight: 600; }
+    .quiz-option.correct { border-color: var(--green); background: var(--green-light); color: #065F46; }
+    .quiz-option.wrong { border-color: #EF4444; background: #FEF2F2; color: #991B1B; }
+    .quiz-option .letter {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--gray-100);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+    }
+    .quiz-option.correct .letter { background: var(--green); color: white; }
+    .quiz-option.wrong .letter { background: #EF4444; color: white; }
+    .quiz-answer {
+      display: none; margin-top: 16px; padding: 16px 20px;
+      background: var(--gray-50); border-radius: var(--radius-sm);
+      font-size: 0.88rem; color: var(--gray-600); line-height: 1.6;
+    }
+    .quiz-answer.show { display: block; }
+
     /* COMPLETE BUTTON */
     .complete-btn {
       display: block; width: 100%; padding: 14px; margin-top: 20px;
@@ -192,8 +236,25 @@
     }
     .footer-nav a:hover { background: var(--sky-light); }
 
+    /* LEVEL CARD */
+    .level-card {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: 16px 20px; border-radius: var(--radius-sm);
+      border: 1px solid var(--gray-200); margin-bottom: 12px;
+      transition: background 0.2s;
+    }
+    .level-card:hover { background: var(--gray-50); }
+    .level-badge {
+      flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; color: var(--white);
+    }
+    .level-card h4 { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+    .level-card p { font-size: 0.82rem; color: var(--gray-500); margin: 0; }
+
     /* RESPONSIVE */
     @media (max-width: 640px) {
+      .section-tab { padding: 8px 12px; font-size: 0.78rem; }
       .day-hero h1 { font-size: 1.6rem; }
     }
   </style>
@@ -216,9 +277,9 @@
 
 <!-- HERO -->
 <div class="day-hero">
-  <div class="badge">Day 0</div>
-  <h1>Why — 왜 AI Native인가</h1>
-  <p>AI를 "가끔 쓰는 도구"가 아니라, "늘 함께 일하는 방식"으로 바꿔보자.</p>
+  <div class="badge">🌅 Day 0: Why</div>
+  <h1>Day 0 — Why</h1>
+  <p>AI Native란 무엇인가<br>"AI를 도구로 쓰는 게 아니라, AI와 함께 일하는 방식 자체를 바꾸는 것."</p>
 </div>
 
 <!-- SKILL LAUNCH BANNER -->
@@ -241,153 +302,363 @@
   <div class="progress-step active" id="prog-0"></div>
   <div class="progress-step" id="prog-1"></div>
   <div class="progress-step" id="prog-2"></div>
+  <div class="progress-step" id="prog-3"></div>
 </div>
 <div class="progress-labels">
-  <span class="active" id="lbl-0">AI Native란?</span>
-  <span id="lbl-1">뭘 할 수 있어?</span>
-  <span id="lbl-2">설치 & 첫 대화</span>
+  <span class="active" id="lbl-0">Context</span>
+  <span id="lbl-1">데모</span>
+  <span id="lbl-2">네이티브 레벨</span>
+  <span id="lbl-3">설치 & 첫 실행</span>
 </div>
 
 <div class="content">
 
-  <!-- BLOCK 0: AI Native란? -->
+  <!-- BLOCK 0: AI Native란 무엇인가? -->
   <div class="block open" id="block-0">
     <div class="block-header" onclick="toggleBlock(0)">
-      <h2><span class="block-num" id="num-0">1</span> AI Native가 뭐야?</h2>
+      <h2><span class="block-num" id="num-0">0</span> AI Native란 무엇인가? — 왜 지금 AI Native인가</h2>
       <span class="chevron">▼</span>
     </div>
     <div class="block-body">
-      <div class="section-content active explain" id="block-0-explain">
-        <p>ChatGPT한테 가끔 질문하는 거랑은 다른 얘기야.<br>AI Native는 <strong>일하는 방식 자체</strong>에 AI가 녹아든 거야. 이메일 없이 업무가 안 되듯이, AI 없이 일 안 하는 상태.</p>
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(0, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(0, 'quiz')">❓ 퀴즈</button>
+      </div>
 
-        <h3>뭐가 달라?</h3>
+      <div class="section-content active explain" id="block-0-explain">
+        <p>"AI 잘 쓰는 사람"과 "AI Native"는 다르다. AI Native는 <strong>일하는 방식 자체</strong>가 AI와 함께 설계된 것을 말해.</p>
+
+        <h3>기존 방식 vs AI Native 방식</h3>
         <table>
           <thead>
-            <tr><th>상황</th><th>지금</th><th>AI Native</th></tr>
+            <tr><th>구분</th><th>기존 방식</th><th>AI Native 방식</th></tr>
           </thead>
           <tbody>
-            <tr><td>메일 쓸 때</td><td>처음부터 타이핑</td><td>"거래처에 일정 변경 메일 써줘" → 초안 나옴 → 다듬기</td></tr>
-            <tr><td>데이터 정리</td><td>엑셀 수식 직접 만들기</td><td>"이 파일 읽어서 월별로 정리해줘"</td></tr>
-            <tr><td>회의록</td><td>미팅 끝나고 한참 정리</td><td>"이 내용으로 회의록 만들어줘" → 액션아이템까지</td></tr>
-            <tr><td>뭔가 찾을 때</td><td>구글링 → 여러 페이지 읽기</td><td>"이거 알려줘" → 바로 답변</td></tr>
+            <tr><td>문서 작성</td><td>빈 화면에서 시작</td><td>AI가 초안 → 사람이 다듬기</td></tr>
+            <tr><td>데이터 분석</td><td>엑셀 수식 직접 작성</td><td>"이 데이터 트렌드 분석해줘"</td></tr>
+            <tr><td>이메일 답장</td><td>처음부터 타이핑</td><td>AI 초안 → 톤/내용 조정</td></tr>
+            <tr><td>코드 작성</td><td>한 줄씩 직접 코딩</td><td>자연어로 설명 → AI가 구현</td></tr>
+            <tr><td>정보 검색</td><td>구글링 → 여러 페이지 읽기</td><td>"~에 대해 정리해줘"</td></tr>
           </tbody>
         </table>
 
         <div class="highlight">
-          <p>핵심은 간단해. 내가 처음부터 다 하지 않고, AI가 80% 만들어준 걸 내가 다듬는 거야.</p>
-        </div>
-      </div>
-
-      <button class="complete-btn" id="btn-0" onclick="completeBlock(0)">다음으로 →</button>
-    </div>
-  </div>
-
-  <!-- BLOCK 1: 뭘 할 수 있어? -->
-  <div class="block locked" id="block-1">
-    <div class="block-header" onclick="toggleBlock(1)">
-      <h2><span class="block-num" id="num-1">2</span> Claude Code는 뭘 할 수 있어?</h2>
-      <span class="chevron">▼</span>
-    </div>
-    <div class="block-body">
-      <div class="section-content active explain" id="block-1-explain">
-        <p>일반 AI 챗봇이랑 가장 큰 차이 — <strong>Claude Code는 내 컴퓨터에서 직접 실행돼.</strong><br>파일 읽기, 쓰기, 터미널 명령어 실행까지 다 해. 답변만 하는 게 아니라 실제로 일을 해줘.</p>
-
-        <h3>예를 들면 이런 거야</h3>
-
-        <div class="code-block">
-          <span style="color: #9CA3AF;">나:</span><br>
-          <span style="color: #fff;">"이번 주 메일 중에 답장 안 한 거 있어?"</span><br><br>
-          <span style="color: #9CA3AF;">Claude:</span><br>
-          → 다우오피스 메일함 확인 → 미회신 3건 정리해서 보여줌
+          <p>핵심: AI Native는 "AI를 가끔 쓰는 것"이 아니라, "AI 없이는 일하지 않는 것"이야. 마치 이메일 없이 업무가 안 되듯이.</p>
         </div>
 
-        <div class="code-block">
-          <span style="color: #9CA3AF;">나:</span><br>
-          <span style="color: #fff;">"이 CSV 파일 읽어서 요약표 만들어줘"</span><br><br>
-          <span style="color: #9CA3AF;">Claude:</span><br>
-          → 파일 직접 열어서 → 분석하고 → 정리된 표를 새 파일로 저장
-        </div>
-
-        <div class="code-block">
-          <span style="color: #9CA3AF;">나:</span><br>
-          <span style="color: #fff;">"거래처에 납품일정 변경 메일 초안 써줘. 3/25 → 4/1, 원자재 수급 지연"</span><br><br>
-          <span style="color: #9CA3AF;">Claude:</span><br>
-          → 메일 초안 작성 → "영문 버전도?" → 바로 번역
-        </div>
-
-        <div class="highlight">
-          <p>ChatGPT는 "답변"을 줘. Claude Code는 내 컴퓨터에서 직접 "일"을 해. 이게 핵심 차이야.</p>
-        </div>
-
-        <h3>6일 뒤에는 이런 것도 할 수 있어</h3>
+        <h3>왜 지금인가?</h3>
         <ul>
-          <li>이메일, 캘린더, Teams, Notion을 Claude에 연결해서 한 번에 확인 (Day 2)</li>
-          <li>반복 업무를 명령어 하나로 자동화 (Day 3~4)</li>
-          <li>복잡한 업무를 여러 단계로 쪼개서 한 번에 처리 (Day 5)</li>
+          <li><strong>2024~2025:</strong> AI가 "대화"에서 "실행"으로 진화했어. 파일을 읽고, 쓰고, 명령어를 실행할 수 있게 됐어.</li>
+          <li><strong>Claude Code:</strong> 터미널에서 AI가 직접 내 컴퓨터를 조작해. 채팅 AI와는 차원이 달라.</li>
+          <li><strong>MCP (Model Context Protocol):</strong> AI가 이메일, 캘린더, 노션, Teams 등에 직접 연결돼. 복사-붙여넣기가 사라져.</li>
+        </ul>
+
+        <h3>ABLE Labs는 왜 AI Native를 해야 하나?</h3>
+        <p>우리는 <strong>실험 자동화</strong> 회사야. 고객에게 "자동화하세요"라고 말하면서 정작 우리 업무는 수동이면 설득력이 없어. AI Native는 우리의 정체성에 맞는 일하는 방식이야.</p>
+        <ul>
+          <li>30명 규모의 스타트업 — 한 사람이 여러 역할을 해. AI가 배수기 역할을 해줘야 해.</li>
+          <li>글로벌 비즈니스 — 영어/일본어 커뮤니케이션을 AI가 자연스럽게 지원해.</li>
+          <li>기술 회사 — 코드, 문서, 데이터를 다루는 업무가 많아. AI가 가장 잘하는 영역이야.</li>
         </ul>
       </div>
 
-      <button class="complete-btn" id="btn-1" onclick="completeBlock(1)">다음으로 →</button>
-    </div>
-  </div>
-
-  <!-- BLOCK 2: 설치 & 첫 대화 -->
-  <div class="block locked" id="block-2">
-    <div class="block-header" onclick="toggleBlock(2)">
-      <h2><span class="block-num" id="num-2">3</span> 설치하고 첫 대화해보자</h2>
-      <span class="chevron">▼</span>
-    </div>
-    <div class="block-body">
-      <div class="section-content active execute" id="block-2-execute">
-        <ol class="step-list">
-          <li class="step-item">
-            <div class="step-num">1</div>
-            <div class="step-text">
-              <strong>터미널 열기</strong><br>
-              Mac: <code>⌘ + Space</code> → "터미널" 검색<br>
-              Windows: <code>Win + X</code> → "PowerShell" 선택<br>
-              <span style="font-size:0.8rem;color:var(--gray-400);">VS Code 쓰면 <code>Ctrl + `</code> 로 내장 터미널 열어도 돼.</span>
-            </div>
-          </li>
-          <li class="step-item">
-            <div class="step-num">2</div>
-            <div class="step-text">
-              <strong>Claude Code 설치</strong><br>
-              Mac/Linux: <code>curl -fsSL https://claude.ai/install.sh | bash</code><br>
-              Windows: <code>irm https://claude.ai/install.ps1 | iex</code>
-            </div>
-          </li>
-          <li class="step-item">
-            <div class="step-num">3</div>
-            <div class="step-text">
-              <strong>캠프 저장소 다운로드</strong><br>
-              <code>git clone https://github.com/sangshin-ablelabs/able-native-camp.git</code><br>
-              <span style="font-size:0.8rem;color:var(--gray-400);">git이 없다면? Mac: <code>xcode-select --install</code> / Windows: git-scm.com에서 설치</span>
-            </div>
-          </li>
-          <li class="step-item">
-            <div class="step-num">4</div>
-            <div class="step-text">
-              <strong>Claude Code 실행</strong><br>
-              <code>cd able-native-camp && claude</code><br>
-              <span style="font-size:0.8rem;color:var(--gray-400);">처음 실행하면 브라우저가 열려. Anthropic 계정으로 로그인하면 돼.<br>계정이 없으면 claude.ai에서 가입. Pro/Max/Teams 구독이 필요해.</span>
-            </div>
-          </li>
-          <li class="step-item">
-            <div class="step-num">5</div>
-            <div class="step-text">
-              <strong>첫 대화</strong><br>
-              <code>안녕! 나는 [이름]이야. 잘 부탁해.</code><br>
-              자유롭게 2~3개 질문해봐. 뭐든 괜찮아.
-            </div>
-          </li>
-        </ol>
-        <div class="tip">
-          <p>막히면 Teams #able-native-camp 채널에 물어봐. 누군가 바로 도와줄 거야.</p>
+      <div class="section-content quiz" id="block-0-quiz">
+        <p class="quiz-question">"AI Native"의 핵심 정의로 가장 적절한 것은?</p>
+        <div class="quiz-options" id="quiz-0">
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'A')">
+            <span class="letter">A</span> ChatGPT를 매일 쓰는 것
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'B')">
+            <span class="letter">B</span> AI와 함께 일하는 방식 자체를 설계하는 것
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'C')">
+            <span class="letter">C</span> 코딩을 AI로 대체하는 것
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'D')">
+            <span class="letter">D</span> 모든 업무를 AI에게 맡기는 것
+          </div>
+        </div>
+        <div class="quiz-answer" id="answer-0">
+          ✅ <strong>정답: B.</strong> AI Native는 특정 도구를 쓰는 게 아니라, 업무 프로세스 자체를 AI와 협업하는 방식으로 재설계하는 것이야. "가끔 쓰는 도구"가 아니라 "기본 인프라"로 자리잡는 것.
         </div>
       </div>
 
-      <button class="complete-btn" id="btn-2" onclick="completeDay()">Day 0 완료!</button>
+      <button class="complete-btn" id="btn-0" onclick="completeBlock(0)">✅ Block 0 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 1: 데모 -->
+  <div class="block locked" id="block-1">
+    <div class="block-header" onclick="toggleBlock(1)">
+      <h2><span class="block-num" id="num-1">1</span> 데모 — Claude가 실제로 뭘 할 수 있는지</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(1, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(1, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-1-explain">
+        <p>백문이 불여일견. Claude Code가 실제로 어떤 일을 하는지 시나리오로 살펴보자.</p>
+
+        <h3>시나리오 1: 이메일 초안 작성</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># 사람이 하는 말:</span><br>
+          <span style="color: #fff;">"거래처 A사에 납품 일정 변경 안내 메일 초안 써줘.<br>
+          기존: 3/25 → 변경: 4/1. 사유는 원자재 수급 지연."</span><br><br>
+          <span style="color: #9CA3AF;"># Claude가 하는 일:</span><br>
+          → 메일 제목 + 본문 초안 작성 (HTML 파일로 저장)<br>
+          → 톤 조정 요청하면 즉시 수정<br>
+          → "영문 버전도 만들어줘" → 바로 번역
+        </div>
+
+        <h3>시나리오 2: 데이터 정리</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># 사람이 하는 말:</span><br>
+          <span style="color: #fff;">"이 CSV 파일 읽어서 월별 매출 요약표 만들어줘"</span><br><br>
+          <span style="color: #9CA3AF;"># Claude가 하는 일:</span><br>
+          → CSV 파일 직접 읽기 (Read 도구)<br>
+          → 데이터 분석 및 요약<br>
+          → 마크다운 표 또는 새 파일로 결과 저장 (Write 도구)
+        </div>
+
+        <h3>시나리오 3: 회의록 정리</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># 사람이 하는 말:</span><br>
+          <span style="color: #fff;">"아까 미팅 내용 정리해줘. 참석자는 A, B, C.<br>
+          논의 사항: 1) Q2 목표, 2) 신규 채용, 3) 제품 출시 일정"</span><br><br>
+          <span style="color: #9CA3AF;"># Claude가 하는 일:</span><br>
+          → 구조화된 회의록 작성<br>
+          → 액션 아이템 정리<br>
+          → 담당자별 할 일 리스트 생성
+        </div>
+
+        <h3>시나리오 4: MCP 연결 후</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># MCP로 다우오피스, Teams, Notion이 연결되면:</span><br><br>
+          <span style="color: #fff;">"오늘 메일 중 답장 안 한 거 있어?"</span><br>
+          → 다우오피스 메일함 직접 확인 → 미회신 메일 리스트 제공<br><br>
+          <span style="color: #fff;">"이번 주 일정 정리해줘"</span><br>
+          → 캘린더 직접 조회 → 일정표 생성<br><br>
+          <span style="color: #fff;">"Teams에서 나한테 멘션된 거 확인해줘"</span><br>
+          → Teams 멘션 조회 → 요약 제공
+        </div>
+
+        <div class="highlight">
+          <p>핵심: Claude Code는 "답변"만 하는 게 아니라, 내 컴퓨터에서 직접 "실행"한다. 파일을 읽고, 쓰고, 외부 서비스에 접근해.</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-1-quiz">
+        <p class="quiz-question">Claude Code가 일반 ChatGPT/웹 Claude와 가장 다른 점은?</p>
+        <div class="quiz-options" id="quiz-1">
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'A')">
+            <span class="letter">A</span> 더 긴 답변을 해준다
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'B')">
+            <span class="letter">B</span> 내 컴퓨터에서 파일을 읽고 쓰고 명령어를 실행할 수 있다
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'C')">
+            <span class="letter">C</span> 이미지를 생성할 수 있다
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'D')">
+            <span class="letter">D</span> 인터넷 검색을 할 수 있다
+          </div>
+        </div>
+        <div class="quiz-answer" id="answer-1">
+          ✅ <strong>정답: B.</strong> Claude Code는 터미널에서 실행되기 때문에 로컬 파일 시스템에 직접 접근할 수 있어. 채팅 AI는 대화만 하지만, Claude Code는 실제로 파일을 읽고, 수정하고, 새로 만들어.
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-1" onclick="completeBlock(1)">✅ Block 1 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 2: 네이티브 레벨 소개 -->
+  <div class="block locked" id="block-2">
+    <div class="block-header" onclick="toggleBlock(2)">
+      <h2><span class="block-num" id="num-2">2</span> 네이티브 레벨 — Lv.0 ~ Lv.4</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(2, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(2, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-2-explain">
+        <p>ABLE Native Camp은 6일간 레벨 0에서 레벨 4까지 올라가는 과정이야. 각 레벨이 뭘 의미하는지 알아보자.</p>
+
+        <div class="level-card">
+          <div class="level-badge" style="background:var(--gray-400);">Lv.0</div>
+          <div>
+            <h4>Aware — 인식</h4>
+            <p>AI가 뭘 할 수 있는지 안다. "이런 게 가능하구나"를 이해하는 단계. 오늘(Day 0)이 여기야.</p>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-badge" style="background:var(--sky);">Lv.1</div>
+          <div>
+            <h4>Operate — 조작</h4>
+            <p>Claude Code를 직접 실행하고, 기본 대화를 나눌 수 있다. CLAUDE.md를 만들고, 기본 도구(Read/Write/Edit/Bash)를 사용할 수 있다.</p>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-badge" style="background:#8B5CF6;">Lv.2</div>
+          <div>
+            <h4>Connect — 연결</h4>
+            <p>MCP로 외부 도구(다우오피스, Teams, Notion)를 연결할 수 있다. AI가 내 업무 환경에 직접 접근해.</p>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-badge" style="background:#F59E0B;">Lv.3</div>
+          <div>
+            <h4>Automate — 자동화</h4>
+            <p>반복 업무를 스킬(슬래시 커맨드)로 만들어서 한 번에 실행할 수 있다. 매일 하는 일을 자동화해.</p>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-badge" style="background:var(--green);">Lv.4</div>
+          <div>
+            <h4>Architect — 설계</h4>
+            <p>팀/조직 단위의 AI 워크플로우를 설계할 수 있다. 다른 에이블러에게 전파하고, 조직의 일하는 방식을 바꿀 수 있다.</p>
+          </div>
+        </div>
+
+        <h3>캠프 일정과 레벨 매핑</h3>
+        <table>
+          <thead>
+            <tr><th>Day</th><th>주제</th><th>레벨</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Day 0</td><td>Why — AI Native란 무엇인가</td><td>Lv.0 Aware</td></tr>
+            <tr><td>Day 1</td><td>Operate — 첫 대화</td><td>Lv.1 Operate</td></tr>
+            <tr><td>Day 2</td><td>Connect — MCP 연결</td><td>Lv.2 Connect</td></tr>
+            <tr><td>Day 3</td><td>Workflow — 실전 업무 흐름</td><td>Lv.2 Connect</td></tr>
+            <tr><td>Day 4</td><td>Skill — 나만의 스킬 만들기</td><td>Lv.3 Automate</td></tr>
+            <tr><td>Day 5</td><td>Team — 팀 협업</td><td>Lv.3 Automate</td></tr>
+            <tr><td>Day 6</td><td>Architect — 조직 설계</td><td>Lv.4 Architect</td></tr>
+          </tbody>
+        </table>
+
+        <div class="highlight">
+          <p>목표: 6일 후에 모든 에이블러가 최소 Lv.2 이상. AI 없이 일하는 게 오히려 어색해지는 수준.</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-2-quiz">
+        <p class="quiz-question">MCP를 활용해서 외부 도구(이메일, 캘린더)를 AI에 연결할 수 있는 레벨은?</p>
+        <div class="quiz-options" id="quiz-2">
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'A')">
+            <span class="letter">A</span> Lv.0 Aware
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'B')">
+            <span class="letter">B</span> Lv.1 Operate
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'C')">
+            <span class="letter">C</span> Lv.2 Connect
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'D')">
+            <span class="letter">D</span> Lv.4 Architect
+          </div>
+        </div>
+        <div class="quiz-answer" id="answer-2">
+          ✅ <strong>정답: C.</strong> Lv.2 Connect에서 MCP(Model Context Protocol)를 사용해 다우오피스, Teams, Notion 같은 외부 도구를 AI에 연결할 수 있어. Day 2에서 배울 내용이야.
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-2" onclick="completeBlock(2)">✅ Block 2 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 3: 설치 & 첫 실행 -->
+  <div class="block locked" id="block-3">
+    <div class="block-header" onclick="toggleBlock(3)">
+      <h2><span class="block-num" id="num-3">3</span> 설치 & 첫 실행 — Claude Code 시작하기</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(3, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(3, 'execute')">🏃 실습</button>
+      </div>
+
+      <div class="section-content active explain" id="block-3-explain">
+        <h3>Step 1: Node.js 설치 확인</h3>
+        <p>Claude Code는 Node.js 위에서 돌아가. 먼저 설치되어 있는지 확인하자.</p>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># 터미널에서 실행</span><br>
+          <span style="color: #fff;">node --version</span><br><br>
+          <span style="color: #9CA3AF;"># v18 이상이면 OK. 없으면 https://nodejs.org 에서 설치</span>
+        </div>
+
+        <h3>Step 2: Claude Code 설치</h3>
+        <div class="code-block">
+          <span style="color: #fff;">npm install -g @anthropic-ai/claude-code</span>
+        </div>
+        <p>이 한 줄이면 설치 완료.</p>
+
+        <h3>Step 3: 계정 연결</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># 아무 폴더에서</span><br>
+          <span style="color: #fff;">claude</span><br><br>
+          <span style="color: #9CA3AF;"># 처음 실행하면 Anthropic 계정 로그인 안내가 나와.</span><br>
+          <span style="color: #9CA3AF;"># 회사 계정으로 로그인하면 돼.</span>
+        </div>
+
+        <h3>Step 4: VS Code에서 터미널 열기</h3>
+        <p>VS Code를 쓰고 있다면, 내장 터미널이 가장 편해:</p>
+        <ul>
+          <li>Mac: <code>Ctrl + `</code> (백틱)</li>
+          <li>또는 메뉴 → 터미널 → 새 터미널</li>
+        </ul>
+
+        <div class="highlight">
+          <p>VS Code 터미널에서 <code>claude</code>를 실행하면, 현재 열려 있는 프로젝트 폴더가 자동으로 작업 디렉토리가 돼. 파일을 바로 읽고 수정할 수 있어서 가장 실용적인 조합이야.</p>
+        </div>
+
+        <h3>Step 5: 첫 대화</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># Claude Code가 실행되면</span><br>
+          <span style="color: #fff;">안녕! 나는 [이름]이야. 잘 부탁해.</span>
+        </div>
+        <p>축하해! 이게 AI Native의 첫 걸음이야. 내일(Day 1)부터 본격적으로 시작하자.</p>
+      </div>
+
+      <div class="section-content execute" id="block-3-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">터미널을 열어 (VS Code: <code>Ctrl + `</code>)</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><code>node --version</code> 으로 Node.js 확인. 없으면 <a href="https://nodejs.org" target="_blank" style="color:var(--sky);">nodejs.org</a>에서 설치</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><code>npm install -g @anthropic-ai/claude-code</code> 로 Claude Code 설치</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><code>claude</code> 를 입력해서 실행. 계정 연결이 필요하면 안내에 따라 로그인</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">5</div>
+            <div class="step-text">자기소개를 하고 간단한 질문 2~3개 해봐</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 설치가 안 되면 당황하지 말고, Teams #able-native-camp 채널에 물어봐. 누군가 바로 도와줄 거야.</p>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-3" onclick="completeDay()">🎓 Day 0 완료!</button>
     </div>
   </div>
 
@@ -400,7 +671,8 @@
 </div>
 
 <script>
-const completed = [false, false, false];
+const CORRECT = { 0: 'B', 1: 'B', 2: 'C' };
+const completed = [false, false, false, false];
 
 function toggleBlock(i) {
   const block = document.getElementById('block-' + i);
@@ -408,40 +680,79 @@ function toggleBlock(i) {
   block.classList.toggle('open');
 }
 
+function showTab(block, tab) {
+  const container = document.getElementById(`block-${block}`) || document.querySelector(`[id^="block-${block}"]`);
+  const tabs = container.querySelectorAll('.section-tab');
+  const contents = container.querySelectorAll('.section-content');
+  tabs.forEach(t => { t.classList.remove('active'); if (t.getAttribute('onclick')?.includes(`'${tab}'`)) t.classList.add('active'); });
+  contents.forEach(c => c.classList.remove('active'));
+  document.getElementById(`block-${block}-${tab}`).classList.add('active');
+}
+
+function selectAnswer(quiz, el, answer) {
+  const options = document.querySelectorAll(`#quiz-${quiz} .quiz-option`);
+  const answerBox = document.getElementById('answer-' + quiz);
+  if (answerBox.classList.contains('show')) return;
+
+  options.forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+
+  if (answer === CORRECT[quiz]) {
+    el.classList.add('correct');
+  } else {
+    el.classList.add('wrong');
+    // Highlight correct
+    options.forEach(o => {
+      const letter = o.querySelector('.letter').textContent;
+      if (letter === CORRECT[quiz]) o.classList.add('correct');
+    });
+  }
+  answerBox.classList.add('show');
+}
+
 function completeBlock(i) {
   completed[i] = true;
   const btn = document.getElementById('btn-' + i);
-  btn.textContent = '완료!';
+  btn.textContent = '✅ 완료!';
   btn.classList.add('completed');
 
+  // Update progress
   document.getElementById('prog-' + i).classList.add('done');
   document.getElementById('prog-' + i).classList.remove('active');
   document.getElementById('lbl-' + i).classList.add('done');
   document.getElementById('lbl-' + i).classList.remove('active');
   document.getElementById('num-' + i).classList.add('done');
 
+  // Unlock next
   const next = i + 1;
-  if (next < 3) {
+  if (next < 4) {
     const nextBlock = document.getElementById('block-' + next);
     nextBlock.classList.remove('locked');
     nextBlock.classList.add('open');
     document.getElementById('prog-' + next).classList.add('active');
     document.getElementById('lbl-' + next).classList.add('active');
+
+    // Close current
     document.getElementById('block-' + i).classList.remove('open');
-    setTimeout(() => { nextBlock.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+
+    // Scroll to next
+    setTimeout(() => {
+      nextBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
   }
 }
 
 function completeDay() {
-  completed[2] = true;
+  completed[3] = true;
   localStorage.setItem('day0Complete', 'true');
-  const btn = document.getElementById('btn-2');
-  btn.textContent = 'Day 0 끝! Day 1에서 만나자';
+  const btn = document.getElementById('btn-3');
+  btn.textContent = '🎉 Day 0 수료 완료!';
   btn.classList.add('completed');
-  document.getElementById('prog-2').classList.add('done');
-  document.getElementById('lbl-2').classList.add('done');
-  document.getElementById('num-2').classList.add('done');
+  document.getElementById('prog-3').classList.add('done');
+  document.getElementById('lbl-3').classList.add('done');
+  document.getElementById('num-3').classList.add('done');
 
+  // Enable next day link
   const nextDay = document.getElementById('next-day');
   nextDay.style.opacity = '1';
   nextDay.style.pointerEvents = 'auto';
