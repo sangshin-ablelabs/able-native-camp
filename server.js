@@ -6,7 +6,7 @@ const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'able-native-camp-admin';
+const ADMIN_KEY = process.env.ADMIN_KEY || 'able-native-camp-admin';
 const DATA_DIR = path.join(__dirname, 'data');
 
 // ─── Data 디렉토리 초기화 ───
@@ -60,7 +60,7 @@ function authenticateToken(req, res, next) {
 // ─── Admin auth ───
 function authenticateAdmin(req, res, next) {
   const auth = req.headers.authorization;
-  if (!auth || auth !== `Bearer ${ADMIN_SECRET}`) {
+  if (!auth || auth !== `Bearer ${ADMIN_KEY}`) {
     return res.status(401).json({ error: 'admin unauthorized' });
   }
   next();
