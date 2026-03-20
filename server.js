@@ -139,6 +139,8 @@ app.get('/api/leaderboard', (req, res) => {
         totalTokens: 0,
         totalInput: 0,
         totalOutput: 0,
+        totalCacheCreate: 0,
+        totalCacheRead: 0,
         activeDays: 0,
         dailyCost: {},
       };
@@ -155,6 +157,8 @@ app.get('/api/leaderboard', (req, res) => {
           totalTokens: 0,
           totalInput: 0,
           totalOutput: 0,
+          totalCacheCreate: 0,
+          totalCacheRead: 0,
           activeDays: 0,
           dailyCost: {},
         };
@@ -165,6 +169,8 @@ app.get('/api/leaderboard', (req, res) => {
       u.totalTokens += s.total_tokens || 0;
       u.totalInput += s.input_tokens || 0;
       u.totalOutput += s.output_tokens || 0;
+      u.totalCacheCreate += s.cache_creation_tokens || 0;
+      u.totalCacheRead += s.cache_read_tokens || 0;
 
       if (!u.dailyCost[s.date]) {
         u.dailyCost[s.date] = { cost: 0, tokens: 0 };

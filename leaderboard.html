@@ -191,12 +191,13 @@
     }
 
     /* RESPONSIVE */
+    .board-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     @media (max-width: 768px) {
       .stats-row { grid-template-columns: repeat(2, 1fr); }
       .tiers { grid-template-columns: repeat(2, 1fr); }
       .awards { grid-template-columns: repeat(2, 1fr); }
       .awards .award-card:last-child { grid-column: span 2; }
-      .board-table { font-size: 0.8rem; }
+      .board-table { font-size: 0.8rem; min-width: 700px; }
       .board-table th, .board-table td { padding: 8px 10px; }
     }
     @media (max-width: 480px) {
@@ -367,14 +368,18 @@
     <!-- Level + Tier -->
     <div id="profile-badges" style="display:flex;gap:8px;margin-bottom:16px;"></div>
     <!-- Stats grid -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
       <div class="profile-stat">
         <div class="profile-stat-num" id="profile-total-cost">$0</div>
         <div class="profile-stat-label">누적 비용</div>
       </div>
       <div class="profile-stat">
         <div class="profile-stat-num" id="profile-total-tokens">0</div>
-        <div class="profile-stat-label">누적 토큰</div>
+        <div class="profile-stat-label">입출력</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-num" id="profile-cache-rate">-</div>
+        <div class="profile-stat-label">캐시율</div>
       </div>
       <div class="profile-stat">
         <div class="profile-stat-num" id="profile-streak">0</div>
@@ -432,6 +437,10 @@ async function fetchLeaderboard() {
       tokenCountLog: Object.fromEntries(Object.entries(m.dailyCost || {}).map(([d, v]) => [d, v.tokens])),
       totalCost: m.totalCost,
       totalTokens: m.totalTokens,
+      totalInput: m.totalInput || 0,
+      totalOutput: m.totalOutput || 0,
+      totalCacheCreate: m.totalCacheCreate || 0,
+      totalCacheRead: m.totalCacheRead || 0,
       activeDays: m.activeDays,
     }));
     try {
@@ -590,9 +599,9 @@ function renderBoard(data) {
     return (b.level || 0) - (a.level || 0) || a.name.localeCompare(b.name, 'ko');
   });
 
-  let html = `<table class="board-table"><thead><tr>
+  let html = `<div class="board-table-wrap"><table class="board-table"><thead><tr>
     <th>#</th><th>이름</th><th>등급</th>
-    <th>${viewLabels[currentView]}</th><th>토큰 사용량</th><th>활성일</th>
+    <th>${viewLabels[currentView]}</th><th>입출력</th><th>캐시</th><th>캐시율</th><th>활성일</th>
   </tr></thead><tbody>`;
 
   sorted.forEach((member, idx) => {
@@ -616,9 +625,19 @@ function renderBoard(data) {
     // Cost
     html += `<td><span class="token-val">$${tokens.toFixed(2)}</span></td>`;
 
-    // Token count
-    const totalCount = getTotalTokenCount(member);
-    html += `<td><span style="font-size:0.8rem;color:var(--gray-500);">${totalCount > 0 ? formatTokenCount(totalCount) : '-'}</span></td>`;
+    // Input + Output tokens
+    const io = (member.totalInput || 0) + (member.totalOutput || 0);
+    html += `<td><span style="font-size:0.8rem;color:var(--gray-500);">${io > 0 ? formatTokenCount(io) : '-'}</span></td>`;
+
+    // Cache tokens (create + read)
+    const cache = (member.totalCacheCreate || 0) + (member.totalCacheRead || 0);
+    html += `<td><span style="font-size:0.8rem;color:var(--gray-500);">${cache > 0 ? formatTokenCount(cache) : '-'}</span></td>`;
+
+    // Cache rate
+    const totalAll = io + cache;
+    const cacheRate = totalAll > 0 ? Math.round((cache / totalAll) * 100) : 0;
+    const cacheColor = cacheRate >= 80 ? 'var(--green)' : cacheRate >= 50 ? '#FBBF24' : 'var(--gray-400)';
+    html += `<td><span style="font-size:0.8rem;font-weight:700;color:${cacheColor};">${totalAll > 0 ? cacheRate + '%' : '-'}</span></td>`;
 
     // Active days
     html += '<td><span style="font-size:0.8rem;color:var(--gray-500);">' + (member.activeDays || 0) + '일</span></td>';
@@ -626,7 +645,7 @@ function renderBoard(data) {
     html += '</tr>';
   });
 
-  html += '</tbody></table>';
+  html += '</tbody></table></div>';
   container.innerHTML = html;
 }
 
@@ -675,7 +694,12 @@ function openProfileModal(id) {
 
   // Stats
   document.getElementById('profile-total-cost').textContent = '$' + getTotalCost(m).toFixed(2);
-  document.getElementById('profile-total-tokens').textContent = formatTokenCount(getTotalTokenCount(m));
+  const profileIO = (m.totalInput || 0) + (m.totalOutput || 0);
+  document.getElementById('profile-total-tokens').textContent = formatTokenCount(profileIO);
+  const profileCache = (m.totalCacheCreate || 0) + (m.totalCacheRead || 0);
+  const profileTotal = profileIO + profileCache;
+  const profileCacheRate = profileTotal > 0 ? Math.round((profileCache / profileTotal) * 100) : 0;
+  document.getElementById('profile-cache-rate').textContent = profileTotal > 0 ? profileCacheRate + '%' : '-';
   document.getElementById('profile-streak').textContent = getStreak(m);
 
   // Badges
@@ -702,10 +726,14 @@ function exportData() {
   const data = getData();
   if (data.length === 0) { alert('데이터가 없어!'); return; }
   const sorted = [...data].sort((a, b) => getTotalCost(b) - getTotalCost(a));
-  let csv = '순위,이름,등급,누적비용($),토큰수,활성일\n';
+  let csv = '순위,이름,등급,누적비용($),입출력,캐시,캐시율,활성일\n';
   sorted.forEach((m, i) => {
     const t = getTier(m);
-    csv += `${i+1},${m.name},${t ? t.name : '-'},$${getTotalCost(m).toFixed(2)},${formatTokenCount(getTotalTokenCount(m))},${m.activeDays || 0}\n`;
+    const io = (m.totalInput || 0) + (m.totalOutput || 0);
+    const cache = (m.totalCacheCreate || 0) + (m.totalCacheRead || 0);
+    const total = io + cache;
+    const rate = total > 0 ? Math.round((cache / total) * 100) + '%' : '-';
+    csv += `${i+1},${m.name},${t ? t.name : '-'},$${getTotalCost(m).toFixed(2)},${formatTokenCount(io)},${formatTokenCount(cache)},${rate},${m.activeDays || 0}\n`;
   });
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
