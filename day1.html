@@ -310,7 +310,7 @@
             <p>터미널에서 아래 명령어를 <strong>복사해서 붙여넣기</strong>하면 끝!</p>
             <div style="position:relative;">
               <div id="setup-install-cmd" class="code-block" style="font-size:0.78rem;word-break:break-all;user-select:all;"></div>
-              <button onclick="copyInstallCmd()" style="position:absolute;top:8px;right:8px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;font-size:0.72rem;cursor:pointer;">복사</button>
+              <button onclick="copyInstallCmd(this)" style="position:absolute;top:8px;right:8px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;font-size:0.72rem;cursor:pointer;">복사</button>
             </div>
             <div class="tip" style="margin-top:12px;">
               <p>💡 이 명령어가 하는 일: Claude Code 세션 종료 시 사용량을 리더보드 서버로 자동 전송하는 hook을 설치해.</p>
@@ -760,12 +760,19 @@ function showSetupDone() {
   document.getElementById('setup-done').style.display = 'block';
 }
 
-function copyInstallCmd() {
+function copyInstallCmd(btn) {
   const cmd = document.getElementById('setup-install-cmd').textContent;
   navigator.clipboard.writeText(cmd).then(() => {
-    const btn = event.target;
     btn.textContent = '복사됨!';
     setTimeout(() => { btn.textContent = '복사'; }, 2000);
+  }).catch(() => {
+    // fallback: select text
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById('setup-install-cmd'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    btn.textContent = '선택됨 — Ctrl+C';
+    setTimeout(() => { btn.textContent = '복사'; }, 3000);
   });
 }
 
