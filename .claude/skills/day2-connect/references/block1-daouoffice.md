@@ -87,8 +87,8 @@ claude mcp list
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "다우오피스 MCP를 연결한 후, 이메일을 확인하려면 어떻게 해야 할까?",
-    "header": "Block 1 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 1 퀴즈: 다우오피스 MCP를 연결한 후, 이메일을 확인하려면 어떻게 해야 할까?",
     "options": [
       {"label": "A. 다우오피스 웹사이트에 로그인해서 직접 확인해"},
       {"label": "B. Claude에게 '오늘 메일 뭐 왔어?'라고 자연어로 말해"},

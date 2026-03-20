@@ -108,8 +108,8 @@
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "스킬로 만들기 가장 좋은 업무는?",
-    "header": "Block 2 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 2 퀴즈: 스킬로 만들기 가장 좋은 업무는?",
     "options": [
       {"label": "A. 한 번만 하는 특수 프로젝트"},
       {"label": "B. 매주 반복하고, 절차가 비슷하고, 결과물 형식이 정해진 업무"},

@@ -78,8 +78,8 @@
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "에이전트에게 위임하면 안 되는 건?",
-    "header": "Block 2 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 2 퀴즈: 에이전트에게 위임하면 안 되는 건?",
     "options": [
       {"label": "A. 이메일 분류 + 우선순위 판단"},
       {"label": "B. 주간 보고서 초안 작성"},

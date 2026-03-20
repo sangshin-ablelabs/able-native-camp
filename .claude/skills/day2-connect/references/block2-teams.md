@@ -81,8 +81,8 @@ claude mcp list
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "Teams MCP를 사용할 때 가장 주의해야 할 점은?",
-    "header": "Block 2 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 2 퀴즈: Teams MCP를 사용할 때 가장 주의해야 할 점은?",
     "options": [
       {"label": "A. 메시지를 최대한 많이 보내야 해"},
       {"label": "B. 메시지 발송 전 반드시 내용을 확인해야 해"},

@@ -88,8 +88,8 @@ Teams #able-native-camp 채널에 아래 형식으로 공유:
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "스킬 공유의 가장 큰 가치는?",
-    "header": "Block 2 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 2 퀴즈: 스킬 공유의 가장 큰 가치는?",
     "options": [
       {"label": "A. 발표 연습이 돼"},
       {"label": "B. 한 사람의 스킬이 조직 전체의 자산이 돼"},

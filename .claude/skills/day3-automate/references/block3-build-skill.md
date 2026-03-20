@@ -117,8 +117,8 @@ cp [캠프경로]/.claude/skills/day3-automate/templates/skill-template.md .clau
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "스킬의 절차(Instructions)를 잘 쓰려면 어떤 관점이 가장 유용할까?",
-    "header": "Block 3 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 3 퀴즈: 스킬의 절차(Instructions)를 잘 쓰려면 어떤 관점이 가장 유용할까?",
     "options": [
       {"label": "A. 프로그래밍 문법을 정확히 쓰는 관점"},
       {"label": "B. 동료에게 업무를 인수인계하는 관점"},

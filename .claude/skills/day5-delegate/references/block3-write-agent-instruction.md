@@ -103,8 +103,8 @@
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "에이전트 인스트럭션의 4요소가 아닌 건?",
-    "header": "Block 3 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 3 퀴즈: 에이전트 인스트럭션의 4요소가 아닌 건?",
     "options": [
       {"label": "A. 목표 (Goal)"},
       {"label": "B. 실행 속도 (Speed)"},

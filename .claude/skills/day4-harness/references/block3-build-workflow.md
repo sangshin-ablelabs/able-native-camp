@@ -85,8 +85,8 @@ Step 3: [...]  → 사용할 도구: [MCP/스킬명]
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "워크플로우 스킬을 만들 때 가장 중요한 거는?",
-    "header": "Block 3 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 3 퀴즈: 워크플로우 스킬을 만들 때 가장 중요한 거는?",
     "options": [
       {"label": "A. 단계를 최대한 많이 만들어"},
       {"label": "B. 각 단계의 입출력이 명확히 연결돼야 해"},

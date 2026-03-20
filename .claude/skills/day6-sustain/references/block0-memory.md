@@ -93,8 +93,8 @@ Claude에게 이렇게 말하면 돼:
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "메모리 시스템의 핵심 가치는?",
-    "header": "Block 0 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 0 퀴즈: 메모리 시스템의 핵심 가치는?",
     "options": [
       {"label": "A. Claude가 더 빠르게 응답해"},
       {"label": "B. 쓸수록 나에게 최적화되어 복리로 성장해"},

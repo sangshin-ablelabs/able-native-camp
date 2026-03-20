@@ -70,8 +70,8 @@
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "어떤 업무를 해봤고, 결과는 어땠어? (한줄이면 충분)",
-    "header": "실전 체험 소감",
+    "question": "한줄로 적어봐",
+    "header": "실전 체험 소감: 어떤 업무를 해봤고, 결과는 어땠어? (한줄이면 충분)",
     "multiSelect": false
   }]
 })

@@ -60,8 +60,8 @@ Day 5에서는 **에이전트에게 위임**해.
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "Day 4 미션 완료했어?",
-    "header": "Day 4 마무리",
+    "question": "아래에서 골라봐",
+    "header": "Day 4 마무리: Day 4 미션 완료했어?",
     "options": [
       {"label": "Teams에 공유 완료!", "description": "Day 4 달성"},
       {"label": "아직 진행 중", "description": "더 시간이 필요해"}

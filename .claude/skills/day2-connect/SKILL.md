@@ -96,8 +96,8 @@ AskUserQuestion으로 시작 블록을 선택하게 해:
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "어디서부터 시작할까?",
-    "header": "Day 2 블록 선택",
+    "question": "아래에서 골라봐",
+    "header": "Day 2 블록 선택: 어디서부터 시작할까?",
     "options": [
       {"label": "Block 0: MCP 개념", "description": "MCP가 뭔지, 왜 필요한지"},
       {"label": "Block 1: 다우오피스", "description": "이메일 + 캘린더 연결"},

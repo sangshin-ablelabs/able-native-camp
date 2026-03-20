@@ -68,8 +68,8 @@ Day 2에서 MCP를 연결했고, Day 3에서 스킬을 만들었잖아.
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "데일리 브리핑 워크플로우에서 연결된 MCP는 몇 개야?",
-    "header": "Block 1 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 1 퀴즈: 데일리 브리핑 워크플로우에서 연결된 MCP는 몇 개야?",
     "options": [
       {"label": "A. 1개 (Notion만)"},
       {"label": "B. 2개 (캘린더 + 메일)"},

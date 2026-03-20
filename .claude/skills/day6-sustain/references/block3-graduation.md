@@ -114,8 +114,8 @@ Most Improved   — 가장 크게 성장한 사람
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "6일간의 캠프에서 가장 크게 달라진 점은?",
-    "header": "졸업 소감",
+    "question": "한줄로 적어봐",
+    "header": "졸업 소감: 6일간의 캠프에서 가장 크게 달라진 점은?",
     "multiSelect": false
   }]
 })

@@ -61,8 +61,8 @@ Claude Code에는 핵심 도구 4가지가 있어. 이것만 알면 대부분의
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "파일의 특정 부분만 수정하고 싶을 때 가장 적절한 도구는?",
-    "header": "Block 2 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 2 퀴즈: 파일의 특정 부분만 수정하고 싶을 때 가장 적절한 도구는?",
     "options": [
       {"label": "A. Read"},
       {"label": "B. Write"},

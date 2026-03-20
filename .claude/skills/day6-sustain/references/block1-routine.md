@@ -86,8 +86,8 @@ Claude Code를 어떻게 활용할 수 있는지 포함해서 만들어줘.
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "루틴을 시작할 때 가장 좋은 방법은?",
-    "header": "Block 1 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 1 퀴즈: 루틴을 시작할 때 가장 좋은 방법은?",
     "options": [
       {"label": "A. 처음부터 10개 루틴을 한꺼번에 세팅해"},
       {"label": "B. 매일 아침 하나의 루틴(예: 데일리 브리핑)부터 시작해"},

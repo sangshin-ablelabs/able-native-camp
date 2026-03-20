@@ -63,8 +63,8 @@ SKILL.md에 "이 스킬이 호출되면 이렇게 해"라고 적어놓으면, `/
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "스킬(Skill)의 본질은 뭘까?",
-    "header": "Block 0 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 0 퀴즈: 스킬(Skill)의 본질은 뭘까?",
     "options": [
       {"label": "A. Claude Code의 유료 기능"},
       {"label": "B. 자주 하는 요청을 한 단어로 실행하게 만든 마크다운 파일"},

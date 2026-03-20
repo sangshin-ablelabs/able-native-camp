@@ -95,8 +95,8 @@ AskUserQuestion으로 시작 블록을 선택하게 해:
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "어디서부터 시작할까?",
-    "header": "Day 5 블록 선택",
+    "question": "아래에서 골라봐",
+    "header": "Day 5 블록 선택: 어디서부터 시작할까?",
     "options": [
       {"label": "Block 0: 스킬 vs 에이전트", "description": "개념 구분: 시키기 vs 위임하기"},
       {"label": "Block 1: 위임 데모", "description": "복잡한 업무를 통째로 위임하는 사례"},

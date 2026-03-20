@@ -80,8 +80,8 @@ claude mcp list
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "MCP를 가장 잘 설명한 비유는?",
-    "header": "Block 0 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 0 퀴즈: MCP를 가장 잘 설명한 비유는?",
     "options": [
       {"label": "A. AI의 뇌 — 더 똑똑하게 만들어"},
       {"label": "B. AI의 손 — 연결할수록 할 수 있는 일이 늘어나"},

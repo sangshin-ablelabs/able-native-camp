@@ -92,8 +92,8 @@ claude mcp list
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "Notion API 키를 발급한 뒤 반드시 해야 하는 추가 작업은?",
-    "header": "Block 3 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 3 퀴즈: Notion API 키를 발급한 뒤 반드시 해야 하는 추가 작업은?",
     "options": [
       {"label": "A. Notion 앱을 재시작해"},
       {"label": "B. 접근할 페이지/DB에서 해당 인테그레이션을 '연결'해"},

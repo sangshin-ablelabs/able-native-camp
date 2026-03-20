@@ -57,8 +57,8 @@ Finder에서 숨겨진 폴더도 볼 수 있게 설정해줘
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "설치 확인하고 대화 좀 해봤어?",
-    "header": "Setup 확인",
+    "question": "아래에서 골라봐",
+    "header": "Setup 확인: 설치 확인하고 대화 좀 해봤어?",
     "options": [
       {"label": "다 했어!", "description": "Day 1으로 가자"},
       {"label": "아직 해보는 중", "description": "좀 더 놀아볼게"},

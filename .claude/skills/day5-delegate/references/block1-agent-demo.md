@@ -71,8 +71,8 @@
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "에이전트가 잘 동작하려면 가장 중요한 건?",
-    "header": "Block 1 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 1 퀴즈: 에이전트가 잘 동작하려면 가장 중요한 건?",
     "options": [
       {"label": "A. 가능한 한 구체적으로 순서를 지정해줘야 해"},
       {"label": "B. CLAUDE.md가 충실하고, 목표가 명확해야 해"},

@@ -82,8 +82,8 @@ Claude가 하는 일:
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "MCP 조합의 가장 큰 장점은?",
-    "header": "Block 4 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 4 퀴즈: MCP 조합의 가장 큰 장점은?",
     "options": [
       {"label": "A. 도구를 많이 연결할수록 비용이 줄어들어"},
       {"label": "B. 여러 도구의 데이터를 하나의 프롬프트로 조합할 수 있어"},

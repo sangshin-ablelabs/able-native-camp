@@ -73,8 +73,8 @@ Day 3: Automate — 반복 업무를 스킬로 만들어
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "Day 2 미션 완료했어?",
-    "header": "Day 2 마무리",
+    "question": "아래에서 골라봐",
+    "header": "Day 2 마무리: Day 2 미션 완료했어?",
     "options": [
       {"label": "Teams에 공유 완료!", "description": "Day 2 달성"},
       {"label": "아직 진행 중", "description": "더 시간이 필요해"}

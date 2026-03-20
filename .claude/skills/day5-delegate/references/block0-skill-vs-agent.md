@@ -58,8 +58,8 @@ Day 1~4에서 배운 것들을 정리하고, 오늘 배울 "에이전트"가 왜
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "에이전트와 하네스의 가장 큰 차이는?",
-    "header": "Block 0 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 0 퀴즈: 에이전트와 하네스의 가장 큰 차이는?",
     "options": [
       {"label": "A. 에이전트가 더 빨라"},
       {"label": "B. 에이전트는 목표만 주면 방법을 스스로 판단해"},

@@ -74,8 +74,8 @@ CLAUDE.md 파일을 만들어줘.
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "CLAUDE.md에 넣으면 가장 효과적인 정보는?",
-    "header": "Block 1 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 1 퀴즈: CLAUDE.md에 넣으면 가장 효과적인 정보는?",
     "options": [
       {"label": "A. 내 취미와 좋아하는 음식"},
       {"label": "B. 내 역할, 업무, 선호 스타일, 회사 맥락"},

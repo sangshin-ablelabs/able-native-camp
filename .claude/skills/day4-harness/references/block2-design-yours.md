@@ -90,8 +90,8 @@
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "워크플로우 설계 시 가장 먼저 해야 하는 거는?",
-    "header": "Block 2 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 2 퀴즈: 워크플로우 설계 시 가장 먼저 해야 하는 거는?",
     "options": [
       {"label": "A. MCP를 최대한 많이 연결해"},
       {"label": "B. 반복 업무를 골라서 단계별로 쪼개"},

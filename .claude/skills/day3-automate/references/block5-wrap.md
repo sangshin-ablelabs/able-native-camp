@@ -64,8 +64,8 @@ Day 4에서는 **Harness**를 배워. 스킬 하나가 아니라, **스킬들을
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "Day 3 미션을 완료했어?",
-    "header": "Day 3 마무리",
+    "question": "아래에서 골라봐",
+    "header": "Day 3 마무리: Day 3 미션을 완료했어?",
     "options": [
       {"label": "Teams에 공유 완료!", "description": "Day 3 달성"},
       {"label": "아직 진행 중", "description": "더 시간이 필요해"}

@@ -46,8 +46,8 @@ Day 2에서는 **MCP**를 배워. 다우오피스, Teams, Notion을 AI에 직접
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "Day 1 미션 완료했어?",
-    "header": "Day 1 마무리",
+    "question": "아래에서 골라봐",
+    "header": "Day 1 마무리: Day 1 미션 완료했어?",
     "options": [
       {"label": "Teams에 공유 완료!", "description": "Day 1 달성"},
       {"label": "아직 진행 중", "description": "더 시간이 필요해"}

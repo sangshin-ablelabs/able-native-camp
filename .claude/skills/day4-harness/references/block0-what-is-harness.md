@@ -63,8 +63,8 @@ Day 4: Harness  → 스킬을 엮어 워크플로우를 만들어 (시스템을 
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "하네스(Harness)의 핵심 개념은?",
-    "header": "Block 0 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 0 퀴즈: 하네스(Harness)의 핵심 개념은?",
     "options": [
       {"label": "A. 스킬을 더 빠르게 실행하는 거"},
       {"label": "B. 스킬 A의 출력이 스킬 B의 입력이 되도록 연결하는 거"},

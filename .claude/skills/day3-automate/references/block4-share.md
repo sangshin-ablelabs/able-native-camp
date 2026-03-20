@@ -77,8 +77,8 @@
 ```json
 AskUserQuestion({
   "questions": [{
-    "question": "교환 테스트의 가장 큰 가치는?",
-    "header": "Block 4 퀴즈",
+    "question": "아래에서 골라봐",
+    "header": "Block 4 퀴즈: 교환 테스트의 가장 큰 가치는?",
     "options": [
       {"label": "A. 자랑할 수 있어"},
       {"label": "B. 만든 사람이 당연하다고 생각한 빠진 부분을 발견할 수 있어"},
