@@ -182,6 +182,7 @@
     <h3 id="detail-title"></h3>
     <div id="detail-body"></div>
     <div class="modal-actions" style="margin-top: 16px;">
+      <button class="btn btn-primary" onclick="downloadSkill(document.getElementById('detail-title').dataset.id)">⬇ 다운로드</button>
       <button class="btn btn-outline" onclick="closeDetailModal()">닫기</button>
     </div>
   </div>
@@ -221,7 +222,7 @@ async function render() {
   const weekStr = weekAgo.toISOString().split('T')[0];
   document.getElementById('stat-total').textContent = data.length;
   document.getElementById('stat-authors').textContent = new Set(data.map(s => s.author)).size;
-  document.getElementById('stat-popular').textContent = data.filter(s => (s.likes || 0) >= 3).length;
+  document.getElementById('stat-popular').textContent = data.filter(s => (s.downloads || 0) >= 3).length;
   document.getElementById('stat-new').textContent = data.filter(s => s.date >= weekStr).length;
 
   // Make a working copy for filtering
@@ -236,11 +237,11 @@ async function render() {
       (s.cmd || '').toLowerCase().includes(query)
     );
   }
-  if (currentFilter === 'popular') data = data.filter(s => (s.likes || 0) >= 1);
+  if (currentFilter === 'popular') data = data.filter(s => (s.downloads || 0) >= 1);
   if (currentFilter === 'new') data = data.filter(s => s.date >= weekStr);
 
   // Sort: popular first, then new
-  data.sort((a, b) => (b.likes || 0) - (a.likes || 0) || b.date.localeCompare(a.date));
+  data.sort((a, b) => (b.downloads || 0) - (a.downloads || 0) || b.date.localeCompare(a.date));
 
   const container = document.getElementById('skills-content');
   if (data.length === 0 && !query) {
@@ -255,18 +256,19 @@ async function render() {
   let html = '<div class="skills-grid">';
   data.forEach(skill => {
     const isNew = skill.date >= weekStr;
-    const isPopular = (skill.likes || 0) >= 3;
+    const isPopular = (skill.downloads || 0) >= 3;
     html += `
     <div class="skill-card" onclick="showDetail('${skill.id}')">
       <div class="skill-card-header">
         <h3>${esc(skill.name)}</h3>
+        ${skill.skillmd ? `<button class="btn btn-primary" style="font-size:0.72rem;padding:5px 12px;" onclick="event.stopPropagation(); downloadSkill('${skill.id}')">⬇ 다운로드</button>` : ''}
       </div>
       <p>${esc(skill.desc)}</p>
       <div class="skill-meta">
         <span class="author">👤 ${esc(skill.author)}</span>
         ${isNew ? '<span class="tag new">🆕 NEW</span>' : ''}
         ${isPopular ? '<span class="tag popular">🔥 인기</span>' : ''}
-        ${skill.skillmd ? '<span class="tag">📄 SKILL.md</span>' : ''}
+        <span style="font-size:0.75rem;color:var(--gray-400);">⬇ ${skill.downloads || 0}</span>
         <span class="likes" onclick="event.stopPropagation(); toggleLike('${skill.id}')">❤️ ${skill.likes || 0}</span>
         <span style="margin-left:auto;font-size:0.7rem;color:var(--gray-400);">
           ✏️ <span onclick="event.stopPropagation(); editSkill('${skill.id}')" style="cursor:pointer;">수정</span>
@@ -296,10 +298,12 @@ function showDetail(id) {
   const s = skillsCache.find(x => x.id === id);
   if (!s) return;
   document.getElementById('detail-title').textContent = s.name;
+  document.getElementById('detail-title').dataset.id = s.id;
   document.getElementById('detail-body').innerHTML = `
     <div style="margin-bottom:12px;">
       <span style="font-size:0.82rem;color:var(--gray-500);">by ${esc(s.author)}</span>
       <span style="margin-left:12px;font-size:0.75rem;color:var(--gray-400);">${s.date}</span>
+      <span style="margin-left:12px;font-size:0.82rem;color:var(--gray-400);">⬇ ${s.downloads || 0}</span>
       <span style="margin-left:12px;font-size:0.82rem;color:var(--gray-400);">❤️ ${s.likes || 0}</span>
     </div>
     <div style="margin-bottom:16px;">
@@ -426,6 +430,28 @@ async function saveSkill() {
   } catch (err) {
     console.error('Save error:', err);
     alert('스킬 저장 중 오류가 발생했어! ' + err.message);
+  }
+}
+
+async function downloadSkill(id) {
+  const s = skillsCache.find(x => x.id === id);
+  if (!s || !s.skillmd) { alert('SKILL.md가 없는 스킬이야!'); return; }
+  try {
+    // 다운로드 카운트 증가
+    await fetch(`/api/skills/${id}/download`, { method: 'POST' });
+    // 파일 다운로드
+    const blob = new Blob([s.skillmd], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${s.name}-SKILL.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    await render();
+  } catch (err) {
+    console.error('Download error:', err);
   }
 }
 

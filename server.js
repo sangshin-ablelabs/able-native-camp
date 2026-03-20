@@ -436,6 +436,21 @@ app.delete('/api/skills/:id', (req, res) => {
   }
 });
 
+// POST /api/skills/:id/download — 다운로드 카운트 증가
+app.post('/api/skills/:id/download', (req, res) => {
+  try {
+    const skills = getSkills();
+    const s = skills.find(x => x.id === req.params.id);
+    if (!s) return res.status(404).json({ error: 'skill not found' });
+    s.downloads = (s.downloads || 0) + 1;
+    writeJSON(SKILLS_FILE, skills);
+    res.json(s);
+  } catch (err) {
+    console.error('Skills DOWNLOAD error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/skills/:id/like — 좋아요 토글
 app.post('/api/skills/:id/like', (req, res) => {
   try {
