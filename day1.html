@@ -320,6 +320,10 @@
           <div id="setup-step2" style="display:none;">
             <h3>Step 2: Hook 설치</h3>
             <p>터미널에서 아래 명령어를 <strong>복사해서 붙여넣기</strong>하면 끝!</p>
+            <div style="display:flex;gap:4px;margin-bottom:8px;">
+              <button onclick="showInstallOS('win')" id="os-tab-win" style="padding:6px 16px;border-radius:6px 6px 0 0;border:1px solid rgba(255,255,255,0.2);border-bottom:2px solid var(--sky);background:rgba(74,144,217,0.15);color:#fff;font-size:0.78rem;font-weight:600;cursor:pointer;">🪟 Windows</button>
+              <button onclick="showInstallOS('mac')" id="os-tab-mac" style="padding:6px 16px;border-radius:6px 6px 0 0;border:1px solid rgba(255,255,255,0.1);border-bottom:none;background:transparent;color:rgba(255,255,255,0.5);font-size:0.78rem;font-weight:600;cursor:pointer;">🍎 Mac / Linux</button>
+            </div>
             <div style="position:relative;">
               <div id="setup-install-cmd" class="code-block" style="font-size:0.78rem;word-break:break-all;user-select:all;"></div>
               <button onclick="copyInstallCmd(this)" style="position:absolute;top:8px;right:8px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;font-size:0.72rem;cursor:pointer;">복사</button>
@@ -758,12 +762,36 @@ async function registerForCamp() {
   }
 }
 
+let currentOS = 'win'; // default Windows (90% of users)
 function showInstallStep() {
   document.getElementById('setup-step1').style.display = 'none';
   document.getElementById('setup-step2').style.display = 'block';
+  showInstallOS('win');
+}
+function showInstallOS(os) {
+  currentOS = os;
   const serverUrl = window.location.origin;
-  const cmd = `curl -sL ${serverUrl}/api/install | bash -s -- ${campToken}`;
-  document.getElementById('setup-install-cmd').textContent = cmd;
+  const winTab = document.getElementById('os-tab-win');
+  const macTab = document.getElementById('os-tab-mac');
+  if (os === 'win') {
+    winTab.style.borderBottom = '2px solid var(--sky)';
+    winTab.style.background = 'rgba(74,144,217,0.15)';
+    winTab.style.color = '#fff';
+    macTab.style.borderBottom = 'none';
+    macTab.style.background = 'transparent';
+    macTab.style.color = 'rgba(255,255,255,0.5)';
+    const cmd = `$env:AINC_TOKEN="${campToken}"; irm "${serverUrl}/api/install-ps1" | iex`;
+    document.getElementById('setup-install-cmd').textContent = cmd;
+  } else {
+    macTab.style.borderBottom = '2px solid var(--sky)';
+    macTab.style.background = 'rgba(74,144,217,0.15)';
+    macTab.style.color = '#fff';
+    winTab.style.borderBottom = 'none';
+    winTab.style.background = 'transparent';
+    winTab.style.color = 'rgba(255,255,255,0.5)';
+    const cmd = `curl -sL ${serverUrl}/api/install | bash -s -- ${campToken}`;
+    document.getElementById('setup-install-cmd').textContent = cmd;
+  }
 }
 
 function showSetupDone() {

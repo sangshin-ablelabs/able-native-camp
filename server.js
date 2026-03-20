@@ -356,6 +356,68 @@ echo "  이제 Claude Code 세션 종료 시 자동으로 사용량이 기록돼
   res.type('text/plain').send(script);
 });
 
+// GET /api/install-ps1 — Windows PowerShell 설치 스크립트
+// ═══════════════════════════════════════════
+app.get('/api/install-ps1', (req, res) => {
+  const serverUrl = req.query.url || `${req.protocol}://${req.get('host')}`;
+  const script = `# ABLE Native Camp — Hook 설치 스크립트 (Windows PowerShell)
+$Token = $env:AINC_TOKEN
+if (-not $Token) { Write-Host "ERROR: AINC_TOKEN 환경변수가 없어. 웹에서 복사한 전체 명령어를 붙여넣어줘."; return }
+
+$ApiUrl = "${serverUrl}"
+$ConfigDir = "$env:USERPROFILE\\.config\\ainc"
+$SettingsFile = "$env:USERPROFILE\\.claude\\settings.json"
+
+Write-Host "🏕️ ABLE Native Camp Hook 설치 중..."
+
+# 1. 디렉토리 생성
+New-Item -ItemType Directory -Force -Path $ConfigDir | Out-Null
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\\.claude" | Out-Null
+
+# 2. 토큰 + URL 저장
+[System.IO.File]::WriteAllText("$ConfigDir\\token", $Token)
+[System.IO.File]::WriteAllText("$ConfigDir\\api_url", $ApiUrl)
+
+# 3. Hook 스크립트 다운로드
+Invoke-WebRequest -Uri "$ApiUrl/api/hook-script" -OutFile "$ConfigDir\\report-usage.js" -UseBasicParsing
+
+# 4. Claude Code settings.json에 Stop hook 추가
+$hookCmd = "node $($ConfigDir -replace '\\\\','/')/" + "report-usage.js"
+if (Test-Path $SettingsFile) {
+    $settings = Get-Content $SettingsFile -Raw | ConvertFrom-Json
+    if ($settings | Get-Member -Name hooks -MemberType NoteProperty) {
+        $raw = Get-Content $SettingsFile -Raw
+        if ($raw -match "ainc[/\\\\]report-usage") {
+            Write-Host "✅ Hook already configured"
+        } else {
+            # hooks 있지만 ainc 없으면 Stop에 추가
+            if (-not ($settings.hooks | Get-Member -Name Stop -MemberType NoteProperty)) {
+                $settings.hooks | Add-Member -NotePropertyName Stop -NotePropertyValue @()
+            }
+            $newHook = @{ matcher = ".*"; hooks = @(@{ type = "command"; command = $hookCmd }) }
+            $settings.hooks.Stop = @($settings.hooks.Stop) + $newHook
+            $settings | ConvertTo-Json -Depth 10 | Set-Content $SettingsFile -Encoding UTF8
+            Write-Host "✅ Hook added to settings.json"
+        }
+    } else {
+        $settings | Add-Member -NotePropertyName hooks -NotePropertyValue @{ Stop = @(@{ matcher = ".*"; hooks = @(@{ type = "command"; command = $hookCmd }) }) }
+        $settings | ConvertTo-Json -Depth 10 | Set-Content $SettingsFile -Encoding UTF8
+        Write-Host "✅ Hook added to settings.json"
+    }
+} else {
+    @{ hooks = @{ Stop = @(@{ matcher = ".*"; hooks = @(@{ type = "command"; command = $hookCmd }) }) } } | ConvertTo-Json -Depth 10 | Set-Content $SettingsFile -Encoding UTF8
+    Write-Host "✅ settings.json created with hook"
+}
+
+Write-Host ""
+Write-Host "🎉 설치 완료!"
+Write-Host "  Config: $ConfigDir"
+Write-Host "  Server: $ApiUrl"
+Write-Host "  이제 Claude Code 세션 종료 시 자동으로 사용량이 기록돼!"
+`;
+  res.type('text/plain').send(script);
+});
+
 // ═══════════════════════════════════════════
 // GET /api/weekly-awards — 자동 주간 어워드 계산
 // ═══════════════════════════════════════════
