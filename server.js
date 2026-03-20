@@ -419,6 +419,16 @@ Write-Host "  이제 Claude Code 세션 종료 시 자동으로 사용량이 기
 });
 
 // ═══════════════════════════════════════════
+// Skills Hub — data/skills.json (선언부 — weekly-awards에서 참조하므로 먼저 정의)
+// ═══════════════════════════════════════════
+const SKILLS_FILE = 'skills.json';
+if (!fs.existsSync(path.join(DATA_DIR, SKILLS_FILE))) {
+  writeJSON(SKILLS_FILE, []);
+}
+
+function getSkills() { return readJSON(SKILLS_FILE) || []; }
+
+// ═══════════════════════════════════════════
 // GET /api/weekly-awards — 자동 주간 어워드 계산
 // ═══════════════════════════════════════════
 app.get('/api/weekly-awards', (req, res) => {
@@ -593,14 +603,8 @@ app.get('/api/weekly-awards', (req, res) => {
 });
 
 // ═══════════════════════════════════════════
-// Skills Hub API — data/skills.json
+// Skills Hub API — CRUD endpoints
 // ═══════════════════════════════════════════
-const SKILLS_FILE = 'skills.json';
-if (!fs.existsSync(path.join(DATA_DIR, SKILLS_FILE))) {
-  writeJSON(SKILLS_FILE, []);
-}
-
-function getSkills() { return readJSON(SKILLS_FILE) || []; }
 
 // GET /api/skills — 전체 스킬 목록
 app.get('/api/skills', (req, res) => {
@@ -615,7 +619,7 @@ app.get('/api/skills', (req, res) => {
 // POST /api/skills — 스킬 등록
 app.post('/api/skills', (req, res) => {
   try {
-    const { name, author, desc, skillmd } = req.body;
+    const { name, author, email, desc, skillmd } = req.body;
     if (!name || !author) {
       return res.status(400).json({ error: 'name and author required' });
     }
@@ -624,8 +628,10 @@ app.post('/api/skills', (req, res) => {
       id: 'skill-' + Date.now(),
       name,
       author,
+      email: email || '',
       desc: desc || '',
       skillmd: skillmd || '',
+      essential: false,
       likes: 0,
       date: new Date().toISOString().split('T')[0],
     };
@@ -638,12 +644,20 @@ app.post('/api/skills', (req, res) => {
   }
 });
 
-// PUT /api/skills/:id — 스킬 수정
+// PUT /api/skills/:id — 스킬 수정 (작성자 본인만 가능)
 app.put('/api/skills/:id', (req, res) => {
   try {
     const skills = getSkills();
     const idx = skills.findIndex(s => s.id === req.params.id);
     if (idx === -1) return res.status(404).json({ error: 'skill not found' });
+
+    // 작성자 권한 확인: 요청의 email이 원작성자 email과 일치해야 함
+    const reqEmail = (req.headers['x-user-email'] || req.body.email || '').toLowerCase().trim();
+    const skillEmail = (skills[idx].email || '').toLowerCase().trim();
+    if (!reqEmail || !skillEmail || reqEmail !== skillEmail) {
+      return res.status(403).json({ error: '작성자 본인만 수정할 수 있어' });
+    }
+
     const { name, author, desc, skillmd } = req.body;
     if (name !== undefined) skills[idx].name = name;
     if (author !== undefined) skills[idx].author = author;
@@ -657,17 +671,45 @@ app.put('/api/skills/:id', (req, res) => {
   }
 });
 
-// DELETE /api/skills/:id — 스킬 삭제
+// DELETE /api/skills/:id — 스킬 삭제 (작성자 본인만 가능)
 app.delete('/api/skills/:id', (req, res) => {
   try {
     const skills = getSkills();
     const idx = skills.findIndex(s => s.id === req.params.id);
     if (idx === -1) return res.status(404).json({ error: 'skill not found' });
+
+    // 작성자 권한 확인
+    const reqEmail = (req.headers['x-user-email'] || req.body.email || '').toLowerCase().trim();
+    const skillEmail = (skills[idx].email || '').toLowerCase().trim();
+    if (!reqEmail || !skillEmail || reqEmail !== skillEmail) {
+      return res.status(403).json({ error: '작성자 본인만 삭제할 수 있어' });
+    }
+
     skills.splice(idx, 1);
     writeJSON(SKILLS_FILE, skills);
     res.json({ ok: true });
   } catch (err) {
     console.error('Skills DELETE error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/skills/:id/essential — 필수 스킬 토글 (Admin)
+app.put('/api/skills/:id/essential', authenticateAdmin, (req, res) => {
+  try {
+    const skills = getSkills();
+    const s = skills.find(x => x.id === req.params.id);
+    if (!s) return res.status(404).json({ error: 'skill not found' });
+    // toggle: body에 essential 값이 있으면 사용, 없으면 반전
+    if (req.body.essential !== undefined) {
+      s.essential = !!req.body.essential;
+    } else {
+      s.essential = !s.essential;
+    }
+    writeJSON(SKILLS_FILE, skills);
+    res.json(s);
+  } catch (err) {
+    console.error('Skills ESSENTIAL error:', err);
     res.status(500).json({ error: err.message });
   }
 });

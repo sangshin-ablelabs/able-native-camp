@@ -59,6 +59,7 @@
     .skill-meta .tag { padding: 2px 8px; border-radius: 6px; font-size: 0.68rem; font-weight: 600; background: var(--gray-100); color: var(--gray-500); }
     .skill-meta .tag.popular { background: #FEF3C7; color: #92400E; }
     .skill-meta .tag.new { background: #D1FAE5; color: #065F46; }
+    .skill-meta .tag.essential { background: #EDE9FE; color: #6D28D9; }
     .skill-meta .likes { font-size: 0.75rem; color: var(--gray-400); cursor: pointer; }
     .skill-meta .likes:hover { color: #EF4444; }
 
@@ -139,6 +140,7 @@
     <input type="text" class="search-input" id="search-input" placeholder="스킬 이름, 설명, 만든 사람으로 검색..." />
     <div class="filter-group">
       <button class="filter-btn active" onclick="setFilter('all')">전체</button>
+      <button class="filter-btn" onclick="setFilter('essential')">필수</button>
       <button class="filter-btn" onclick="setFilter('popular')">인기</button>
       <button class="filter-btn" onclick="setFilter('new')">신규</button>
     </div>
@@ -206,10 +208,10 @@ async function fetchSkills() {
   }
 }
 
-function setFilter(f) {
+function setFilter(f, e) {
   currentFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
+  (e ? e.target : event.target).classList.add('active');
   render();
 }
 
@@ -237,6 +239,7 @@ async function render() {
       (s.cmd || '').toLowerCase().includes(query)
     );
   }
+  if (currentFilter === 'essential') data = data.filter(s => s.essential);
   if (currentFilter === 'popular') data = data.filter(s => (s.downloads || 0) >= 1);
   if (currentFilter === 'new') data = data.filter(s => s.date >= weekStr);
 
@@ -253,27 +256,34 @@ async function render() {
     return;
   }
 
+  // 현재 로그인 사용자 email (edit/delete 권한 판단용)
+  const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  const currentEmail = currentUser ? (currentUser.email || '').toLowerCase() : '';
+
   let html = '<div class="skills-grid">';
   data.forEach(skill => {
     const isNew = skill.date >= weekStr;
     const isPopular = (skill.downloads || 0) >= 3;
+    const isEssential = skill.essential;
+    const isAuthor = currentEmail && (skill.email || '').toLowerCase() === currentEmail;
     html += `
     <div class="skill-card" onclick="showDetail('${skill.id}')">
       <div class="skill-card-header">
-        <h3>${esc(skill.name)}</h3>
+        <h3>${isEssential ? '<span style="color:#6D28D9;">🛡️</span> ' : ''}${esc(skill.name)}</h3>
         ${skill.skillmd ? `<button class="btn btn-primary" style="font-size:0.72rem;padding:5px 12px;" onclick="event.stopPropagation(); downloadSkill('${skill.id}')">⬇ 다운로드</button>` : ''}
       </div>
       <p>${esc(skill.desc)}</p>
       <div class="skill-meta">
         <span class="author">👤 ${esc(skill.author)}</span>
+        ${isEssential ? '<span class="tag essential">🛡️ 필수</span>' : ''}
         ${isNew ? '<span class="tag new">🆕 NEW</span>' : ''}
         ${isPopular ? '<span class="tag popular">🔥 인기</span>' : ''}
         <span style="font-size:0.75rem;color:var(--gray-400);">⬇ ${skill.downloads || 0}</span>
         <span class="likes" onclick="event.stopPropagation(); toggleLike('${skill.id}')">❤️ ${skill.likes || 0}</span>
-        <span style="margin-left:auto;font-size:0.7rem;color:var(--gray-400);">
+        ${isAuthor ? `<span style="margin-left:auto;font-size:0.7rem;color:var(--gray-400);">
           ✏️ <span onclick="event.stopPropagation(); editSkill('${skill.id}')" style="cursor:pointer;">수정</span>
           🗑️ <span onclick="event.stopPropagation(); deleteSkill('${skill.id}')" style="cursor:pointer;">삭제</span>
-        </span>
+        </span>` : ''}
       </div>
     </div>`;
   });
@@ -409,19 +419,27 @@ async function saveSkill() {
   const skillmd = skillFileContent || document.getElementById('input-skillmd').value.trim();
   if (!name || !author) { alert('이름과 만든 사람은 필수야!'); return; }
 
+  const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  const email = currentUser ? (currentUser.email || '') : '';
+
   try {
     if (editingId) {
       const res = await fetch(`/api/skills/${editingId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, author, desc, skillmd }),
+        headers: { 'Content-Type': 'application/json', 'X-User-Email': email },
+        body: JSON.stringify({ name, author, desc, skillmd, email }),
       });
+      if (res.status === 403) {
+        const body = await res.json();
+        alert(body.error || '작성자 본인만 수정할 수 있어');
+        return;
+      }
       if (!res.ok) throw new Error('수정 실패: ' + res.status);
     } else {
       const res = await fetch('/api/skills', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, author, desc, skillmd }),
+        body: JSON.stringify({ name, author, desc, skillmd, email }),
       });
       if (!res.ok) throw new Error('등록 실패: ' + res.status);
     }
@@ -457,8 +475,19 @@ async function downloadSkill(id) {
 
 async function deleteSkill(id) {
   if (!confirm('정말 삭제할까?')) return;
+  const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  const email = currentUser ? (currentUser.email || '') : '';
   try {
-    const res = await fetch(`/api/skills/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/skills/${id}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'X-User-Email': email },
+      body: JSON.stringify({ email }),
+    });
+    if (res.status === 403) {
+      const body = await res.json();
+      alert(body.error || '작성자 본인만 삭제할 수 있어');
+      return;
+    }
     if (!res.ok) throw new Error('삭제 실패: ' + res.status);
     await render();
   } catch (err) {
