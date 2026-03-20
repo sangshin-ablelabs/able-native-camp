@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 2: Connect — ABLE Native Camp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #1E3A5F; --navy-deep: #0F1F35; --sky: #4A90D9; --sky-light: #E8F1FB;
+      --green: #10B981; --green-light: #ECFDF5; --white: #FFFFFF;
+      --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF; --gray-500: #6B7280; --gray-600: #4B5563; --gray-800: #1F2937;
+      --radius: 16px; --radius-sm: 10px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif; color: var(--gray-800); line-height: 1.7; background: var(--white); -webkit-font-smoothing: antialiased; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--gray-200); }
+    .nav-inner { max-width: 800px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.1rem; font-weight: 800; color: var(--navy); text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--sky); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-right a { font-size: 0.85rem; font-weight: 500; color: var(--gray-600); text-decoration: none; }
+    .nav-right a:hover { color: var(--navy); }
+    .day-hero { padding: 100px 24px 48px; text-align: center; background: linear-gradient(170deg, var(--white) 0%, #D1FAE5 100%); }
+    .day-hero .badge { display: inline-block; padding: 4px 14px; border-radius: 20px; background: #D1FAE5; color: #065F46; font-size: 0.75rem; font-weight: 600; margin-bottom: 16px; }
+    .day-hero h1 { font-size: 2rem; font-weight: 900; color: var(--navy); margin-bottom: 8px; letter-spacing: -0.5px; }
+    .day-hero p { font-size: 1rem; color: var(--gray-600); max-width: 520px; margin: 0 auto; }
+    .progress-bar { max-width: 800px; margin: 0 auto; padding: 24px 24px 0; display: flex; gap: 8px; }
+    .progress-step { flex: 1; height: 6px; border-radius: 3px; background: var(--gray-200); transition: background 0.3s; }
+    .progress-step.done { background: var(--green); }
+    .progress-step.active { background: var(--sky); }
+    .progress-labels { max-width: 800px; margin: 0 auto; padding: 8px 24px 24px; display: flex; gap: 8px; }
+    .progress-labels span { flex: 1; font-size: 0.65rem; font-weight: 500; color: var(--gray-400); text-align: center; }
+    .progress-labels span.active { color: var(--sky); font-weight: 700; }
+    .progress-labels span.done { color: var(--green); }
+    .content { max-width: 800px; margin: 0 auto; padding: 0 24px 80px; }
+    .block { margin-bottom: 32px; border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; background: var(--white); }
+    .block.locked { opacity: 0.5; pointer-events: none; }
+    .block-header { padding: 20px 24px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s; }
+    .block-header:hover { background: var(--gray-50); }
+    .block-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 10px; }
+    .block-header .block-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: 700; background: var(--sky-light); color: var(--sky); }
+    .block-header .block-num.done { background: var(--green-light); color: var(--green); }
+    .block-header .chevron { font-size: 1.2rem; color: var(--gray-400); transition: transform 0.2s; }
+    .block.open .block-header .chevron { transform: rotate(180deg); }
+    .block-body { display: none; padding: 0 24px 24px; }
+    .block.open .block-body { display: block; }
+    .section-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--gray-100); }
+    .section-tab { padding: 10px 20px; font-size: 0.85rem; font-weight: 600; color: var(--gray-400); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; background: none; border-top: 0; border-left: 0; border-right: 0; font-family: inherit; }
+    .section-tab:hover { color: var(--gray-600); }
+    .section-tab.active { color: var(--sky); border-bottom-color: var(--sky); }
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+    .explain h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin: 28px 0 10px; padding-top: 20px; border-top: 1px solid var(--gray-200); }
+    .explain h3:first-child, .explain p + h3:first-of-type { border-top: none; padding-top: 0; margin-top: 16px; }
+    .explain p { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 12px; line-height: 1.7; }
+    .explain ul { padding-left: 20px; margin-bottom: 12px; }
+    .explain li { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 4px; }
+    .explain .highlight { background: var(--sky-light); border-radius: var(--radius-sm); padding: 16px 20px; margin: 16px 0; border-left: 4px solid var(--sky); }
+    .explain .highlight p { margin: 0; font-weight: 500; color: var(--navy); }
+    .explain .warning { background: #FEF3C7; border-radius: var(--radius-sm); padding: 16px 20px; margin: 16px 0; border-left: 4px solid #F59E0B; }
+    .explain .warning p { margin: 0; font-weight: 500; color: #92400E; }
+    .explain code { background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; }
+    .explain .code-block { background: var(--navy-deep); border-radius: var(--radius-sm); padding: 16px 20px; margin: 12px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; color: var(--green); line-height: 1.8; overflow-x: auto; position: relative; }
+    .explain table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    .explain th { text-align: left; padding: 8px 12px; font-size: 0.8rem; font-weight: 600; color: var(--gray-500); border-bottom: 2px solid var(--gray-200); background: var(--gray-50); }
+    .explain td { padding: 10px 12px; font-size: 0.85rem; border-bottom: 1px solid var(--gray-100); }
+    .execute .step-list { list-style: none; padding: 0; }
+    .execute .step-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--gray-100); align-items: flex-start; }
+    .execute .step-item:last-child { border-bottom: none; }
+    .execute .step-num { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--sky); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; margin-top: 2px; }
+    .execute .step-text { font-size: 0.9rem; color: var(--gray-600); line-height: 1.6; }
+    .execute .step-text code { background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; }
+    .execute .tip { background: var(--green-light); border-radius: var(--radius-sm); padding: 14px 18px; margin-top: 16px; border-left: 4px solid var(--green); }
+    .execute .tip p { font-size: 0.85rem; color: #065F46; margin: 0; }
+    .quiz-question { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+    .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-option { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: var(--radius-sm); border: 2px solid var(--gray-200); cursor: pointer; font-size: 0.9rem; color: var(--gray-600); transition: all 0.2s; background: var(--white); }
+    .quiz-option:hover { border-color: var(--sky); background: var(--sky-light); }
+    .quiz-option.selected { border-color: var(--sky); background: var(--sky-light); color: var(--navy); font-weight: 600; }
+    .quiz-option.correct { border-color: var(--green); background: var(--green-light); color: #065F46; }
+    .quiz-option.wrong { border-color: #EF4444; background: #FEF2F2; color: #991B1B; }
+    .quiz-option .letter { width: 28px; height: 28px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+    .quiz-option.correct .letter { background: var(--green); color: white; }
+    .quiz-option.wrong .letter { background: #EF4444; color: white; }
+    .quiz-answer { display: none; margin-top: 16px; padding: 16px 20px; background: var(--gray-50); border-radius: var(--radius-sm); font-size: 0.88rem; color: var(--gray-600); line-height: 1.6; }
+    .quiz-answer.show { display: block; }
+    .complete-btn { display: block; width: 100%; padding: 14px; margin-top: 20px; background: var(--sky); color: white; border: none; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .complete-btn:hover { background: var(--navy); }
+    .complete-btn.completed { background: var(--green); cursor: default; }
+    .footer-nav { max-width: 800px; margin: 0 auto; padding: 32px 24px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--gray-200); }
+    .footer-nav a { font-size: 0.9rem; font-weight: 600; color: var(--sky); text-decoration: none; padding: 10px 20px; border-radius: var(--radius-sm); transition: background 0.2s; }
+    .footer-nav a:hover { background: var(--sky-light); }
+    @media (max-width: 640px) { .section-tab { padding: 8px 12px; font-size: 0.78rem; } .day-hero h1 { font-size: 1.6rem; } }
+  </style>
+  <link rel="stylesheet" href="auth-styles.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span>ABLE</span> Native Camp</a>
+    <div class="nav-right">
+      <a href="day1.html">← Day 1</a>
+      <a href="index.html">홈</a>
+      <a href="skills.html">스킬 허브</a>
+      <a href="leaderboard.html">리더보드</a>
+      <a href="reference.html">레퍼런스</a>
+    </div>
+    <div id="auth-ui"></div>
+  </div>
+</nav>
+
+<div class="day-hero">
+  <div class="badge">🔌 Level 2: Connect</div>
+  <h1>Day 2 — 연결</h1>
+  <p>"내 업무 도구를 AI에게 열어줘."<br>다우오피스, Teams, Notion을 AI에 직접 연결하는 날이야.</p>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-step active" id="prog-0"></div>
+  <div class="progress-step" id="prog-1"></div>
+  <div class="progress-step" id="prog-2"></div>
+  <div class="progress-step" id="prog-3"></div>
+  <div class="progress-step" id="prog-4"></div>
+  <div class="progress-step" id="prog-5"></div>
+</div>
+<div class="progress-labels">
+  <span class="active" id="lbl-0">MCP란</span>
+  <span id="lbl-1">다우오피스</span>
+  <span id="lbl-2">Teams</span>
+  <span id="lbl-3">Notion</span>
+  <span id="lbl-4">3개 조합</span>
+  <span id="lbl-5">마무리</span>
+</div>
+
+<div class="content">
+
+  <!-- BLOCK 0: MCP란 -->
+  <div class="block open" id="block-0">
+    <div class="block-header" onclick="toggleBlock(0)">
+      <h2><span class="block-num" id="num-0">1</span> MCP란 — AI에게 손을 달아주는 것</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(0, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(0, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(0, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-0-explain">
+        <p>MCP는 <strong>Model Context Protocol</strong>의 약자야. AI에게 "손"을 달아주는 규격이라고 생각하면 돼.</p>
+        <div class="highlight">
+          <p>💡 비유: 스마트폰에 앱을 설치하듯, Claude Code에 MCP를 연결하면 새로운 능력이 생겨.</p>
+        </div>
+        <h3>MCP 연결 전 vs 후</h3>
+        <table>
+          <thead><tr><th>연결 전 ❌</th><th>연결 후 ✅</th></tr></thead>
+          <tbody>
+            <tr><td>"메일 확인해줘" → 못 해</td><td>"메일 확인해줘" → 바로 조회</td></tr>
+            <tr><td>"오늘 일정 뭐야" → 모름</td><td>"오늘 일정 뭐야" → 캘린더 확인</td></tr>
+            <tr><td>"팀즈에서 뭐라 했어" → 못 봄</td><td>"팀즈에서 뭐라 했어" → 메시지 읽기</td></tr>
+            <tr><td>"노션에서 찾아줘" → 불가</td><td>"노션에서 찾아줘" → 검색+읽기</td></tr>
+          </tbody>
+        </table>
+        <h3>오늘 연결할 3개</h3>
+        <ul>
+          <li>📮 <strong>다우오피스</strong> — 메일 + 캘린더 (회사 기본 도구)</li>
+          <li>💬 <strong>Teams</strong> — 채널 메시지, 1:1 채팅</li>
+          <li>📓 <strong>Notion</strong> — 문서, 데이터베이스, 위키</li>
+        </ul>
+        <p>이 3개만 연결하면 주요 업무 도구 대부분에 AI가 접근할 수 있어.</p>
+      </div>
+
+      <div class="section-content execute" id="block-0-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">Claude Code 터미널에서 <code>claude mcp list</code> 를 입력해서 현재 연결된 MCP가 있는지 확인해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">아마 아무것도 없을 거야. 이제부터 하나씩 연결할 거야!</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="section-content quiz" id="block-0-quiz">
+        <p class="quiz-question">MCP를 가장 잘 설명한 것은?</p>
+        <div class="quiz-options" id="quiz-0">
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'A')"><span class="letter">A</span> AI를 더 똑똑하게 만드는 업그레이드</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'B')"><span class="letter">B</span> AI가 외부 도구에 접근할 수 있게 해주는 연결 규격</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'C')"><span class="letter">C</span> 새로운 프로그래밍 언어</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'D')"><span class="letter">D</span> 보안 프로토콜</div>
+        </div>
+        <div class="quiz-answer" id="answer-0">✅ <strong>정답: B.</strong> MCP는 AI가 외부 도구(메일, 캘린더, 팀즈 등)에 접근할 수 있게 해주는 연결 규격이야. AI 자체를 똑똑하게 만드는 게 아니라, AI가 "할 수 있는 것"의 범위를 넓혀주는 거야.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-0" onclick="completeBlock(0)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 1: 다우오피스 -->
+  <div class="block locked" id="block-1">
+    <div class="block-header" onclick="toggleBlock(1)">
+      <h2><span class="block-num" id="num-1">2</span> 📮 다우오피스 연결 — 메일 + 캘린더</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(1, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(1, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(1, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-1-explain">
+        <p>다우오피스는 ABLE Labs의 기본 업무 도구야. 여기에 메일과 캘린더가 있어. MCP로 연결하면:</p>
+        <table>
+          <thead><tr><th>할 수 있는 것</th><th>예시</th></tr></thead>
+          <tbody>
+            <tr><td>📬 최근 메일 확인</td><td>"읽지 않은 메일 보여줘"</td></tr>
+            <tr><td>🔍 메일 검색</td><td>"삼성바이오로직스에서 온 메일 찾아줘"</td></tr>
+            <tr><td>📅 오늘 일정 확인</td><td>"오늘 미팅 뭐 있어?"</td></tr>
+            <tr><td>📆 이번 주 일정</td><td>"이번 주 스케줄 정리해줘"</td></tr>
+          </tbody>
+        </table>
+        <h3>연결 방법</h3>
+        <p>Claude Code 터미널에서 이렇게 말하면 돼:</p>
+        <div class="code-block">다우오피스 MCP 연결해줘</div>
+        <p>Claude가 필요한 설정을 안내해줘. 프로젝트 폴더의 <code>.mcp.json</code> 파일에 설정이 추가돼.</p>
+        <div class="highlight">
+          <p>💡 핵심: 명령어를 외울 필요 없어. 자연어로 "다우오피스 메일 연결하고 싶어"라고 말하면 Claude가 단계별로 안내해줘.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-1-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">Claude에게 "다우오피스 MCP 연결해줘"라고 말해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">연결이 되면 <strong>"최근 메일 5개 보여줘"</strong> 라고 시켜봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>"오늘 일정 뭐야?"</strong> 라고 물어봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>"이번 주 일정 정리해줘"</strong> 도 해봐</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 처음 연결할 때 인증(로그인)이 필요할 수 있어. Claude가 안내하는 대로 따라하면 돼.</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-1-quiz">
+        <p class="quiz-question">다우오피스 MCP로 할 수 없는 것은?</p>
+        <div class="quiz-options" id="quiz-1">
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'A')"><span class="letter">A</span> 메일 검색</div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'B')"><span class="letter">B</span> 오늘 일정 확인</div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'C')"><span class="letter">C</span> 메일 자동 발송</div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'D')"><span class="letter">D</span> 이번 주 캘린더 조회</div>
+        </div>
+        <div class="quiz-answer" id="answer-1">✅ <strong>정답: C.</strong> 다우오피스 MCP는 메일을 읽고 검색하는 건 가능하지만, 자동으로 메일을 보내는 기능은 없어. 메일 발송은 직접 해야 해 — AI가 초안을 써주면 확인하고 보내는 거야.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-1" onclick="completeBlock(1)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 2: Teams -->
+  <div class="block locked" id="block-2">
+    <div class="block-header" onclick="toggleBlock(2)">
+      <h2><span class="block-num" id="num-2">3</span> 💬 Teams 연결 — 채널 + 채팅</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(2, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(2, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(2, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-2-explain">
+        <p>Teams는 사내 소통 도구야. MCP로 연결하면:</p>
+        <table>
+          <thead><tr><th>할 수 있는 것</th><th>예시</th></tr></thead>
+          <tbody>
+            <tr><td>📋 팀/채널 목록 보기</td><td>"우리 팀즈 채널 뭐 있어?"</td></tr>
+            <tr><td>💬 채널 메시지 읽기</td><td>"general 채널 최근 메시지 보여줘"</td></tr>
+            <tr><td>✍️ 메시지 보내기</td><td>"이 내용을 채널에 공유해줘"</td></tr>
+            <tr><td>🔔 멘션 확인</td><td>"나를 멘션한 메시지 있어?"</td></tr>
+            <tr><td>🔍 메시지 검색</td><td>"NOTABLE 관련 메시지 찾아줘"</td></tr>
+          </tbody>
+        </table>
+        <div class="warning">
+          <p>⚠️ <strong>중요:</strong> Teams 메시지 보내기는 진짜로 전송돼! 전체 채널에 보이니까, 보내기 전에 반드시 내용을 확인해. 처음엔 읽기만 연습하자.</p>
+        </div>
+        <h3>연결 방법</h3>
+        <p>Claude Code 터미널에서:</p>
+        <div class="code-block">Teams MCP 연결해줘</div>
+        <p>Claude가 Microsoft 인증 과정을 안내해줘. 안내에 따라 로그인하면 자동으로 연결돼.</p>
+      </div>
+
+      <div class="section-content execute" id="block-2-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">Claude에게 "Teams MCP 연결해줘"라고 말해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>"우리 팀즈 팀 목록 보여줘"</strong> (읽기부터!)</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>"general 채널 최근 메시지 5개 보여줘"</strong></div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>"나를 멘션한 메시지 있어?"</strong></div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 메시지 전송은 Day 2 마무리에서 연습해. 지금은 읽기만!</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-2-quiz">
+        <p class="quiz-question">Teams MCP를 쓸 때 가장 주의해야 할 것은?</p>
+        <div class="quiz-options" id="quiz-2">
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'A')"><span class="letter">A</span> 인터넷 연결 상태</div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'B')"><span class="letter">B</span> 메시지 전송 전 반드시 내용 확인</div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'C')"><span class="letter">C</span> 하루 사용량 제한</div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'D')"><span class="letter">D</span> 영어로만 검색 가능</div>
+        </div>
+        <div class="quiz-answer" id="answer-2">✅ <strong>정답: B.</strong> Teams 메시지는 전송하면 진짜로 전체 채널에 보여. AI가 작성한 내용을 반드시 확인하고 보내야 해. "보내줘"라고 하기 전에 항상 내용을 먼저 확인해.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-2" onclick="completeBlock(2)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 3: Notion -->
+  <div class="block locked" id="block-3">
+    <div class="block-header" onclick="toggleBlock(3)">
+      <h2><span class="block-num" id="num-3">4</span> 📓 Notion 연결 — 문서 + 데이터베이스</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(3, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(3, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(3, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-3-explain">
+        <p>Notion은 회사의 지식 저장소야. MCP로 연결하면:</p>
+        <table>
+          <thead><tr><th>할 수 있는 것</th><th>예시</th></tr></thead>
+          <tbody>
+            <tr><td>🔍 페이지 검색</td><td>"NOTABLE 관련 문서 찾아줘"</td></tr>
+            <tr><td>📖 페이지 읽기</td><td>"이 페이지 내용 요약해줘"</td></tr>
+            <tr><td>✏️ 페이지 생성/수정</td><td>"회의록 페이지 만들어줘"</td></tr>
+            <tr><td>📊 데이터베이스 조회</td><td>"태스크 DB에서 내 할 일 보여줘"</td></tr>
+            <tr><td>💬 코멘트 추가</td><td>"이 페이지에 코멘트 달아줘"</td></tr>
+          </tbody>
+        </table>
+        <h3>연결 방법 (Notion은 좀 더 복잡해)</h3>
+        <ol style="padding-left: 20px; margin: 12px 0;">
+          <li style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 8px;"><strong>Notion API 키 만들기:</strong> notion.so/my-integrations 에서 새 Integration 생성</li>
+          <li style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 8px;"><strong>페이지에 연결:</strong> 접근하고 싶은 노션 페이지에서 "..." → "연결" → 만든 Integration 선택</li>
+          <li style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 8px;"><strong>Claude에 MCP 추가:</strong> API 키를 사용해서 MCP 연결</li>
+        </ol>
+        <div class="highlight">
+          <p>💡 복잡해 보여도 Claude에게 "Notion MCP 연결하고 싶어"라고 말하면 단계별로 안내해줘.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-3-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">Claude에게 "Notion MCP 연결해줘"라고 말해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">안내에 따라 Notion API 키를 생성해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">연결되면 <strong>"노션에서 [키워드] 검색해줘"</strong> 해봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>"테스트 페이지 하나 만들어줘"</strong> 로 쓰기도 테스트해봐</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 Notion Integration은 연결한 페이지만 접근 가능해. 접근하고 싶은 페이지에 직접 Integration을 연결해야 해.</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-3-quiz">
+        <p class="quiz-question">Notion MCP 연결 후에도 특정 페이지에 접근이 안 되는 이유는?</p>
+        <div class="quiz-options" id="quiz-3">
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'A')"><span class="letter">A</span> API 키가 만료돼서</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'B')"><span class="letter">B</span> 그 페이지에 Integration을 연결 안 해서</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'C')"><span class="letter">C</span> 유료 기능이라서</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'D')"><span class="letter">D</span> Notion 서버 문제</div>
+        </div>
+        <div class="quiz-answer" id="answer-3">✅ <strong>정답: B.</strong> Notion은 보안상 Integration을 각 페이지/데이터베이스에 직접 연결해야 접근 가능해. 전체 워크스페이스에 자동 접근은 안 돼.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-3" onclick="completeBlock(3)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 4: 3개 조합 -->
+  <div class="block locked" id="block-4">
+    <div class="block-header" onclick="toggleBlock(4)">
+      <h2><span class="block-num" id="num-4">5</span> 🔀 3개 조합 — 진짜 힘은 여기서</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(4, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(4, 'execute')">🏃 실습</button>
+      </div>
+
+      <div class="section-content active explain" id="block-4-explain">
+        <p>MCP 하나만 써도 유용하지만, <strong>3개를 동시에 쓰면 차원이 달라져</strong>.</p>
+        <div class="highlight">
+          <p>💡 "오늘의 업무 요약해줘" 한마디면 → 📅 캘린더에서 오늘 일정 확인 → 📬 관련 메일 확인 → 📓 노션에서 태스크 확인 → 종합해서 정리</p>
+        </div>
+        <h3>실전 프롬프트 예시</h3>
+        <div class="code-block">
+          오늘의 업무를 종합 정리해줘.<br>
+          1. 오늘 캘린더 일정 확인<br>
+          2. 최근 중요 메일 확인<br>
+          3. 노션 태스크 확인<br>
+          4. 위 정보를 종합해서 투두 리스트 만들어줘
+        </div>
+        <h3>더 써볼 수 있는 것들</h3>
+        <ul>
+          <li><strong>"이번 주 위클리 리포트 초안 써줘"</strong> — 일정 + 메일 + 노션 종합</li>
+          <li><strong>"[고객명] 미팅 준비해줘"</strong> — 메일 히스토리 + 노션 문서 + 일정 확인</li>
+          <li><strong>"팀즈에서 나한테 온 요청 정리해줘"</strong> — 멘션 + 메일 크로스 체크</li>
+        </ul>
+      </div>
+
+      <div class="section-content execute" id="block-4-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">Claude에게 <strong>"오늘의 업무를 종합 정리해줘"</strong> 라고 시켜봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">3개 MCP가 동시에 돌아가는 걸 확인해. 캘린더, 메일, 노션을 한번에 조회하는 거야</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">결과물이 마음에 들면, <strong>"이걸 Teams #able-native-camp 채널에 공유해줘"</strong> (전송 전 내용 확인!)</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 3개 MCP를 한번에 쓰는 게 이 캠프의 핵심이야. Day 3부터는 이걸 자동화하는 법을 배워.</p>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-4" onclick="completeBlock(4)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 5: 마무리 -->
+  <div class="block locked" id="block-5">
+    <div class="block-header" onclick="toggleBlock(5)">
+      <h2><span class="block-num" id="num-5">6</span> Day 2 마무리 🎉</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-content active explain" id="block-5-explain">
+        <h3>오늘 배운 것</h3>
+        <table>
+          <thead><tr><th>#</th><th>배운 것</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>MCP = AI에게 외부 도구 접근 능력을 주는 연결 규격</td></tr>
+            <tr><td>2</td><td>📮 다우오피스 — 메일 읽기/검색, 캘린더 조회</td></tr>
+            <tr><td>3</td><td>💬 Teams — 메시지 읽기/보내기, 멘션 확인</td></tr>
+            <tr><td>4</td><td>📓 Notion — 검색, 읽기, 쓰기, DB 조회</td></tr>
+            <tr><td>5</td><td>🔀 3개 조합 = 업무 종합 정리가 한마디로 가능</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin-top: 24px;">오늘의 미션 🎯</h3>
+        <p>Teams <strong>#able-native-camp</strong> 채널에 공유해:</p>
+        <div class="code-block">
+          [Day 2 완료]<br>
+          - 연결한 MCP: [다우오피스 / Teams / Notion]<br>
+          - 가장 유용했던 기능: [한 가지]<br>
+          - 소감: [한줄]
+        </div>
+
+        <h3 style="margin-top: 24px;">추가로 연결 가능한 MCP들 🧩</h3>
+        <p>관심 있으면 직접 연결해봐. 의무는 아니야:</p>
+        <ul>
+          <li>🔬 <strong>PubMed / bioRxiv</strong> — 논문 검색 (연구팀)</li>
+          <li>📁 <strong>OneDrive</strong> — 파일 관리</li>
+          <li>📈 <strong>SalesMap CRM</strong> — 영업 데이터 (세일즈팀)</li>
+          <li>📨 <strong>Stibee</strong> — 뉴스레터 (마케팅팀)</li>
+        </ul>
+
+        <h3 style="margin-top: 24px;">내일 예고 👀</h3>
+        <p>Day 3에서는 <strong>스킬</strong>을 만들어. 반복 업무를 <code>/명령어</code> 하나로 자동 실행하는 법을 배워. "매주 같은 일을 왜 또 해?" → 한번 만들고, 다음부터 명령어 한방.</p>
+      </div>
+
+      <button class="complete-btn" id="btn-5" onclick="completeDay()">🎓 Day 2 완료!</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-nav">
+  <a href="day1.html">← Day 1: Operate</a>
+  <a href="day3.html" id="next-day" style="opacity: 0.3; pointer-events: none;">Day 3: Automate →</a>
+</div>
+
+<script>
+const CORRECT = { 0: 'B', 1: 'C', 2: 'B', 3: 'B' };
+const TOTAL = 6;
+const completed = new Array(TOTAL).fill(false);
+
+function toggleBlock(i) {
+  const block = document.getElementById('block-' + i);
+  if (block.classList.contains('locked')) return;
+  block.classList.toggle('open');
+}
+
+function showTab(block, tab) {
+  const tabs = document.querySelectorAll('#block-' + block + ' .section-tab');
+  const contents = document.querySelectorAll('#block-' + block + ' .section-content');
+  tabs.forEach(t => t.classList.remove('active'));
+  contents.forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('block-' + block + '-' + tab).classList.add('active');
+}
+
+function selectAnswer(quiz, el, answer) {
+  const options = document.querySelectorAll('#quiz-' + quiz + ' .quiz-option');
+  const answerBox = document.getElementById('answer-' + quiz);
+  if (answerBox.classList.contains('show')) return;
+  options.forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  if (answer === CORRECT[quiz]) {
+    el.classList.add('correct');
+  } else {
+    el.classList.add('wrong');
+    options.forEach(o => {
+      const letter = o.querySelector('.letter').textContent;
+      if (letter === CORRECT[quiz]) o.classList.add('correct');
+    });
+  }
+  answerBox.classList.add('show');
+}
+
+function completeBlock(i) {
+  completed[i] = true;
+  const btn = document.getElementById('btn-' + i);
+  btn.textContent = '✅ 완료!';
+  btn.classList.add('completed');
+  document.getElementById('prog-' + i).classList.add('done');
+  document.getElementById('prog-' + i).classList.remove('active');
+  document.getElementById('lbl-' + i).classList.add('done');
+  document.getElementById('lbl-' + i).classList.remove('active');
+  document.getElementById('num-' + i).classList.add('done');
+  const next = i + 1;
+  if (next < TOTAL) {
+    const nextBlock = document.getElementById('block-' + next);
+    nextBlock.classList.remove('locked');
+    nextBlock.classList.add('open');
+    document.getElementById('prog-' + next).classList.add('active');
+    document.getElementById('lbl-' + next).classList.add('active');
+    document.getElementById('block-' + i).classList.remove('open');
+    setTimeout(() => { nextBlock.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+  }
+}
+
+function completeDay() {
+  completed[TOTAL - 1] = true;
+  localStorage.setItem('day2Complete', 'true');
+  const btn = document.getElementById('btn-' + (TOTAL - 1));
+  btn.textContent = '🎉 Day 2 수료 완료!';
+  btn.classList.add('completed');
+  document.getElementById('prog-' + (TOTAL - 1)).classList.add('done');
+  document.getElementById('lbl-' + (TOTAL - 1)).classList.add('done');
+  document.getElementById('num-' + (TOTAL - 1)).classList.add('done');
+  const nextDay = document.getElementById('next-day');
+  nextDay.style.opacity = '1';
+  nextDay.style.pointerEvents = 'auto';
+}
+</script>
+
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>

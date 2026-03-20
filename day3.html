@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 3: Automate — ABLE Native Camp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #1E3A5F; --navy-deep: #0F1F35; --sky: #4A90D9; --sky-light: #E8F1FB;
+      --green: #10B981; --green-light: #ECFDF5; --white: #FFFFFF;
+      --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF; --gray-500: #6B7280; --gray-600: #4B5563; --gray-800: #1F2937;
+      --radius: 16px; --radius-sm: 10px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif; color: var(--gray-800); line-height: 1.7; background: var(--white); -webkit-font-smoothing: antialiased; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--gray-200); }
+    .nav-inner { max-width: 800px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.1rem; font-weight: 800; color: var(--navy); text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--sky); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-right a { font-size: 0.85rem; font-weight: 500; color: var(--gray-600); text-decoration: none; }
+    .nav-right a:hover { color: var(--navy); }
+    .day-hero { padding: 100px 24px 48px; text-align: center; background: linear-gradient(170deg, var(--white) 0%, #FEF3C7 100%); }
+    .day-hero .badge { display: inline-block; padding: 4px 14px; border-radius: 20px; background: #FEF3C7; color: #92400E; font-size: 0.75rem; font-weight: 600; margin-bottom: 16px; }
+    .day-hero h1 { font-size: 2rem; font-weight: 900; color: var(--navy); margin-bottom: 8px; letter-spacing: -0.5px; }
+    .day-hero p { font-size: 1rem; color: var(--gray-600); max-width: 520px; margin: 0 auto; }
+    .progress-bar { max-width: 800px; margin: 0 auto; padding: 24px 24px 0; display: flex; gap: 8px; }
+    .progress-step { flex: 1; height: 6px; border-radius: 3px; background: var(--gray-200); transition: background 0.3s; }
+    .progress-step.done { background: var(--green); }
+    .progress-step.active { background: var(--sky); }
+    .progress-labels { max-width: 800px; margin: 0 auto; padding: 8px 24px 24px; display: flex; gap: 8px; }
+    .progress-labels span { flex: 1; font-size: 0.65rem; font-weight: 500; color: var(--gray-400); text-align: center; }
+    .progress-labels span.active { color: var(--sky); font-weight: 700; }
+    .progress-labels span.done { color: var(--green); }
+    .content { max-width: 800px; margin: 0 auto; padding: 0 24px 80px; }
+    .block { margin-bottom: 32px; border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; background: var(--white); }
+    .block.locked { opacity: 0.5; pointer-events: none; }
+    .block-header { padding: 20px 24px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s; }
+    .block-header:hover { background: var(--gray-50); }
+    .block-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 10px; }
+    .block-header .block-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: 700; background: var(--sky-light); color: var(--sky); }
+    .block-header .block-num.done { background: var(--green-light); color: var(--green); }
+    .block-header .chevron { font-size: 1.2rem; color: var(--gray-400); transition: transform 0.2s; }
+    .block.open .block-header .chevron { transform: rotate(180deg); }
+    .block-body { display: none; padding: 0 24px 24px; }
+    .block.open .block-body { display: block; }
+    .section-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--gray-100); }
+    .section-tab { padding: 10px 20px; font-size: 0.85rem; font-weight: 600; color: var(--gray-400); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; background: none; border-top: 0; border-left: 0; border-right: 0; font-family: inherit; }
+    .section-tab:hover { color: var(--gray-600); }
+    .section-tab.active { color: var(--sky); border-bottom-color: var(--sky); }
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+    .explain h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin: 28px 0 10px; padding-top: 20px; border-top: 1px solid var(--gray-200); }
+    .explain h3:first-child, .explain p + h3:first-of-type { border-top: none; padding-top: 0; margin-top: 16px; }
+    .explain p { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 12px; line-height: 1.7; }
+    .explain ul { padding-left: 20px; margin-bottom: 12px; }
+    .explain li { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 4px; }
+    .explain .highlight { background: var(--sky-light); border-radius: var(--radius-sm); padding: 16px 20px; margin: 16px 0; border-left: 4px solid var(--sky); }
+    .explain .highlight p { margin: 0; font-weight: 500; color: var(--navy); }
+    .explain .warning { background: #FEF3C7; border-radius: var(--radius-sm); padding: 16px 20px; margin: 16px 0; border-left: 4px solid #F59E0B; }
+    .explain .warning p { margin: 0; font-weight: 500; color: #92400E; }
+    .explain code { background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; }
+    .explain .code-block { background: var(--navy-deep); border-radius: var(--radius-sm); padding: 16px 20px; margin: 12px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; color: var(--green); line-height: 1.8; overflow-x: auto; position: relative; }
+    .explain table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    .explain th { text-align: left; padding: 8px 12px; font-size: 0.8rem; font-weight: 600; color: var(--gray-500); border-bottom: 2px solid var(--gray-200); background: var(--gray-50); }
+    .explain td { padding: 10px 12px; font-size: 0.85rem; border-bottom: 1px solid var(--gray-100); }
+    .execute .step-list { list-style: none; padding: 0; }
+    .execute .step-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--gray-100); align-items: flex-start; }
+    .execute .step-item:last-child { border-bottom: none; }
+    .execute .step-num { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--sky); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; margin-top: 2px; }
+    .execute .step-text { font-size: 0.9rem; color: var(--gray-600); line-height: 1.6; }
+    .execute .step-text code { background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; }
+    .execute .tip { background: var(--green-light); border-radius: var(--radius-sm); padding: 14px 18px; margin-top: 16px; border-left: 4px solid var(--green); }
+    .execute .tip p { font-size: 0.85rem; color: #065F46; margin: 0; }
+    .quiz-question { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+    .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-option { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: var(--radius-sm); border: 2px solid var(--gray-200); cursor: pointer; font-size: 0.9rem; color: var(--gray-600); transition: all 0.2s; background: var(--white); }
+    .quiz-option:hover { border-color: var(--sky); background: var(--sky-light); }
+    .quiz-option.selected { border-color: var(--sky); background: var(--sky-light); color: var(--navy); font-weight: 600; }
+    .quiz-option.correct { border-color: var(--green); background: var(--green-light); color: #065F46; }
+    .quiz-option.wrong { border-color: #EF4444; background: #FEF2F2; color: #991B1B; }
+    .quiz-option .letter { width: 28px; height: 28px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+    .quiz-option.correct .letter { background: var(--green); color: white; }
+    .quiz-option.wrong .letter { background: #EF4444; color: white; }
+    .quiz-answer { display: none; margin-top: 16px; padding: 16px 20px; background: var(--gray-50); border-radius: var(--radius-sm); font-size: 0.88rem; color: var(--gray-600); line-height: 1.6; }
+    .quiz-answer.show { display: block; }
+    .complete-btn { display: block; width: 100%; padding: 14px; margin-top: 20px; background: var(--sky); color: white; border: none; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .complete-btn:hover { background: var(--navy); }
+    .complete-btn.completed { background: var(--green); cursor: default; }
+    .footer-nav { max-width: 800px; margin: 0 auto; padding: 32px 24px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--gray-200); }
+    .footer-nav a { font-size: 0.9rem; font-weight: 600; color: var(--sky); text-decoration: none; padding: 10px 20px; border-radius: var(--radius-sm); transition: background 0.2s; }
+    .footer-nav a:hover { background: var(--sky-light); }
+    @media (max-width: 640px) { .section-tab { padding: 8px 12px; font-size: 0.78rem; } .day-hero h1 { font-size: 1.6rem; } }
+  </style>
+  <link rel="stylesheet" href="auth-styles.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span>ABLE</span> Native Camp</a>
+    <div class="nav-right">
+      <a href="day2.html">← Day 2</a>
+      <a href="index.html">홈</a>
+      <a href="skills.html">스킬 허브</a>
+      <a href="leaderboard.html">리더보드</a>
+      <a href="reference.html">레퍼런스</a>
+    </div>
+    <div id="auth-ui"></div>
+  </div>
+</nav>
+
+<div class="day-hero">
+  <div class="badge">⚡ Level 3: Skills</div>
+  <h1>Day 3 — 자동화</h1>
+  <p>"반복 요청을 /명령어 하나로."<br>스킬을 만들어서 매번 같은 말 안 해도 되는 날이야.</p>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-step active" id="prog-0"></div>
+  <div class="progress-step" id="prog-1"></div>
+  <div class="progress-step" id="prog-2"></div>
+  <div class="progress-step" id="prog-3"></div>
+  <div class="progress-step" id="prog-4"></div>
+  <div class="progress-step" id="prog-5"></div>
+</div>
+<div class="progress-labels">
+  <span class="active" id="lbl-0">스킬이란</span>
+  <span id="lbl-1">SKILL.md</span>
+  <span id="lbl-2">업무 찾기</span>
+  <span id="lbl-3">스킬 제작</span>
+  <span id="lbl-4">교환 테스트</span>
+  <span id="lbl-5">마무리</span>
+</div>
+
+<div class="content">
+
+  <!-- BLOCK 0: 스킬이란 -->
+  <div class="block open" id="block-0">
+    <div class="block-header" onclick="toggleBlock(0)">
+      <h2><span class="block-num" id="num-0">1</span> 스킬이란 — 반복 요청을 한 단어로</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(0, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(0, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(0, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-0-explain">
+        <p>스킬(Skill)은 <strong>자주 하는 요청을 /명령어 하나로 실행</strong>하는 거야. 예를 들어 매주 월요일마다 "지난주 생산 데이터 정리해서 보고서 만들어줘, 형식은 이렇고, 파일명은 이렇게..."라고 길게 말하던 걸, <code>/주간생산</code> 한 단어로 끝내는 거지.</p>
+        <h3>스킬의 정체</h3>
+        <p>스킬은 그냥 <strong>마크다운 파일(SKILL.md)</strong>이야. 거창한 코딩이 아니라, AI에게 주는 업무 매뉴얼이라고 생각하면 돼.</p>
+        <h3>디렉토리 구조</h3>
+        <div class="code-block">
+          .claude/skills/[스킬명]/<br>
+          ├── SKILL.md          # 핵심 — 스킬 정의 파일<br>
+          ├── references/       # 참고자료 (선택)<br>
+          └── templates/        # 템플릿 파일 (선택)
+        </div>
+        <h3>팀별 스킬 예시</h3>
+        <table>
+          <thead><tr><th>팀</th><th>스킬 예시</th></tr></thead>
+          <tbody>
+            <tr><td>제조팀</td><td><code>/주간생산</code></td></tr>
+            <tr><td>연구팀</td><td><code>/실험보고서</code></td></tr>
+            <tr><td>경영지원</td><td><code>/비용정산</code></td></tr>
+            <tr><td>마케팅</td><td><code>/뉴스레터</code></td></tr>
+            <tr><td>영업</td><td><code>/팔로업</code></td></tr>
+            <tr><td>QA</td><td><code>/QA리포트</code></td></tr>
+          </tbody>
+        </table>
+        <div class="highlight">
+          <p>💡 스킬 = AI에게 업무 매뉴얼을 주는 것. 한 번 만들면, 다음부턴 /명령어 한방이야.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-0-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">지금까지 Claude에게 가장 길게 했던 요청을 떠올려봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">그 중 반복되는 것 하나를 골라봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">"이걸 매번 말 안 해도 되면 얼마나 편할까?" 생각해봐</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="section-content quiz" id="block-0-quiz">
+        <p class="quiz-question">스킬(Skill)이란?</p>
+        <div class="quiz-options" id="quiz-0">
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'A')"><span class="letter">A</span> 프로그래밍 언어</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'B')"><span class="letter">B</span> 반복 업무를 /명령어로 실행하는 마크다운 파일</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'C')"><span class="letter">C</span> AI 모델 업그레이드</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'D')"><span class="letter">D</span> 새로운 MCP</div>
+        </div>
+        <div class="quiz-answer" id="answer-0">✅ <strong>정답: B.</strong> 스킬은 반복적인 업무 요청을 SKILL.md 마크다운 파일로 정의해두고, /명령어 하나로 실행하는 거야. 코딩이 아니라 업무 매뉴얼이야.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-0" onclick="completeBlock(0)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 1: SKILL.md 해부 -->
+  <div class="block locked" id="block-1">
+    <div class="block-header" onclick="toggleBlock(1)">
+      <h2><span class="block-num" id="num-1">2</span> 📝 SKILL.md 해부 — 5가지 구성 요소</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(1, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(1, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(1, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-1-explain">
+        <p>SKILL.md는 5가지 섹션으로 구성돼 있어. 하나씩 보자.</p>
+        <table>
+          <thead><tr><th>#</th><th>섹션</th><th>역할</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><strong>Front Matter</strong></td><td>name, description — 스킬의 이름과 한줄 설명</td></tr>
+            <tr><td>2</td><td><strong>제목 + 목적</strong></td><td>이 스킬이 뭘 하는지 한줄 설명</td></tr>
+            <tr><td>3</td><td><strong>절차 (Instructions)</strong></td><td>핵심! 단계별 구체 지시</td></tr>
+            <tr><td>4</td><td><strong>참고자료 references/</strong></td><td>필요한 참고 파일 (선택)</td></tr>
+            <tr><td>5</td><td><strong>템플릿 templates/</strong></td><td>결과물 형식 (선택)</td></tr>
+          </tbody>
+        </table>
+        <p><strong>절차가 가장 중요해.</strong> "무엇을, 어떤 순서로, 어떤 기준으로" 할지 적는 부분이야.</p>
+        <h3>SKILL.md 구조 예시</h3>
+        <div class="code-block">
+          ---<br>
+          name: 주간생산<br>
+          description: 주간 생산 실적 보고서를 자동 생성한다<br>
+          ---<br>
+          <br>
+          # 주간 생산 실적 보고서<br>
+          매주 월요일, 지난주 생산 데이터를 정리해서 보고서를 만든다.<br>
+          <br>
+          ## 절차<br>
+          1. production/ 폴더에서 최근 7일 데이터 파일을 읽는다<br>
+          2. 라인별 생산량, 불량률, 가동률을 계산한다<br>
+          3. 전주 대비 증감률을 표시한다<br>
+          4. templates/weekly-report.md 형식으로 보고서를 생성한다<br>
+          5. 파일명: YYYY-MM-DD_주간생산.md<br>
+          <br>
+          ## 참고자료<br>
+          - references/production-codes.md<br>
+          <br>
+          ## 템플릿<br>
+          - templates/weekly-report.md
+        </div>
+        <div class="highlight">
+          <p>💡 절차를 잘 쓰면 AI가 잘 실행해. 핵심은 '동료에게 인수인계하듯' 쓰는 거야.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-1-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text"><code>.claude/skills/</code> 폴더 구조를 확인해봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">예시 SKILL.md를 읽어봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">각 섹션이 어떤 역할인지 파악해봐</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="section-content quiz" id="block-1-quiz">
+        <p class="quiz-question">SKILL.md에서 가장 중요한 섹션은?</p>
+        <div class="quiz-options" id="quiz-1">
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'A')"><span class="letter">A</span> Front Matter</div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'B')"><span class="letter">B</span> 제목</div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'C')"><span class="letter">C</span> 절차 (Instructions)</div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'D')"><span class="letter">D</span> 템플릿</div>
+        </div>
+        <div class="quiz-answer" id="answer-1">✅ <strong>정답: C.</strong> 절차(Instructions)가 스킬의 핵심이야. "무엇을, 어떤 순서로, 어떤 기준으로" 해야 하는지 구체적으로 적어야 AI가 정확하게 실행해.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-1" onclick="completeBlock(1)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 2: 내 업무 찾기 -->
+  <div class="block locked" id="block-2">
+    <div class="block-header" onclick="toggleBlock(2)">
+      <h2><span class="block-num" id="num-2">3</span> 🔍 내 업무 찾기 — 스킬로 만들 반복 업무</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(2, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(2, 'execute')">🏃 실습</button>
+      </div>
+
+      <div class="section-content active explain" id="block-2-explain">
+        <p>모든 업무가 스킬이 되는 건 아니야. 좋은 스킬 후보는 이런 거야:</p>
+        <ul>
+          <li>✅ 매주/매월 <strong>반복</strong>되는 업무</li>
+          <li>✅ 매번 <strong>비슷한 패턴</strong>으로 하는 업무</li>
+          <li>✅ <strong>같은 형식의 결과물</strong>이 나오는 업무</li>
+          <li>✅ "이걸 <strong>또</strong> 해야 해?" 느낌이 드는 업무</li>
+        </ul>
+        <h3>팀별 스킬 후보 예시</h3>
+        <table>
+          <thead><tr><th>팀</th><th>스킬 후보</th></tr></thead>
+          <tbody>
+            <tr><td>제조팀</td><td>생산일보, BOM 정리, 설비점검, 검사성적서, 재고요약</td></tr>
+            <tr><td>연구팀</td><td>데이터분석, 레퍼런스 정리, 프로토콜, 시약발주, 실험노트</td></tr>
+            <tr><td>경영지원</td><td>월별경비, 회의록, 출근부, 카드정산, 계약서검토</td></tr>
+            <tr><td>마케팅</td><td>뉴스레터, SNS포스트, 전시회체크리스트, 고객레퍼런스, 웹업데이트</td></tr>
+            <tr><td>영업</td><td>팔로업메일, 견적서, 파이프라인, 고객템플릿, 주간보고</td></tr>
+          </tbody>
+        </table>
+        <h3>선택 기준 3가지</h3>
+        <ol style="padding-left: 20px; margin: 12px 0;">
+          <li style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 8px;"><strong>빈도:</strong> 주 1회 이상 반복</li>
+          <li style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 8px;"><strong>패턴:</strong> 매번 비슷한 절차</li>
+          <li style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 8px;"><strong>결과물:</strong> 보고서, 메일, 리스트 등 정형화된 아웃풋</li>
+        </ol>
+      </div>
+
+      <div class="section-content execute" id="block-2-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">내 반복 업무 5개를 적어봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">위 3가지 기준(빈도, 패턴, 결과물)으로 <strong>1개를 선택</strong>해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">Claude에게 <strong>"나는 [팀]에서 [업무]를 매주 해. 절차를 정리해줘"</strong> 라고 말해봐</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 처음엔 가장 단순한 업무를 골라. 성공 경험이 쌓이면 복잡한 것도 만들 수 있어.</p>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-2" onclick="completeBlock(2)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 3: 스킬 만들기 -->
+  <div class="block locked" id="block-3">
+    <div class="block-header" onclick="toggleBlock(3)">
+      <h2><span class="block-num" id="num-3">4</span> 🛠️ 스킬 만들기 — 실전 제작</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(3, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(3, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(3, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-3-explain">
+        <p>이제 진짜 만들어보자. 3단계야.</p>
+        <h3>Step 1. 절차 매핑</h3>
+        <p>동료에게 인수인계하듯 작성해. 이 4가지를 반드시 포함해:</p>
+        <ul>
+          <li><strong>데이터 어디서:</strong> 어떤 파일/폴더에서 가져오는지</li>
+          <li><strong>계산 어떻게:</strong> 무슨 계산/가공을 하는지</li>
+          <li><strong>결과물 형식:</strong> 어떤 형태로 만드는지</li>
+          <li><strong>파일 이름:</strong> 결과물 파일명 규칙</li>
+        </ul>
+        <h3>Step 2. SKILL.md 작성</h3>
+        <p>아래 템플릿을 복사해서 채워넣어:</p>
+        <div class="code-block">
+          ---<br>
+          name: [스킬명]<br>
+          description: [한줄 설명]<br>
+          ---<br>
+          <br>
+          # [스킬 제목]<br>
+          [이 스킬이 하는 일 한줄 설명]<br>
+          <br>
+          ## 절차<br>
+          1. [첫 번째 단계]<br>
+          2. [두 번째 단계]<br>
+          3. [세 번째 단계]<br>
+          ...<br>
+          <br>
+          ## 참고자료 (선택)<br>
+          - references/[파일명]<br>
+          <br>
+          ## 템플릿 (선택)<br>
+          - templates/[파일명]
+        </div>
+        <h3>Step 3. 테스트 & 반복</h3>
+        <p>실행 → 결과 확인 → 수정. 2-3회 반복하면 쓸만해져.</p>
+        <h3>잘 쓴 예 vs 못 쓴 예</h3>
+        <table>
+          <thead><tr><th>❌ 못 쓴 예</th><th>✅ 잘 쓴 예</th></tr></thead>
+          <tbody>
+            <tr><td>"보고서 만들어줘"</td><td>"production/ 폴더에서 최근 7일 데이터를 읽어서 라인별 생산량/불량률을 계산하고 전주 대비 증감률을 포함한 보고서를 만들어줘"</td></tr>
+            <tr><td>"메일 써줘"</td><td>"지난주 미팅 노트를 참고해서 고객에게 후속 조치 사항 3가지를 포함한 팔로업 메일 초안을 써줘"</td></tr>
+          </tbody>
+        </table>
+        <div class="warning">
+          <p>⚠️ '보고서 만들어줘'처럼 애매하게 쓰면 AI도 애매하게 실행해. 구체적으로!</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-3-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">디렉토리 만들기: <code>.claude/skills/[내스킬명]/</code></div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">SKILL.md 파일 작성 — Claude에게 <strong>"방금 정리한 절차를 SKILL.md로 만들어줘"</strong> 라고 요청해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><code>/내스킬명</code> 으로 실행해봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text">결과 확인하고 부족한 부분 수정해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">5</div>
+            <div class="step-text">2-3회 반복해서 완성도를 높여</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 처음부터 완벽할 필요 없어. 실행하고 고치는 게 가장 빠른 방법이야.</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-3-quiz">
+        <p class="quiz-question">좋은 스킬의 핵심은?</p>
+        <div class="quiz-options" id="quiz-3">
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'A')"><span class="letter">A</span> 코드가 포함되어야 한다</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'B')"><span class="letter">B</span> 동료에게 인수인계하듯 구체적으로 쓴다</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'C')"><span class="letter">C</span> 최대한 짧게 쓴다</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'D')"><span class="letter">D</span> 영어로 써야 한다</div>
+        </div>
+        <div class="quiz-answer" id="answer-3">✅ <strong>정답: B.</strong> 좋은 스킬의 핵심은 "동료에게 인수인계하듯" 구체적으로 쓰는 거야. 데이터 어디서 가져오는지, 뭘 어떻게 가공하는지, 결과물은 어떤 형식인지 — 빠짐없이 적어야 AI가 정확하게 실행해.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-3" onclick="completeBlock(3)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 4: 교환 테스트 -->
+  <div class="block locked" id="block-4">
+    <div class="block-header" onclick="toggleBlock(4)">
+      <h2><span class="block-num" id="num-4">5</span> 🔄 교환 테스트 — 동료와 스킬 교환</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(4, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(4, 'execute')">🏃 실습</button>
+      </div>
+
+      <div class="section-content active explain" id="block-4-explain">
+        <p>왜 교환 테스트를 해야 할까? <strong>나에겐 당연한 맥락이 다른 사람에겐 빠진 정보</strong>일 수 있거든.</p>
+        <div class="warning">
+          <p>⚠️ 예: "production/ 폴더에서 읽어" → 그 폴더 어디 있어? 경로가 안 적혀 있으면 다른 사람은 실행 못 해.</p>
+        </div>
+        <h3>교환 테스트 방법</h3>
+        <ol style="padding-left: 20px; margin: 12px 0;">
+          <li style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 8px;"><strong>짝 찾기:</strong> 옆 사람과 짝을 지어</li>
+          <li style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 8px;"><strong>SKILL.md 교환:</strong> 서로의 스킬 파일을 공유해</li>
+          <li style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 8px;"><strong>서로의 스킬 실행:</strong> 상대방의 스킬을 실행해봐</li>
+          <li style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 8px;"><strong>피드백:</strong> 아래 5가지를 확인해</li>
+          <li style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 8px;"><strong>피드백 반영:</strong> 받은 피드백으로 스킬 수정</li>
+        </ol>
+        <h3>피드백 체크리스트</h3>
+        <ul>
+          <li>실행이 됐는지?</li>
+          <li>절차대로 나오는지?</li>
+          <li>막히는 단계가 있는지?</li>
+          <li>결과물이 쓸만한지?</li>
+          <li>개선점 1개</li>
+        </ul>
+        <div class="highlight">
+          <p>💡 교환 테스트는 스킬의 빈틈을 찾는 가장 좋은 방법이야. 혼자선 절대 못 찾는 걸 동료가 찾아줘.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-4-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">옆 사람과 짝을 지어</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">SKILL.md 파일을 교환해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">상대방의 스킬을 실행해봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text">피드백을 작성해 (실행 여부, 절차, 막히는 단계, 결과물, 개선점)</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">5</div>
+            <div class="step-text">받은 피드백으로 스킬을 업데이트해</div>
+          </li>
+        </ol>
+      </div>
+
+      <button class="complete-btn" id="btn-4" onclick="completeBlock(4)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 5: 마무리 -->
+  <div class="block locked" id="block-5">
+    <div class="block-header" onclick="toggleBlock(5)">
+      <h2><span class="block-num" id="num-5">6</span> Day 3 마무리 🎉</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-content active explain" id="block-5-explain">
+        <h3>오늘 배운 것</h3>
+        <table>
+          <thead><tr><th>#</th><th>배운 것</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>스킬 = 반복 요청을 /명령어로 실행</td></tr>
+            <tr><td>2</td><td>SKILL.md = AI 업무 매뉴얼 (마크다운 하나)</td></tr>
+            <tr><td>3</td><td>구조: Front Matter → 목적 → 절차 → 참고/템플릿</td></tr>
+            <tr><td>4</td><td>핵심: 동료에게 인수인계하듯 구체적으로</td></tr>
+            <tr><td>5</td><td>교환 테스트로 빠진 부분 발견</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin-top: 24px;">오늘의 미션 🎯</h3>
+        <p>Teams <strong>#able-native-camp</strong> 채널에 공유해:</p>
+        <div class="code-block">
+          [Day 3 완료]<br>
+          - 만든 스킬: /[스킬명]<br>
+          - 스킬이 하는 일: [한줄 설명]<br>
+          - 교환 테스트 피드백: [받은 개선점 1개]<br>
+          - 소감: [한줄]
+        </div>
+
+        <h3 style="margin-top: 24px;">내일 예고 👀</h3>
+        <p>Day 4에서는 <strong>Harness</strong>를 배워 — 스킬 여러 개를 연결해서 워크플로우를 만드는 법을 배워. 레고 조립처럼!</p>
+      </div>
+
+      <button class="complete-btn" id="btn-5" onclick="completeDay()">🎓 Day 3 완료!</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-nav">
+  <a href="day2.html">← Day 2: Connect</a>
+  <a href="day4.html" id="next-day" style="opacity: 0.3; pointer-events: none;">Day 4: Harness →</a>
+</div>
+
+<script>
+const CORRECT = { 0: 'B', 1: 'C', 3: 'B' };
+const TOTAL = 6;
+const completed = new Array(TOTAL).fill(false);
+
+function toggleBlock(i) {
+  const block = document.getElementById('block-' + i);
+  if (block.classList.contains('locked')) return;
+  block.classList.toggle('open');
+}
+
+function showTab(block, tab) {
+  const tabs = document.querySelectorAll('#block-' + block + ' .section-tab');
+  const contents = document.querySelectorAll('#block-' + block + ' .section-content');
+  tabs.forEach(t => t.classList.remove('active'));
+  contents.forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('block-' + block + '-' + tab).classList.add('active');
+}
+
+function selectAnswer(quiz, el, answer) {
+  const options = document.querySelectorAll('#quiz-' + quiz + ' .quiz-option');
+  const answerBox = document.getElementById('answer-' + quiz);
+  if (answerBox.classList.contains('show')) return;
+  options.forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  if (answer === CORRECT[quiz]) {
+    el.classList.add('correct');
+  } else {
+    el.classList.add('wrong');
+    options.forEach(o => {
+      const letter = o.querySelector('.letter').textContent;
+      if (letter === CORRECT[quiz]) o.classList.add('correct');
+    });
+  }
+  answerBox.classList.add('show');
+}
+
+function completeBlock(i) {
+  completed[i] = true;
+  const btn = document.getElementById('btn-' + i);
+  btn.textContent = '✅ 완료!';
+  btn.classList.add('completed');
+  document.getElementById('prog-' + i).classList.add('done');
+  document.getElementById('prog-' + i).classList.remove('active');
+  document.getElementById('lbl-' + i).classList.add('done');
+  document.getElementById('lbl-' + i).classList.remove('active');
+  document.getElementById('num-' + i).classList.add('done');
+  const next = i + 1;
+  if (next < TOTAL) {
+    const nextBlock = document.getElementById('block-' + next);
+    nextBlock.classList.remove('locked');
+    nextBlock.classList.add('open');
+    document.getElementById('prog-' + next).classList.add('active');
+    document.getElementById('lbl-' + next).classList.add('active');
+    document.getElementById('block-' + i).classList.remove('open');
+    setTimeout(() => { nextBlock.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+  }
+}
+
+function completeDay() {
+  completed[TOTAL - 1] = true;
+  localStorage.setItem('day3Complete', 'true');
+  const btn = document.getElementById('btn-' + (TOTAL - 1));
+  btn.textContent = '🎉 Day 3 수료 완료!';
+  btn.classList.add('completed');
+  document.getElementById('prog-' + (TOTAL - 1)).classList.add('done');
+  document.getElementById('lbl-' + (TOTAL - 1)).classList.add('done');
+  document.getElementById('num-' + (TOTAL - 1)).classList.add('done');
+  const nextDay = document.getElementById('next-day');
+  nextDay.style.opacity = '1';
+  nextDay.style.pointerEvents = 'auto';
+}
+</script>
+
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>

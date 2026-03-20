@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 5: Delegate — ABLE Native Camp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #1E3A5F; --navy-deep: #0F1F35; --sky: #4A90D9; --sky-light: #E8F1FB;
+      --green: #10B981; --green-light: #ECFDF5; --white: #FFFFFF;
+      --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF; --gray-500: #6B7280; --gray-600: #4B5563; --gray-800: #1F2937;
+      --radius: 16px; --radius-sm: 10px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif; color: var(--gray-800); line-height: 1.7; background: var(--white); -webkit-font-smoothing: antialiased; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--gray-200); }
+    .nav-inner { max-width: 800px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.1rem; font-weight: 800; color: var(--navy); text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--sky); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-right a { font-size: 0.85rem; font-weight: 500; color: var(--gray-600); text-decoration: none; }
+    .nav-right a:hover { color: var(--navy); }
+    .day-hero { padding: 100px 24px 48px; text-align: center; background: linear-gradient(170deg, var(--white) 0%, #FCE7F3 100%); }
+    .day-hero .badge { display: inline-block; padding: 4px 14px; border-radius: 20px; background: #FCE7F3; color: #9D174D; font-size: 0.75rem; font-weight: 600; margin-bottom: 16px; }
+    .day-hero h1 { font-size: 2rem; font-weight: 900; color: var(--navy); margin-bottom: 8px; letter-spacing: -0.5px; }
+    .day-hero p { font-size: 1rem; color: var(--gray-600); max-width: 520px; margin: 0 auto; }
+    .progress-bar { max-width: 800px; margin: 0 auto; padding: 24px 24px 0; display: flex; gap: 8px; }
+    .progress-step { flex: 1; height: 6px; border-radius: 3px; background: var(--gray-200); transition: background 0.3s; }
+    .progress-step.done { background: var(--green); }
+    .progress-step.active { background: var(--sky); }
+    .progress-labels { max-width: 800px; margin: 0 auto; padding: 8px 24px 24px; display: flex; gap: 8px; }
+    .progress-labels span { flex: 1; font-size: 0.65rem; font-weight: 500; color: var(--gray-400); text-align: center; }
+    .progress-labels span.active { color: var(--sky); font-weight: 700; }
+    .progress-labels span.done { color: var(--green); }
+    .content { max-width: 800px; margin: 0 auto; padding: 0 24px 80px; }
+    .block { margin-bottom: 32px; border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; background: var(--white); }
+    .block.locked { opacity: 0.5; pointer-events: none; }
+    .block-header { padding: 20px 24px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s; }
+    .block-header:hover { background: var(--gray-50); }
+    .block-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 10px; }
+    .block-header .block-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: 700; background: var(--sky-light); color: var(--sky); }
+    .block-header .block-num.done { background: var(--green-light); color: var(--green); }
+    .block-header .chevron { font-size: 1.2rem; color: var(--gray-400); transition: transform 0.2s; }
+    .block.open .block-header .chevron { transform: rotate(180deg); }
+    .block-body { display: none; padding: 0 24px 24px; }
+    .block.open .block-body { display: block; }
+    .section-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--gray-100); }
+    .section-tab { padding: 10px 20px; font-size: 0.85rem; font-weight: 600; color: var(--gray-400); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; background: none; border-top: 0; border-left: 0; border-right: 0; font-family: inherit; }
+    .section-tab:hover { color: var(--gray-600); }
+    .section-tab.active { color: var(--sky); border-bottom-color: var(--sky); }
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+    .explain h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin: 28px 0 10px; padding-top: 20px; border-top: 1px solid var(--gray-200); }
+    .explain h3:first-child, .explain p + h3:first-of-type { border-top: none; padding-top: 0; margin-top: 16px; }
+    .explain p { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 12px; line-height: 1.7; }
+    .explain ul { padding-left: 20px; margin-bottom: 12px; }
+    .explain li { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 4px; }
+    .explain .highlight { background: var(--sky-light); border-radius: var(--radius-sm); padding: 16px 20px; margin: 16px 0; border-left: 4px solid var(--sky); }
+    .explain .highlight p { margin: 0; font-weight: 500; color: var(--navy); }
+    .explain .warning { background: #FEF3C7; border-radius: var(--radius-sm); padding: 16px 20px; margin: 16px 0; border-left: 4px solid #F59E0B; }
+    .explain .warning p { margin: 0; font-weight: 500; color: #92400E; }
+    .explain code { background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; }
+    .explain .code-block { background: var(--navy-deep); border-radius: var(--radius-sm); padding: 16px 20px; margin: 12px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; color: var(--green); line-height: 1.8; overflow-x: auto; position: relative; }
+    .explain table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    .explain th { text-align: left; padding: 8px 12px; font-size: 0.8rem; font-weight: 600; color: var(--gray-500); border-bottom: 2px solid var(--gray-200); background: var(--gray-50); }
+    .explain td { padding: 10px 12px; font-size: 0.85rem; border-bottom: 1px solid var(--gray-100); }
+    .execute .step-list { list-style: none; padding: 0; }
+    .execute .step-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--gray-100); align-items: flex-start; }
+    .execute .step-item:last-child { border-bottom: none; }
+    .execute .step-num { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--sky); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; margin-top: 2px; }
+    .execute .step-text { font-size: 0.9rem; color: var(--gray-600); line-height: 1.6; }
+    .execute .step-text code { background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; }
+    .execute .tip { background: var(--green-light); border-radius: var(--radius-sm); padding: 14px 18px; margin-top: 16px; border-left: 4px solid var(--green); }
+    .execute .tip p { font-size: 0.85rem; color: #065F46; margin: 0; }
+    .quiz-question { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+    .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-option { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: var(--radius-sm); border: 2px solid var(--gray-200); cursor: pointer; font-size: 0.9rem; color: var(--gray-600); transition: all 0.2s; background: var(--white); }
+    .quiz-option:hover { border-color: var(--sky); background: var(--sky-light); }
+    .quiz-option.selected { border-color: var(--sky); background: var(--sky-light); color: var(--navy); font-weight: 600; }
+    .quiz-option.correct { border-color: var(--green); background: var(--green-light); color: #065F46; }
+    .quiz-option.wrong { border-color: #EF4444; background: #FEF2F2; color: #991B1B; }
+    .quiz-option .letter { width: 28px; height: 28px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+    .quiz-option.correct .letter { background: var(--green); color: white; }
+    .quiz-option.wrong .letter { background: #EF4444; color: white; }
+    .quiz-answer { display: none; margin-top: 16px; padding: 16px 20px; background: var(--gray-50); border-radius: var(--radius-sm); font-size: 0.88rem; color: var(--gray-600); line-height: 1.6; }
+    .quiz-answer.show { display: block; }
+    .complete-btn { display: block; width: 100%; padding: 14px; margin-top: 20px; background: var(--sky); color: white; border: none; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .complete-btn:hover { background: var(--navy); }
+    .complete-btn.completed { background: var(--green); cursor: default; }
+    .footer-nav { max-width: 800px; margin: 0 auto; padding: 32px 24px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--gray-200); }
+    .footer-nav a { font-size: 0.9rem; font-weight: 600; color: var(--sky); text-decoration: none; padding: 10px 20px; border-radius: var(--radius-sm); transition: background 0.2s; }
+    .footer-nav a:hover { background: var(--sky-light); }
+    @media (max-width: 640px) { .section-tab { padding: 8px 12px; font-size: 0.78rem; } .day-hero h1 { font-size: 1.6rem; } }
+  </style>
+  <link rel="stylesheet" href="auth-styles.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span>ABLE</span> Native Camp</a>
+    <div class="nav-right">
+      <a href="day4.html">← Day 4</a>
+      <a href="index.html">홈</a>
+      <a href="skills.html">스킬 허브</a>
+      <a href="leaderboard.html">리더보드</a>
+      <a href="reference.html">레퍼런스</a>
+    </div>
+    <div id="auth-ui"></div>
+  </div>
+</nav>
+
+<div class="day-hero">
+  <div class="badge">🤖 Level 5: Agents</div>
+  <h1>Day 5 — 위임</h1>
+  <p>"목표만 줘, 방법은 AI가 판단해."<br>스킬을 넘어 에이전트에게 업무를 위임하는 날이야.</p>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-step active" id="prog-0"></div>
+  <div class="progress-step" id="prog-1"></div>
+  <div class="progress-step" id="prog-2"></div>
+  <div class="progress-step" id="prog-3"></div>
+  <div class="progress-step" id="prog-4"></div>
+</div>
+<div class="progress-labels">
+  <span class="active" id="lbl-0">스킬vs에이전트</span>
+  <span id="lbl-1">에이전트 데모</span>
+  <span id="lbl-2">위임 판별</span>
+  <span id="lbl-3">지시문 작성</span>
+  <span id="lbl-4">마무리</span>
+</div>
+
+<div class="content">
+
+  <!-- BLOCK 0: 스킬 vs 에이전트 -->
+  <div class="block open" id="block-0">
+    <div class="block-header" onclick="toggleBlock(0)">
+      <h2><span class="block-num" id="num-0">1</span> 스킬 vs 에이전트 — 실행과 판단의 차이</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(0, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(0, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(0, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-0-explain">
+        <p>AI 활용에는 4단계 계층이 있어. 각 단계마다 AI에게 주는 자율성이 달라져.</p>
+        <h3>4단계 계층</h3>
+        <table>
+          <thead><tr><th>단계</th><th>지시 방식</th><th>예시</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Skill</strong></td><td>"이거 해"</td><td>메일 요약해, 번역해</td></tr>
+            <tr><td><strong>Harness</strong></td><td>"순서대로 해"</td><td>메일 확인 → 요약 → 보고서</td></tr>
+            <tr><td><strong>Agent</strong></td><td>"이 목표 달성해, 방법은 네가 판단"</td><td>놓친 거 없는지 확인해줘</td></tr>
+            <tr><td><strong>Sub-agent</strong></td><td>에이전트가 에이전트에게 위임</td><td>메일 에이전트 + 일정 에이전트 협업</td></tr>
+          </tbody>
+        </table>
+        <p>핵심 차이: <strong>스킬/하네스는 사람이 방법을 정해주지만, 에이전트는 AI가 스스로 방법을 판단해.</strong></p>
+        <h3>스킬 vs 에이전트 비교</h3>
+        <table>
+          <thead><tr><th></th><th>스킬</th><th>에이전트</th></tr></thead>
+          <tbody>
+            <tr><td><strong>실행 방식</strong></td><td>지시대로 실행</td><td>목표만 주면 방법 자체 판단</td></tr>
+            <tr><td><strong>순서</strong></td><td>정해진 순서</td><td>상황 따라 다르게 행동</td></tr>
+            <tr><td><strong>판단</strong></td><td>사람이 판단</td><td>AI가 판단</td></tr>
+            <tr><td><strong>유연성</strong></td><td>고정적</td><td>적응적</td></tr>
+          </tbody>
+        </table>
+        <div class="highlight">
+          <p>스킬은 "레시피대로 요리해", 에이전트는 "맛있는 저녁 만들어" — 재료 보고 알아서 판단하는 거야.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-0-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">지금까지 만든 스킬/워크플로우를 떠올려봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">"방법을 내가 정해줬는데, AI가 알아서 해도 될까?" 생각해봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">그 차이를 느껴봐 — 지시 vs 위임의 경계가 어디인지</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="section-content quiz" id="block-0-quiz">
+        <p class="quiz-question">에이전트가 스킬/하네스와 다른 핵심 차이는?</p>
+        <div class="quiz-options" id="quiz-0">
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'A')"><span class="letter">A</span> 더 빠르다</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'B')"><span class="letter">B</span> AI가 방법을 스스로 판단한다</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'C')"><span class="letter">C</span> MCP가 더 많이 필요하다</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'D')"><span class="letter">D</span> 코딩이 필요하다</div>
+        </div>
+        <div class="quiz-answer" id="answer-0">✅ <strong>정답: B.</strong> 에이전트의 핵심은 AI가 목표만 받고 방법을 스스로 판단한다는 거야. 스킬은 정해진 대로 실행하지만, 에이전트는 상황을 보고 어디를 확인할지, 뭘 먼저 할지 스스로 결정해.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-0" onclick="completeBlock(0)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 1: 에이전트 데모 -->
+  <div class="block locked" id="block-1">
+    <div class="block-header" onclick="toggleBlock(1)">
+      <h2><span class="block-num" id="num-1">2</span> 🤖 에이전트 데모 — 이번 주 놓친 거 없어?</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(1, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(1, 'execute')">🏃 실습</button>
+      </div>
+
+      <div class="section-content active explain" id="block-1-explain">
+        <p>실제 데모를 보자. <strong>"이번 주 놓친 거 없는지 확인해줘"</strong> — 이 한마디면 에이전트가 자율적으로 움직여.</p>
+        <h3>에이전트의 자율 판단 과정</h3>
+        <table>
+          <thead><tr><th>순서</th><th>에이전트 행동</th><th>판단 내용</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>📅 캘린더 확인</td><td>일정 놓친 건 없나?</td></tr>
+            <tr><td>2</td><td>📬 메일 확인</td><td>미회신 메일 있나?</td></tr>
+            <tr><td>3</td><td>💬 Teams 확인</td><td>미응답 멘션 있나?</td></tr>
+            <tr><td>4</td><td>🎯 우선순위 판단</td><td>긴급 / 보통 / 참고 분류</td></tr>
+            <tr><td>5</td><td>📝 리포트 작성</td><td>종합 정리</td></tr>
+          </tbody>
+        </table>
+        <p>핵심: 사람은 "확인해줘"만 말했는데, AI가 <strong>어디서 뭘 볼지, 뭐가 긴급한지 스스로 판단</strong>했어.</p>
+        <div class="highlight">
+          <p>에이전트가 잘 작동하려면: CLAUDE.md(뇌) + MCP(손) + 명확한 목표(지시) — 3가지가 갖춰져야 해.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-1-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">Claude에게 <strong>"이번 주 놓친 게 없는지 확인해줘"</strong>라고 말해봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">AI가 어떤 순서로, 어디를 확인하는지 관찰해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">판단 기준이 어떻게 작동하는지 봐 — 긴급/보통/참고를 어떻게 나눴어?</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>에이전트의 행동 패턴을 관찰하는 게 이 실습의 핵심이야. 뭘 먼저 했고, 왜 그랬는지 생각해봐.</p>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-1" onclick="completeBlock(1)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 2: 위임 가능한 업무 판별 -->
+  <div class="block locked" id="block-2">
+    <div class="block-header" onclick="toggleBlock(2)">
+      <h2><span class="block-num" id="num-2">3</span> 위임 가능한 업무 판별 — 체크리스트</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(2, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(2, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(2, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-2-explain">
+        <p>모든 업무를 에이전트에게 맡길 수 있는 건 아니야. <strong>2개 이상 해당하면 위임 가능해:</strong></p>
+        <h3>위임 가능 체크리스트</h3>
+        <ul>
+          <li>✅ 정답이 여러 개인 업무</li>
+          <li>✅ 정보 수집 + 분석 + 판단이 섞인 업무</li>
+          <li>✅ 매번 다르게 진행되는 업무</li>
+          <li>✅ 목표는 명확하지만 과정은 유연한 업무</li>
+          <li>✅ 실수해도 되돌릴 수 있는 업무</li>
+        </ul>
+        <h3>절대 위임하면 안 되는 것</h3>
+        <ul>
+          <li>❌ 최종 결정 (승인, 계약, 채용)</li>
+          <li>❌ 민감 데이터 처리</li>
+          <li>❌ 되돌릴 수 없는 행동 (전송, 삭제)</li>
+          <li>❌ 감정 판단이 필요한 것</li>
+        </ul>
+        <div class="highlight">
+          <p>핵심 원칙: "에이전트가 초안, 사람이 결정." 이 경계를 지키면 안전하게 위임할 수 있어.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-2-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">내 업무 중 위임 가능한 것 3개를 적어봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">위 체크리스트로 검증해 — 2개 이상 해당하는지 확인</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">1개 선택해서 Claude에게 <strong>"이 업무 네가 판단해서 해봐"</strong>라고 시켜봐</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="section-content quiz" id="block-2-quiz">
+        <p class="quiz-question">AI에게 위임하면 안 되는 것은?</p>
+        <div class="quiz-options" id="quiz-2">
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'A')"><span class="letter">A</span> 데이터 수집과 분석</div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'B')"><span class="letter">B</span> 최종 승인 결정</div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'C')"><span class="letter">C</span> 초안 작성</div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'D')"><span class="letter">D</span> 정보 요약</div>
+        </div>
+        <div class="quiz-answer" id="answer-2">✅ <strong>정답: B.</strong> 최종 승인, 계약, 채용 같은 결정은 반드시 사람이 해야 해. AI는 초안과 분석까지만 — 최종 결정은 항상 사람의 몫이야.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-2" onclick="completeBlock(2)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 3: 에이전트 지시문 작성 -->
+  <div class="block locked" id="block-3">
+    <div class="block-header" onclick="toggleBlock(3)">
+      <h2><span class="block-num" id="num-3">4</span> 📝 에이전트 지시문 작성 — CLAUDE.md에 판단 기준 넣기</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(3, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(3, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(3, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-3-explain">
+        <p>에이전트가 제대로 일하려면 CLAUDE.md에 <strong>판단 기준</strong>을 넣어야 해. 4가지 필수 요소가 있어:</p>
+        <h3>에이전트 지시문 4요소</h3>
+        <table>
+          <thead><tr><th>#</th><th>요소</th><th>설명</th><th>예시</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><strong>목표</strong></td><td>뭘 완수할지</td><td>이번 주 놓친 업무 리포트 작성</td></tr>
+            <tr><td>2</td><td><strong>사용 가능한 도구</strong></td><td>MCP, 스킬, 파일 접근</td><td>다우오피스, Teams, Notion</td></tr>
+            <tr><td>3</td><td><strong>판단 기준</strong></td><td>우선순위 규칙, 긴급 기준, 예외 처리</td><td>24시간 미회신 = 긴급</td></tr>
+            <tr><td>4</td><td><strong>제약조건</strong></td><td>못 하는 것, 확인 필요한 것, 형식 제한</td><td>메시지 전송 전 반드시 확인</td></tr>
+          </tbody>
+        </table>
+        <h3>CLAUDE.md 에이전트 섹션 템플릿</h3>
+        <div class="code-block">
+          ## 주간 리포트 에이전트<br><br>
+          ### 목표<br>
+          매주 금요일, 이번 주 놓친 업무가 없는지 확인하고 리포트 작성<br><br>
+          ### 사용 도구<br>
+          - 다우오피스: 캘린더, 메일<br>
+          - Teams: 멘션, 채널 메시지<br>
+          - Notion: 태스크 DB<br><br>
+          ### 판단 기준<br>
+          - 24시간 이상 미회신 메일 → 긴급<br>
+          - 멘션 미응답 → 긴급<br>
+          - 일정 충돌 → 보통<br>
+          - 참고용 정보 → 참고<br><br>
+          ### 제약조건<br>
+          - 메시지 전송 전 반드시 본인 확인<br>
+          - 민감 정보 포함 시 알림만<br>
+          - 결과물은 노션 페이지로 정리
+        </div>
+        <div class="highlight">
+          <p>CLAUDE.md는 에이전트의 '뇌', 지시문은 에이전트의 '업무 매뉴얼'. 둘 다 있어야 제대로 작동해.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-3-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">Block 2에서 선택한 위임 업무로 지시문을 작성해봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">4가지 요소(목표, 도구, 판단 기준, 제약조건)를 모두 포함시켜</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">CLAUDE.md에 추가해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text">실행해보고 AI의 판단 과정을 관찰해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">5</div>
+            <div class="step-text">부족한 판단 기준이 있으면 보충해 — 반복할수록 정교해져</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>처음부터 완벽할 필요 없어. 실행 → 관찰 → 보충을 반복하면 에이전트가 점점 똑똑해져.</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-3-quiz">
+        <p class="quiz-question">에이전트 지시문에 반드시 포함해야 하는 것은?</p>
+        <div class="quiz-options" id="quiz-3">
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'A')"><span class="letter">A</span> 코드 예시</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'B')"><span class="letter">B</span> 목표, 도구, 판단기준, 제약조건</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'C')"><span class="letter">C</span> 실행 시간</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'D')"><span class="letter">D</span> 에이전트 이름</div>
+        </div>
+        <div class="quiz-answer" id="answer-3">✅ <strong>정답: B.</strong> 에이전트 지시문에는 목표(뭘 할지), 도구(뭘 쓸 수 있는지), 판단 기준(어떻게 판단할지), 제약조건(못 하는 것)이 반드시 포함돼야 해.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-3" onclick="completeBlock(3)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 4: Day 5 마무리 -->
+  <div class="block locked" id="block-4">
+    <div class="block-header" onclick="toggleBlock(4)">
+      <h2><span class="block-num" id="num-4">5</span> Day 5 마무리 🎉</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-content active explain" id="block-4-explain">
+        <h3>오늘 배운 것</h3>
+        <table>
+          <thead><tr><th>#</th><th>배운 것</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>에이전트 = 목표만 주면 방법을 스스로 판단</td></tr>
+            <tr><td>2</td><td>스킬 → 하네스 → 에이전트 (실행 → 연결 → 판단)</td></tr>
+            <tr><td>3</td><td>위임 기준: 정답 여러 개 + 정보 수집 분석 + 되돌릴 수 있는 업무</td></tr>
+            <tr><td>4</td><td>절대 위임 불가: 최종 결정, 민감 데이터, 되돌릴 수 없는 행동</td></tr>
+            <tr><td>5</td><td>지시문 4요소: 목표 + 도구 + 판단 기준 + 제약조건</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin-top: 24px;">오늘의 미션 🎯</h3>
+        <p>Teams <strong>#able-native-camp</strong> 채널에 공유해:</p>
+        <div class="code-block">
+          [Day 5 완료]<br>
+          - 위임한 업무: [어떤 업무를 에이전트에게 맡겼는지]<br>
+          - AI 판단 과정: [AI가 어떻게 판단했는지 관찰한 것]<br>
+          - 만족도: [⭐~⭐⭐⭐⭐⭐]<br>
+          - 배운 점: [한줄]
+        </div>
+
+        <h3 style="margin-top: 24px;">내일 예고 👀</h3>
+        <p>Day 6에서는 <strong>Sustain</strong> — 메모리와 루틴으로 AI가 나를 점점 더 잘 이해하게 만드는 법을 배워. 복리 성장의 시작!</p>
+      </div>
+
+      <button class="complete-btn" id="btn-4" onclick="completeDay()">🎓 Day 5 완료!</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-nav">
+  <a href="day4.html">← Day 4: Orchestrate</a>
+  <a href="day6.html" id="next-day" style="opacity: 0.3; pointer-events: none;">Day 6: Sustain →</a>
+</div>
+
+<script>
+const CORRECT = { 0: 'B', 2: 'B', 3: 'B' };
+const TOTAL = 5;
+const completed = new Array(TOTAL).fill(false);
+
+function toggleBlock(i) {
+  const block = document.getElementById('block-' + i);
+  if (block.classList.contains('locked')) return;
+  block.classList.toggle('open');
+}
+
+function showTab(block, tab) {
+  const tabs = document.querySelectorAll('#block-' + block + ' .section-tab');
+  const contents = document.querySelectorAll('#block-' + block + ' .section-content');
+  tabs.forEach(t => t.classList.remove('active'));
+  contents.forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('block-' + block + '-' + tab).classList.add('active');
+}
+
+function selectAnswer(quiz, el, answer) {
+  const options = document.querySelectorAll('#quiz-' + quiz + ' .quiz-option');
+  const answerBox = document.getElementById('answer-' + quiz);
+  if (answerBox.classList.contains('show')) return;
+  options.forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  if (answer === CORRECT[quiz]) {
+    el.classList.add('correct');
+  } else {
+    el.classList.add('wrong');
+    options.forEach(o => {
+      const letter = o.querySelector('.letter').textContent;
+      if (letter === CORRECT[quiz]) o.classList.add('correct');
+    });
+  }
+  answerBox.classList.add('show');
+}
+
+function completeBlock(i) {
+  completed[i] = true;
+  const btn = document.getElementById('btn-' + i);
+  btn.textContent = '✅ 완료!';
+  btn.classList.add('completed');
+  document.getElementById('prog-' + i).classList.add('done');
+  document.getElementById('prog-' + i).classList.remove('active');
+  document.getElementById('lbl-' + i).classList.add('done');
+  document.getElementById('lbl-' + i).classList.remove('active');
+  document.getElementById('num-' + i).classList.add('done');
+  const next = i + 1;
+  if (next < TOTAL) {
+    const nextBlock = document.getElementById('block-' + next);
+    nextBlock.classList.remove('locked');
+    nextBlock.classList.add('open');
+    document.getElementById('prog-' + next).classList.add('active');
+    document.getElementById('lbl-' + next).classList.add('active');
+    document.getElementById('block-' + i).classList.remove('open');
+    setTimeout(() => { nextBlock.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+  }
+}
+
+function completeDay() {
+  completed[TOTAL - 1] = true;
+  localStorage.setItem('day5Complete', 'true');
+  const btn = document.getElementById('btn-' + (TOTAL - 1));
+  btn.textContent = '🎉 Day 5 수료 완료!';
+  btn.classList.add('completed');
+  document.getElementById('prog-' + (TOTAL - 1)).classList.add('done');
+  document.getElementById('lbl-' + (TOTAL - 1)).classList.add('done');
+  document.getElementById('num-' + (TOTAL - 1)).classList.add('done');
+  const nextDay = document.getElementById('next-day');
+  nextDay.style.opacity = '1';
+  nextDay.style.pointerEvents = 'auto';
+}
+</script>
+
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>

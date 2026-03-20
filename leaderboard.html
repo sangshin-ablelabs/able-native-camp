@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>리더보드 — ABLE Native Camp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #1E3A5F; --navy-deep: #0F1F35; --sky: #4A90D9; --sky-light: #E8F1FB;
+      --green: #10B981; --green-light: #ECFDF5; --white: #FFFFFF;
+      --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF; --gray-500: #6B7280; --gray-600: #4B5563; --gray-800: #1F2937;
+      --radius: 16px; --radius-sm: 10px;
+      --bronze: #CD7F32; --silver: #9CA3AF; --gold: #FBBF24; --diamond: #60A5FA;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+      color: var(--gray-800); line-height: 1.7; background: var(--gray-50);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--gray-200); }
+    .nav-inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.1rem; font-weight: 800; color: var(--navy); text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--sky); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-right a { font-size: 0.85rem; font-weight: 500; color: var(--gray-600); text-decoration: none; }
+    .nav-right a:hover { color: var(--navy); }
+
+    /* HERO */
+    .hero { padding: 100px 24px 48px; text-align: center; background: linear-gradient(170deg, var(--white) 0%, #FEF3C7 40%, #FBBF24 100%); }
+    .hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 900; color: var(--navy); letter-spacing: -1px; margin-bottom: 8px; }
+    .hero p { font-size: 1rem; color: var(--gray-600); max-width: 500px; margin: 0 auto; }
+
+    /* STATS */
+    .stats-row { max-width: 1080px; margin: -28px auto 0; padding: 0 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; position: relative; z-index: 10; }
+    .stat-card { background: var(--white); border-radius: var(--radius); padding: 20px 24px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid var(--gray-200); }
+    .stat-card .num { font-size: 2rem; font-weight: 900; color: var(--navy); line-height: 1.2; }
+    .stat-card .label { font-size: 0.78rem; color: var(--gray-500); font-weight: 500; margin-top: 4px; }
+
+    .content { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* TIER CARDS */
+    .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 40px; }
+    .tier-card {
+      background: var(--white); border-radius: var(--radius); padding: 20px 16px;
+      text-align: center; border: 2px solid var(--gray-200); transition: all 0.2s;
+    }
+    .tier-card .icon { font-size: 2rem; margin-bottom: 6px; }
+    .tier-card h4 { font-size: 0.9rem; font-weight: 800; margin-bottom: 2px; }
+    .tier-card .threshold { font-size: 0.75rem; color: var(--gray-400); font-weight: 600; margin-bottom: 6px; }
+    .tier-card .count { font-size: 1.4rem; font-weight: 900; }
+    .tier-card .count-label { font-size: 0.7rem; color: var(--gray-400); }
+    .tier-bronze { border-color: var(--bronze); }
+    .tier-bronze h4 { color: var(--bronze); }
+    .tier-bronze .count { color: var(--bronze); }
+    .tier-silver { border-color: var(--silver); }
+    .tier-silver h4 { color: #6B7280; }
+    .tier-silver .count { color: #6B7280; }
+    .tier-gold { border-color: var(--gold); background: linear-gradient(to bottom, #FFFBEB, var(--white)); }
+    .tier-gold h4 { color: #B45309; }
+    .tier-gold .count { color: #B45309; }
+    .tier-diamond { border-color: var(--diamond); background: linear-gradient(to bottom, #EFF6FF, var(--white)); }
+    .tier-diamond h4 { color: #2563EB; }
+    .tier-diamond .count { color: #2563EB; }
+
+    /* AWARDS */
+    .awards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 40px; }
+    .award-card {
+      background: var(--white); border-radius: var(--radius); padding: 18px 14px;
+      text-align: center; border: 2px solid var(--gray-200); transition: all 0.2s;
+      cursor: pointer;
+    }
+    .award-card:hover { border-color: #FBBF24; box-shadow: 0 4px 20px rgba(251,191,36,0.15); }
+    .award-card.assigned { border-color: #FBBF24; background: linear-gradient(to bottom, #FFFBEB, var(--white)); }
+    .award-card .trophy { font-size: 1.6rem; margin-bottom: 6px; }
+    .award-card h4 { font-size: 0.78rem; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
+    .award-card .desc { font-size: 0.68rem; color: var(--gray-400); line-height: 1.4; }
+    .award-card .winner { margin-top: 8px; padding: 5px 10px; background: #FBBF24; border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: var(--navy); display: inline-block; }
+
+    /* BOARD HEADER */
+    .board-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .board-header h2 { font-size: 1.3rem; font-weight: 800; color: var(--navy); }
+    .board-controls { display: flex; gap: 8px; align-items: center; }
+    .board-actions { display: flex; gap: 8px; }
+
+    /* TOGGLE */
+    .toggle-group { display: flex; border-radius: 8px; overflow: hidden; border: 1px solid var(--gray-200); }
+    .toggle-btn {
+      padding: 7px 16px; font-size: 0.78rem; font-weight: 600; border: none;
+      cursor: pointer; font-family: inherit; transition: all 0.2s;
+      background: var(--white); color: var(--gray-500);
+    }
+    .toggle-btn.active { background: var(--navy); color: white; }
+    .toggle-btn:not(.active):hover { background: var(--gray-100); }
+
+    .btn { padding: 8px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .btn-primary { background: var(--sky); color: white; }
+    .btn-primary:hover { background: var(--navy); }
+    .btn-outline { background: var(--white); color: var(--gray-600); border: 1px solid var(--gray-200); }
+    .btn-outline:hover { border-color: var(--sky); color: var(--sky); }
+    .btn-danger { background: #FEE2E2; color: #991B1B; }
+    .btn-danger:hover { background: #FECACA; }
+
+    /* TABLE */
+    .board-table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      background: var(--white); border-radius: var(--radius);
+      overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      border: 1px solid var(--gray-200);
+    }
+    .board-table th {
+      padding: 14px 16px; font-size: 0.72rem; font-weight: 600;
+      color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px;
+      background: var(--gray-50); border-bottom: 2px solid var(--gray-200);
+      text-align: center; white-space: nowrap;
+    }
+    .board-table th:first-child { text-align: center; width: 50px; }
+    .board-table th:nth-child(2) { text-align: left; }
+    .board-table td {
+      padding: 12px 16px; font-size: 0.88rem; border-bottom: 1px solid var(--gray-100);
+      text-align: center; vertical-align: middle;
+    }
+    .board-table td:first-child { font-weight: 800; color: var(--navy); }
+    .board-table td:nth-child(2) { text-align: left; font-weight: 600; }
+    .board-table tr:hover { background: var(--gray-50); }
+    .board-table tr.rank-1 td:first-child { color: #FBBF24; }
+    .board-table tr.rank-2 td:first-child { color: #9CA3AF; }
+    .board-table tr.rank-3 td:first-child { color: #CD7F32; }
+    .board-table tr.my-row { background: #EFF6FF; }
+    .board-table tr.my-row:hover { background: #DBEAFE; }
+
+    /* LEVEL BADGE */
+    .level-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.68rem; font-weight: 700; white-space: nowrap; }
+    .lvl-1 { background: #DBEAFE; color: #1E40AF; }
+    .lvl-2 { background: #D1FAE5; color: #065F46; }
+    .lvl-3 { background: #FEF3C7; color: #92400E; }
+    .lvl-4 { background: #EDE9FE; color: #5B21B6; }
+    .lvl-5 { background: #FCE7F3; color: #9D174D; }
+    .lvl-6 { background: #CCFBF1; color: #115E59; }
+    .lvl-0 { background: var(--gray-100); color: var(--gray-500); }
+
+    /* TIER BADGE */
+    .tier-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+    .badge-bronze { background: #FEF3C7; color: var(--bronze); }
+    .badge-silver { background: #F3F4F6; color: #6B7280; }
+    .badge-gold { background: #FEF3C7; color: #B45309; }
+    .badge-diamond { background: #DBEAFE; color: #2563EB; }
+    .badge-none { background: var(--gray-100); color: var(--gray-400); }
+
+    /* TOKEN DISPLAY */
+    .token-val { font-size: 1rem; font-weight: 800; color: var(--navy); }
+    .token-val.clickable { cursor: pointer; border-bottom: 1px dashed var(--gray-400); }
+    .token-val.clickable:hover { color: var(--sky); border-color: var(--sky); }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: var(--white); border-radius: var(--radius); padding: 32px; width: 90%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal h3 { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+    .modal label { font-size: 0.82rem; font-weight: 600; color: var(--gray-600); display: block; margin-bottom: 4px; }
+    .modal .hint { font-size: 0.72rem; color: var(--gray-400); margin-bottom: 12px; }
+    .modal input, .modal select { width: 100%; padding: 10px 14px; border: 1px solid var(--gray-200); border-radius: 8px; font-size: 0.9rem; font-family: inherit; margin-bottom: 16px; outline: none; }
+    .modal input:focus, .modal select:focus { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(74,144,217,0.1); }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 60px 24px; background: var(--white); border-radius: var(--radius); border: 2px dashed var(--gray-200); }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 1.1rem; color: var(--gray-500); margin-bottom: 8px; }
+    .empty-state p { font-size: 0.88rem; color: var(--gray-400); margin-bottom: 20px; }
+
+    /* PROFILE MODAL */
+    .profile-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--navy), var(--sky));
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; font-weight: 800; flex-shrink: 0;
+    }
+    .profile-stat {
+      background: var(--gray-50); border-radius: 10px; padding: 12px; text-align: center;
+    }
+    .profile-stat-num {
+      font-size: 1.2rem; font-weight: 800; color: var(--navy);
+    }
+    .profile-stat-label {
+      font-size: 0.7rem; color: var(--gray-400); margin-top: 2px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .tiers { grid-template-columns: repeat(2, 1fr); }
+      .awards { grid-template-columns: repeat(2, 1fr); }
+      .awards .award-card:last-child { grid-column: span 2; }
+      .board-table { font-size: 0.8rem; }
+      .board-table th, .board-table td { padding: 8px 10px; }
+    }
+    @media (max-width: 480px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .tiers { grid-template-columns: 1fr 1fr; }
+      .awards { grid-template-columns: 1fr; }
+      .awards .award-card:last-child { grid-column: span 1; }
+      .board-controls { flex-wrap: wrap; }
+    }
+  </style>
+  <link rel="stylesheet" href="auth-styles.css" />
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span>ABLE</span> Native Camp</a>
+    <div class="nav-right">
+      <a href="index.html">커리큘럼</a>
+      <a href="skills.html">스킬 허브</a>
+      <a href="leaderboard.html" style="color: var(--navy); font-weight: 700;">리더보드</a>
+      <a href="reference.html">레퍼런스</a>
+    </div>
+    <div id="auth-ui"></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>🏆 ABLE Native Camp 리더보드</h1>
+  <p>에이블러들의 캠프 진행 현황. 서로 응원하면서 같이 가자!</p>
+</div>
+
+<!-- STATS -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="num" id="stat-total">0</div>
+    <div class="label">참가자</div>
+  </div>
+  <div class="stat-card">
+    <div class="num" id="stat-tokens">$0</div>
+    <div class="label">총 토큰 사용량</div>
+  </div>
+  <div class="stat-card">
+    <div class="num" id="stat-completed">0</div>
+    <div class="label">총 토큰</div>
+  </div>
+  <div class="stat-card">
+    <div class="num" id="stat-avg-level">-</div>
+    <div class="label">총 활성일</div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- TIER SYSTEM -->
+  <div style="margin-bottom: 8px;">
+    <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--navy);">🎖️ 등급 시스템</h2>
+    <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 4px;">주간 평균 토큰 사용량($)에 따라 등급이 자동으로 올라가!</p>
+  </div>
+  <div class="tiers">
+    <div class="tier-card tier-bronze">
+      <div class="icon">🥉</div>
+      <h4>Bronze</h4>
+      <div class="threshold">$20/week 이상</div>
+      <div class="count" id="tier-bronze-count">0</div>
+      <div class="count-label">명</div>
+    </div>
+    <div class="tier-card tier-silver">
+      <div class="icon">🥈</div>
+      <h4>Silver</h4>
+      <div class="threshold">$50/week 이상</div>
+      <div class="count" id="tier-silver-count">0</div>
+      <div class="count-label">명</div>
+    </div>
+    <div class="tier-card tier-gold">
+      <div class="icon">🥇</div>
+      <h4>Gold</h4>
+      <div class="threshold">$100/week 이상</div>
+      <div class="count" id="tier-gold-count">0</div>
+      <div class="count-label">명</div>
+    </div>
+    <div class="tier-card tier-diamond">
+      <div class="icon">💎</div>
+      <h4>Diamond</h4>
+      <div class="threshold">$200/week 이상</div>
+      <div class="count" id="tier-diamond-count">0</div>
+      <div class="count-label">명</div>
+    </div>
+  </div>
+
+  <!-- AWARDS -->
+  <div style="margin-bottom: 8px;">
+    <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--navy);">🏅 어워드</h2>
+    <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 4px;">졸업식에서 발표! 클릭해서 수상자를 지정할 수 있어.</p>
+  </div>
+  <div class="awards" id="awards-grid">
+    <div class="award-card" onclick="assignAward('best-abler')">
+      <div class="trophy">🏆</div>
+      <h4>Best ABLER</h4>
+      <div class="desc">종합 1위</div>
+      <div class="winner" id="award-best-abler" style="display:none;"></div>
+    </div>
+    <div class="award-card" onclick="assignAward('best-skill')">
+      <div class="trophy">⚡</div>
+      <h4>Best Skill</h4>
+      <div class="desc">최고의 스킬</div>
+      <div class="winner" id="award-best-skill" style="display:none;"></div>
+    </div>
+    <div class="award-card" onclick="assignAward('best-workflow')">
+      <div class="trophy">🔗</div>
+      <h4>Best Workflow</h4>
+      <div class="desc">최고의 워크플로우</div>
+      <div class="winner" id="award-best-workflow" style="display:none;"></div>
+    </div>
+    <div class="award-card" onclick="assignAward('best-delegator')">
+      <div class="trophy">🤖</div>
+      <h4>Best Delegator</h4>
+      <div class="desc">위임의 달인</div>
+      <div class="winner" id="award-best-delegator" style="display:none;"></div>
+    </div>
+    <div class="award-card" onclick="assignAward('most-improved')">
+      <div class="trophy">🚀</div>
+      <h4>Most Improved</h4>
+      <div class="desc">가장 크게 성장</div>
+      <div class="winner" id="award-most-improved" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- BOARD -->
+  <div class="board-header">
+    <h2>📊 순위</h2>
+    <div class="board-controls">
+      <div class="toggle-group">
+        <button class="toggle-btn active" onclick="setView('cumulative')" id="btn-cumulative">누적</button>
+        <button class="toggle-btn" onclick="setView('daily')" id="btn-daily">일간</button>
+        <button class="toggle-btn" onclick="setView('weekly')" id="btn-weekly">주간</button>
+        <button class="toggle-btn" onclick="setView('monthly')" id="btn-monthly">월간</button>
+      </div>
+      <div class="board-actions">
+        <button class="btn btn-outline" onclick="exportData()">📋 내보내기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="board-content"></div>
+
+</div>
+
+<!-- AWARD MODAL -->
+<div class="modal-overlay" id="award-modal">
+  <div class="modal">
+    <h3 id="award-modal-title">수상자 지정</h3>
+    <label>수상자 선택</label>
+    <select id="award-select"><option value="">선택...</option></select>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeAwardModal()">취소</button>
+      <button class="btn btn-danger" onclick="clearAward()" id="btn-clear-award" style="display:none;">해제</button>
+      <button class="btn btn-primary" onclick="saveAward()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal" style="max-width: 480px;">
+    <!-- Header with avatar and name -->
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+      <div class="profile-avatar" id="profile-avatar">S</div>
+      <div>
+        <h3 id="profile-name" style="margin-bottom:2px;"></h3>
+        <div id="profile-email" style="font-size:0.8rem;color:var(--gray-400);"></div>
+      </div>
+    </div>
+    <!-- Level + Tier -->
+    <div id="profile-badges" style="display:flex;gap:8px;margin-bottom:16px;"></div>
+    <!-- Stats grid -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+      <div class="profile-stat">
+        <div class="profile-stat-num" id="profile-total-cost">$0</div>
+        <div class="profile-stat-label">누적 비용</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-num" id="profile-total-tokens">0</div>
+        <div class="profile-stat-label">누적 토큰</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-num" id="profile-streak">0</div>
+        <div class="profile-stat-label">연속 사용일</div>
+      </div>
+    </div>
+    <!-- Badges -->
+    <h4 style="font-size:0.9rem;font-weight:700;color:var(--navy);margin-bottom:12px;">배지</h4>
+    <div id="profile-badge-list" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
+    <!-- Close -->
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn btn-outline" onclick="closeProfileModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───
+const AWARDS_KEY = 'ableCampAwards';
+// 등급: 주간 평균 토큰 사용량 기준
+const TIERS = [
+  { name: 'Diamond', min: 200, icon: '💎', cls: 'badge-diamond' },
+  { name: 'Gold', min: 100, icon: '🥇', cls: 'badge-gold' },
+  { name: 'Silver', min: 50, icon: '🥈', cls: 'badge-silver' },
+  { name: 'Bronze', min: 20, icon: '🥉', cls: 'badge-bronze' },
+];
+const LEVELS = [
+  { name: '시작 전', icon: '⬜', cls: 'lvl-0' },
+  { name: 'Operate', icon: '🖥️', cls: 'lvl-1' },
+  { name: 'Connect', icon: '🔌', cls: 'lvl-2' },
+  { name: 'Automate', icon: '⚡', cls: 'lvl-3' },
+  { name: 'Harness', icon: '🔗', cls: 'lvl-4' },
+  { name: 'Delegate', icon: '🤖', cls: 'lvl-5' },
+  { name: 'Sustain', icon: '🌱', cls: 'lvl-6' },
+];
+
+let apiData = []; // API에서 가져온 데이터
+
+// ─── API에서 데이터 가져오기 ───
+async function fetchLeaderboard() {
+  try {
+    document.getElementById('board-content').innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray-400);">데이터 로딩 중...</div>';
+    const res = await fetch('/api/leaderboard');
+    const json = await res.json();
+    apiData = (json.members || []).map(m => ({
+      id: m.id,
+      name: m.name,
+      email: m.email,
+      role: m.role,
+      level: 0,
+      tokenLog: Object.fromEntries(Object.entries(m.dailyCost || {}).map(([d, v]) => [d, v.cost])),
+      tokenCountLog: Object.fromEntries(Object.entries(m.dailyCost || {}).map(([d, v]) => [d, v.tokens])),
+      totalCost: m.totalCost,
+      totalTokens: m.totalTokens,
+      activeDays: m.activeDays,
+    }));
+    render();
+  } catch (err) {
+    console.error('Failed to fetch leaderboard:', err);
+    document.getElementById('board-content').innerHTML = '<div style="text-align:center;padding:40px;color:#DC2626;">데이터 로딩 실패</div>';
+  }
+}
+
+function getData() { return apiData; }
+
+function isMyEntry(member) {
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  return user && member.email === user.email;
+}
+
+let currentView = 'cumulative';
+let currentAwardKey = null;
+function getAwards() { try { return JSON.parse(localStorage.getItem(AWARDS_KEY)) || {}; } catch { return {}; } }
+function saveAwards(a) { localStorage.setItem(AWARDS_KEY, JSON.stringify(a)); }
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function getWeeklyAvg(member) {
+  if (!member.tokenLog) return 0;
+  const dates = Object.keys(member.tokenLog).sort();
+  if (dates.length === 0) return 0;
+  const first = new Date(dates[0]);
+  const now = new Date();
+  const weeks = Math.max(1, (now - first) / (7 * 24 * 60 * 60 * 1000));
+  return getTotalCost(member) / weeks;
+}
+function getTier(member) {
+  const avg = typeof member === 'number' ? member : getWeeklyAvg(member);
+  for (const t of TIERS) { if (avg >= t.min) return t; }
+  return null;
+}
+function getTotalCost(member) { return member.totalCost || 0; }
+function getTotalTokens(member) { return member.totalTokens || 0; }
+function getTotalTokenCount(member) { return member.totalTokens || 0; }
+function formatTokenCount(n) {
+  if (n >= 1000000000) return (n / 1000000000).toFixed(1) + 'B';
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+  return n.toString();
+}
+function getTodayCost(member) {
+  if (!member.tokenLog) return 0;
+  return member.tokenLog[today()] || 0;
+}
+function getWeekCost(member) {
+  if (!member.tokenLog) return 0;
+  const now = new Date();
+  const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
+  const weekStr = weekAgo.toISOString().split('T')[0];
+  return Object.entries(member.tokenLog).reduce((s, [date, val]) => date >= weekStr ? s + val : s, 0);
+}
+function getMonthCost(member) {
+  if (!member.tokenLog) return 0;
+  const now = new Date();
+  const monthAgo = new Date(now); monthAgo.setDate(now.getDate() - 30);
+  const monthStr = monthAgo.toISOString().split('T')[0];
+  return Object.entries(member.tokenLog).reduce((s, [date, val]) => date >= monthStr ? s + val : s, 0);
+}
+
+// ─── VIEW TOGGLE ───
+function setView(view) {
+  currentView = view;
+  ['cumulative','daily','weekly','monthly'].forEach(v => {
+    document.getElementById('btn-' + v).classList.toggle('active', v === view);
+  });
+  render();
+}
+
+// ─── RENDER ───
+function render() {
+  const data = getData();
+  const awards = getAwards();
+  renderStats(data);
+  renderTiers(data);
+  renderAwards(awards, data);
+  renderBoard(data);
+}
+
+function renderStats(data) {
+  const total = data.length;
+  const totalCost = data.reduce((s, m) => s + getTotalCost(m), 0);
+  const totalTk = data.reduce((s, m) => s + getTotalTokenCount(m), 0);
+  const activeDays = data.reduce((s, m) => s + (m.activeDays || 0), 0);
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-tokens').textContent = '$' + totalCost.toFixed(2);
+  document.getElementById('stat-completed').textContent = formatTokenCount(totalTk);
+  document.getElementById('stat-avg-level').textContent = activeDays;
+}
+
+function renderTiers(data) {
+  const counts = { Diamond: 0, Gold: 0, Silver: 0, Bronze: 0 };
+  data.forEach(m => {
+    const t = getTier(m);
+    if (t) counts[t.name]++;
+  });
+  document.getElementById('tier-diamond-count').textContent = counts.Diamond;
+  document.getElementById('tier-gold-count').textContent = counts.Gold;
+  document.getElementById('tier-silver-count').textContent = counts.Silver;
+  document.getElementById('tier-bronze-count').textContent = counts.Bronze;
+}
+
+function renderAwards(awards, data) {
+  ['best-abler', 'best-skill', 'best-workflow', 'best-delegator', 'most-improved'].forEach(key => {
+    const el = document.getElementById('award-' + key);
+    const card = el.parentElement;
+    if (awards[key]) {
+      const member = data.find(m => m.id === awards[key]);
+      el.textContent = member ? member.name : '(삭제됨)';
+      el.style.display = 'inline-block';
+      card.classList.add('assigned');
+    } else {
+      el.style.display = 'none';
+      card.classList.remove('assigned');
+    }
+  });
+}
+
+function renderBoard(data) {
+  const container = document.getElementById('board-content');
+  if (data.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">👥</div><h3>아직 참가자가 없어</h3><p>Anthropic API 연동 후 자동으로 표시돼!</p></div>`;
+    return;
+  }
+
+  const tokenFns = { cumulative: getTotalCost, daily: getTodayCost, weekly: getWeekCost, monthly: getMonthCost };
+  const getTokens = tokenFns[currentView] || getTotalCost;
+  const viewLabels = { cumulative: '누적 비용', daily: '오늘 비용', weekly: '주간 비용', monthly: '월간 비용' };
+  const sorted = [...data].sort((a, b) => {
+    const diff = getTokens(b) - getTokens(a);
+    if (diff !== 0) return diff;
+    return (b.level || 0) - (a.level || 0) || a.name.localeCompare(b.name, 'ko');
+  });
+
+  let html = `<table class="board-table"><thead><tr>
+    <th>#</th><th>이름</th><th>등급</th>
+    <th>${viewLabels[currentView]}</th><th>토큰 사용량</th><th>활성일</th>
+  </tr></thead><tbody>`;
+
+  sorted.forEach((member, idx) => {
+    const rank = idx + 1;
+    const tokens = getTokens(member);
+    const tier = getTier(member);
+    const rankClass = rank <= 3 ? ' rank-' + rank : '';
+
+    const myRow = isMyEntry(member) ? ' my-row' : '';
+    html += `<tr class="${rankClass}${myRow}">`;
+    html += `<td>${rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank}</td>`;
+    html += `<td><a href="#" onclick="openProfileModal('${member.id}');return false;" style="color:var(--navy);text-decoration:none;font-weight:600;">${member.name}</a></td>`;
+
+    // Tier badge
+    if (tier) {
+      html += `<td><span class="tier-badge ${tier.cls}">${tier.icon} ${tier.name}</span></td>`;
+    } else {
+      html += `<td><span class="tier-badge badge-none">—</span></td>`;
+    }
+
+    // Cost
+    html += `<td><span class="token-val">$${tokens.toFixed(2)}</span></td>`;
+
+    // Token count
+    const totalCount = getTotalTokenCount(member);
+    html += `<td><span style="font-size:0.8rem;color:var(--gray-500);">${totalCount > 0 ? formatTokenCount(totalCount) : '-'}</span></td>`;
+
+    // Active days
+    html += '<td><span style="font-size:0.8rem;color:var(--gray-500);">' + (member.activeDays || 0) + '일</span></td>';
+
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+// ─── BADGE SYSTEM ───
+const BADGES = [
+  { id: 'first_blood', name: 'First Blood', icon: '🎯', desc: '첫 사용', check: (m) => getTotalCost(m) > 0 },
+  { id: 'power_user', name: 'Power User', icon: '⚡', desc: '하루 $100+', check: (m) => m.tokenLog && Object.values(m.tokenLog).some(v => v >= 100) },
+  { id: 'weekly_mvp', name: 'Weekly MVP', icon: '🏆', desc: '주간 비용 1위', check: (m, all) => { if (!all) return false; const sorted = [...all].sort((a,b) => getWeekCost(b) - getWeekCost(a)); return sorted[0] && sorted[0].id === m.id && getWeekCost(m) > 0; } },
+  { id: 'on_fire', name: 'On Fire', icon: '🔥', desc: '7일 연속 사용', check: (m) => getStreak(m) >= 7 },
+  { id: 'diamond_hands', name: 'Diamond Hands', icon: '💎', desc: '30일 연속 사용', check: (m) => getStreak(m) >= 30 },
+  { id: 'big_spender', name: 'Big Spender', icon: '💰', desc: '누적 $500+', check: (m) => getTotalCost(m) >= 500 },
+];
+
+function getStreak(member) {
+  if (!member.tokenLog) return 0;
+  const dates = Object.keys(member.tokenLog).sort().reverse();
+  if (dates.length === 0) return 0;
+  let streak = 1;
+  for (let i = 1; i < dates.length; i++) {
+    const prev = new Date(dates[i-1]);
+    const curr = new Date(dates[i]);
+    const diff = (prev - curr) / (24*60*60*1000);
+    if (diff === 1) streak++;
+    else break;
+  }
+  return streak;
+}
+
+// ─── PROFILE MODAL ───
+function openProfileModal(id) {
+  const data = getData();
+  const m = data.find(x => x.id === id);
+  if (!m) return;
+
+  const initial = (m.name || '?')[0].toUpperCase();
+  document.getElementById('profile-avatar').textContent = initial;
+  document.getElementById('profile-name').textContent = m.name;
+  document.getElementById('profile-email').textContent = m.email || '';
+
+  // Role + Tier badges
+  const tier = getTier(m);
+  let badgesHtml = '';
+  if (m.role) badgesHtml += `<span class="level-badge lvl-1">${m.role}</span>`;
+  if (tier) badgesHtml += `<span class="tier-badge ${tier.cls}">${tier.icon} ${tier.name}</span>`;
+  document.getElementById('profile-badges').innerHTML = badgesHtml;
+
+  // Stats
+  document.getElementById('profile-total-cost').textContent = '$' + getTotalCost(m).toFixed(2);
+  document.getElementById('profile-total-tokens').textContent = formatTokenCount(getTotalTokenCount(m));
+  document.getElementById('profile-streak').textContent = getStreak(m);
+
+  // Badges
+  let badgeListHtml = '';
+  BADGES.forEach(b => {
+    const earned = b.check(m, data);
+    badgeListHtml += `<div style="padding:10px;border-radius:10px;text-align:center;${earned ? 'background:var(--gray-50);' : 'background:var(--gray-100);opacity:0.4;'}">
+      <div style="font-size:1.3rem;">${b.icon}</div>
+      <div style="font-size:0.72rem;font-weight:600;color:${earned ? 'var(--navy)' : 'var(--gray-400)'};">${b.name}</div>
+      <div style="font-size:0.65rem;color:var(--gray-400);">${b.desc}</div>
+    </div>`;
+  });
+  document.getElementById('profile-badge-list').innerHTML = badgeListHtml;
+
+  document.getElementById('profile-modal').classList.add('active');
+}
+
+function closeProfileModal() {
+  document.getElementById('profile-modal').classList.remove('active');
+}
+
+// ─── AWARDS ───
+function assignAward(key) {
+  const data = getData();
+  if (data.length === 0) { alert('참가자를 먼저 추가해!'); return; }
+  currentAwardKey = key;
+  const labels = { 'best-abler': '🏆 Best ABLER', 'best-skill': '⚡ Best Skill', 'best-workflow': '🔗 Best Workflow', 'best-delegator': '🤖 Best Delegator', 'most-improved': '🚀 Most Improved' };
+  document.getElementById('award-modal-title').textContent = labels[key] + ' 수상자';
+  const select = document.getElementById('award-select');
+  select.innerHTML = '<option value="">선택...</option>';
+  data.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.name; select.appendChild(o); });
+  const awards = getAwards();
+  if (awards[key]) { select.value = awards[key]; document.getElementById('btn-clear-award').style.display = 'inline-block'; }
+  else { document.getElementById('btn-clear-award').style.display = 'none'; }
+  document.getElementById('award-modal').classList.add('active');
+}
+function closeAwardModal() { document.getElementById('award-modal').classList.remove('active'); currentAwardKey = null; }
+function saveAward() {
+  const val = document.getElementById('award-select').value;
+  if (!val) { closeAwardModal(); return; }
+  const awards = getAwards();
+  awards[currentAwardKey] = val;
+  saveAwards(awards);
+  closeAwardModal();
+  render();
+}
+function clearAward() {
+  const awards = getAwards();
+  delete awards[currentAwardKey];
+  saveAwards(awards);
+  closeAwardModal();
+  render();
+}
+
+// ─── EXPORT ───
+function exportData() {
+  const data = getData();
+  if (data.length === 0) { alert('데이터가 없어!'); return; }
+  const sorted = [...data].sort((a, b) => getTotalCost(b) - getTotalCost(a));
+  let csv = '순위,이름,등급,누적비용($),토큰수,활성일\n';
+  sorted.forEach((m, i) => {
+    const t = getTier(m);
+    csv += `${i+1},${m.name},${t ? t.name : '-'},$${getTotalCost(m).toFixed(2)},${formatTokenCount(getTotalTokenCount(m))},${m.activeDays || 0}\n`;
+  });
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'able-native-camp-leaderboard.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── CLOSE ON OVERLAY CLICK ───
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+});
+
+// ─── INIT ───
+fetchLeaderboard();
+</script>
+
+<!-- FOOTER -->
+<footer style="text-align: center; padding: 40px 24px; border-top: 1px solid var(--gray-200); font-size: 0.8rem; color: var(--gray-400);">
+  <p>🏕️ Made with ❤️ by <a href="https://ablelabsinc.com" target="_blank" style="color: var(--navy); text-decoration: none; font-weight: 700;">ABLE Labs</a></p>
+  <p style="margin-top: 8px;">🖥️ Operate → 🔌 Connect → ⚡ Automate → 🔗 Harness → 🤖 Delegate → 🌱 Sustain</p>
+</footer>
+
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>

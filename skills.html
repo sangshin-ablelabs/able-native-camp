@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>스킬 허브 — ABLE Native Camp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #1E3A5F; --navy-deep: #0F1F35; --sky: #4A90D9; --sky-light: #E8F1FB;
+      --green: #10B981; --green-light: #ECFDF5; --white: #FFFFFF;
+      --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF; --gray-500: #6B7280; --gray-600: #4B5563; --gray-800: #1F2937;
+      --radius: 16px; --radius-sm: 10px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif; color: var(--gray-800); line-height: 1.7; background: var(--gray-50); -webkit-font-smoothing: antialiased; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--gray-200); }
+    .nav-inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.1rem; font-weight: 800; color: var(--navy); text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--sky); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-right a { font-size: 0.85rem; font-weight: 500; color: var(--gray-600); text-decoration: none; }
+    .nav-right a:hover { color: var(--navy); }
+
+    .hero { padding: 100px 24px 48px; text-align: center; background: linear-gradient(170deg, var(--white) 0%, #EDE9FE 40%, #A78BFA 100%); }
+    .hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 900; color: var(--navy); letter-spacing: -1px; margin-bottom: 8px; }
+    .hero p { font-size: 1rem; color: var(--gray-600); max-width: 560px; margin: 0 auto; }
+
+    .stats-row { max-width: 1080px; margin: -28px auto 0; padding: 0 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; position: relative; z-index: 10; }
+    .stat-card { background: var(--white); border-radius: var(--radius); padding: 20px 24px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid var(--gray-200); }
+    .stat-card .num { font-size: 2rem; font-weight: 900; color: var(--navy); line-height: 1.2; }
+    .stat-card .label { font-size: 0.78rem; color: var(--gray-500); font-weight: 500; margin-top: 4px; }
+
+    .content { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* SEARCH + FILTER */
+    .search-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 200px; padding: 12px 18px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); font-size: 0.9rem; font-family: inherit; outline: none; background: var(--white); }
+    .search-input:focus { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(74,144,217,0.1); }
+    .filter-group { display: flex; border-radius: 8px; overflow: hidden; border: 1px solid var(--gray-200); }
+    .filter-btn { padding: 10px 16px; font-size: 0.8rem; font-weight: 600; border: none; cursor: pointer; font-family: inherit; transition: all 0.2s; background: var(--white); color: var(--gray-500); }
+    .filter-btn.active { background: var(--navy); color: white; }
+    .filter-btn:not(.active):hover { background: var(--gray-100); }
+
+    /* SKILL CARDS */
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+    .skill-card { background: var(--white); border-radius: var(--radius); padding: 24px; border: 1px solid var(--gray-200); transition: all 0.2s; }
+    .skill-card:hover { border-color: var(--sky); box-shadow: 0 4px 20px rgba(74,144,217,0.1); transform: translateY(-2px); }
+    .skill-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .skill-card-header h3 { font-size: 1rem; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 8px; }
+    .skill-card-header .cmd { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.78rem; color: var(--sky); background: var(--sky-light); padding: 2px 8px; border-radius: 6px; }
+    .skill-card p { font-size: 0.85rem; color: var(--gray-600); margin-bottom: 12px; line-height: 1.6; }
+    .skill-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .skill-meta .author { font-size: 0.75rem; color: var(--gray-500); font-weight: 600; }
+    .skill-meta .tag { padding: 2px 8px; border-radius: 6px; font-size: 0.68rem; font-weight: 600; background: var(--gray-100); color: var(--gray-500); }
+    .skill-meta .tag.popular { background: #FEF3C7; color: #92400E; }
+    .skill-meta .tag.new { background: #D1FAE5; color: #065F46; }
+    .skill-meta .likes { font-size: 0.75rem; color: var(--gray-400); cursor: pointer; }
+    .skill-meta .likes:hover { color: #EF4444; }
+
+    .btn { padding: 8px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .btn-primary { background: var(--sky); color: white; }
+    .btn-primary:hover { background: var(--navy); }
+    .btn-outline { background: var(--white); color: var(--gray-600); border: 1px solid var(--gray-200); }
+    .btn-outline:hover { border-color: var(--sky); color: var(--sky); }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: var(--white); border-radius: var(--radius); padding: 32px; width: 90%; max-width: 520px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
+    .modal h3 { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+    .modal label { font-size: 0.82rem; font-weight: 600; color: var(--gray-600); display: block; margin-bottom: 4px; }
+    .modal input, .modal select, .modal textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--gray-200); border-radius: 8px; font-size: 0.9rem; font-family: inherit; margin-bottom: 16px; outline: none; }
+    .modal textarea { min-height: 80px; resize: vertical; }
+    .modal input:focus, .modal select:focus, .modal textarea:focus { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(74,144,217,0.1); }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    .empty-state { text-align: center; padding: 60px 24px; background: var(--white); border-radius: var(--radius); border: 2px dashed var(--gray-200); }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 1.1rem; color: var(--gray-500); margin-bottom: 8px; }
+    .empty-state p { font-size: 0.88rem; color: var(--gray-400); margin-bottom: 20px; }
+
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .skills-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .search-bar { flex-direction: column; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+  <link rel="stylesheet" href="auth-styles.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span>ABLE</span> Native Camp</a>
+    <div class="nav-right">
+      <a href="index.html">커리큘럼</a>
+      <a href="skills.html" style="color: var(--navy); font-weight: 700;">스킬 허브</a>
+      <a href="leaderboard.html">리더보드</a>
+      <a href="reference.html">레퍼런스</a>
+    </div>
+    <div id="auth-ui"></div>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>⚡ 스킬 허브</h1>
+  <p>에이블러들이 만든 스킬을 공유하고 검색하는 곳.<br>좋은 스킬은 모두의 생산성을 올려!</p>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="num" id="stat-total">0</div>
+    <div class="label">등록된 스킬</div>
+  </div>
+  <div class="stat-card">
+    <div class="num" id="stat-authors">0</div>
+    <div class="label">기여자</div>
+  </div>
+  <div class="stat-card">
+    <div class="num" id="stat-popular">0</div>
+    <div class="label">인기 스킬</div>
+  </div>
+  <div class="stat-card">
+    <div class="num" id="stat-new">0</div>
+    <div class="label">이번 주 신규</div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="search-bar">
+    <input type="text" class="search-input" id="search-input" placeholder="스킬 이름, 설명, 만든 사람으로 검색..." oninput="render()" />
+    <div class="filter-group">
+      <button class="filter-btn active" onclick="setFilter('all')">전체</button>
+      <button class="filter-btn" onclick="setFilter('popular')">인기</button>
+      <button class="filter-btn" onclick="setFilter('new')">신규</button>
+    </div>
+    <button class="btn btn-primary" onclick="openAddModal()">+ 스킬 등록</button>
+  </div>
+
+  <div id="skills-content"></div>
+</div>
+
+<!-- ADD SKILL MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <h3 id="modal-title">스킬 등록</h3>
+    <label>스킬 이름</label>
+    <input type="text" id="input-name" placeholder="예: weekly-report" />
+    <label>만든 사람</label>
+    <input type="text" id="input-author" placeholder="이름" />
+    <label>설명</label>
+    <textarea id="input-desc" placeholder="이 스킬이 뭘 하는지 한두 줄로. 예: 매주 금요일 주간 업무 보고서를 자동 생성한다." style="min-height: 60px;"></textarea>
+    <label>SKILL.md <span style="font-weight:400;color:var(--gray-400);">(파일 첨부 또는 직접 입력)</span></label>
+    <div id="skillmd-file-area">
+      <input type="file" id="input-skillmd-file" accept=".md,.txt" onchange="handleSkillFile(this)" style="font-size:0.8rem;" />
+      <div id="skillmd-file-info" style="display:none;margin-top:6px;padding:8px 12px;background:var(--green-light);border-radius:8px;font-size:0.8rem;">
+        <span id="skillmd-file-name" style="font-weight:600;color:var(--green);"></span>
+        <button onclick="clearSkillFile()" style="margin-left:8px;border:none;background:none;color:var(--gray-400);cursor:pointer;font-size:0.8rem;">✕ 제거</button>
+      </div>
+    </div>
+    <div id="skillmd-paste-area">
+      <textarea id="input-skillmd" placeholder=".claude/skills/[이름]/SKILL.md 내용을 붙여넣기" style="min-height: 120px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeAddModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveSkill()">등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <h3 id="detail-title"></h3>
+    <div id="detail-body"></div>
+    <div class="modal-actions" style="margin-top: 16px;">
+      <button class="btn btn-outline" onclick="closeDetailModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SKILLS_KEY = 'ableCampSkills';
+let currentFilter = 'all';
+let editingId = null;
+
+function getData() { try { return JSON.parse(localStorage.getItem(SKILLS_KEY)) || []; } catch { return []; } }
+function saveData(d) { localStorage.setItem(SKILLS_KEY, JSON.stringify(d)); }
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+}
+
+function render() {
+  let data = getData();
+  const query = document.getElementById('search-input').value.toLowerCase();
+
+  // Stats
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekStr = weekAgo.toISOString().split('T')[0];
+  document.getElementById('stat-total').textContent = data.length;
+  document.getElementById('stat-authors').textContent = new Set(data.map(s => s.author)).size;
+  document.getElementById('stat-popular').textContent = data.filter(s => (s.likes || 0) >= 3).length;
+  document.getElementById('stat-new').textContent = data.filter(s => s.date >= weekStr).length;
+
+  // Filter
+  if (query) {
+    data = data.filter(s =>
+      s.name.toLowerCase().includes(query) ||
+      s.desc.toLowerCase().includes(query) ||
+      s.author.toLowerCase().includes(query) ||
+      (s.cmd || '').toLowerCase().includes(query)
+    );
+  }
+  if (currentFilter === 'popular') data = data.filter(s => (s.likes || 0) >= 1);
+  if (currentFilter === 'new') data = data.filter(s => s.date >= weekStr);
+
+  // Sort: popular first, then new
+  data.sort((a, b) => (b.likes || 0) - (a.likes || 0) || b.date.localeCompare(a.date));
+
+  const container = document.getElementById('skills-content');
+  if (data.length === 0 && !query) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">⚡</div><h3>아직 등록된 스킬이 없어</h3><p>Day 3에서 만든 스킬을 여기에 등록하자!</p><button class="btn btn-primary" onclick="openAddModal()">+ 첫 스킬 등록</button></div>`;
+    return;
+  }
+  if (data.length === 0 && query) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><h3>"${query}"에 맞는 스킬이 없어</h3><p>다른 키워드로 검색하거나 새 스킬을 등록해봐!</p></div>`;
+    return;
+  }
+
+  let html = '<div class="skills-grid">';
+  data.forEach(skill => {
+    const isNew = skill.date >= weekStr;
+    const isPopular = (skill.likes || 0) >= 3;
+    html += `
+    <div class="skill-card" onclick="showDetail('${skill.id}')">
+      <div class="skill-card-header">
+        <h3>${skill.name}</h3>
+      </div>
+      <p>${skill.desc}</p>
+      <div class="skill-meta">
+        <span class="author">👤 ${skill.author}</span>
+        ${isNew ? '<span class="tag new">🆕 NEW</span>' : ''}
+        ${isPopular ? '<span class="tag popular">🔥 인기</span>' : ''}
+        ${skill.skillmd ? '<span class="tag">📄 SKILL.md</span>' : ''}
+        <span class="likes" onclick="event.stopPropagation(); toggleLike('${skill.id}')">❤️ ${skill.likes || 0}</span>
+        <span style="margin-left:auto;font-size:0.7rem;color:var(--gray-400);">
+          ✏️ <span onclick="event.stopPropagation(); editSkill('${skill.id}')" style="cursor:pointer;">수정</span>
+          🗑️ <span onclick="event.stopPropagation(); deleteSkill('${skill.id}')" style="cursor:pointer;">삭제</span>
+        </span>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function toggleLike(id) {
+  const data = getData();
+  const s = data.find(x => x.id === id);
+  if (s) { s.likes = (s.likes || 0) + 1; }
+  saveData(data);
+  render();
+}
+
+function showDetail(id) {
+  const data = getData();
+  const s = data.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('detail-title').textContent = s.name;
+  document.getElementById('detail-body').innerHTML = `
+    <div style="margin-bottom:12px;">
+      <span style="font-size:0.82rem;color:var(--gray-500);">by ${s.author}</span>
+      <span style="margin-left:12px;font-size:0.75rem;color:var(--gray-400);">${s.date}</span>
+      <span style="margin-left:12px;font-size:0.82rem;color:var(--gray-400);">❤️ ${s.likes || 0}</span>
+    </div>
+    <div style="margin-bottom:16px;">
+      <p style="font-size:0.9rem;color:var(--gray-600);line-height:1.7;">${s.desc}</p>
+    </div>
+    ${s.skillmd ? `
+    <div style="background:var(--navy-deep);border-radius:var(--radius-sm);padding:16px 20px;font-family:'SF Mono','Fira Code',monospace;font-size:0.82rem;color:var(--green);line-height:1.8;white-space:pre-wrap;overflow-x:auto;">${s.skillmd}</div>
+    ` : ''}
+  `;
+  document.getElementById('detail-modal').classList.add('active');
+}
+function closeDetailModal() { document.getElementById('detail-modal').classList.remove('active'); }
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = '스킬 등록';
+  document.getElementById('input-name').value = '';
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  const authorInput = document.getElementById('input-author');
+  authorInput.value = user ? user.name : '';
+  if (user) authorInput.readOnly = true; else authorInput.readOnly = false;
+  document.getElementById('input-desc').value = '';
+  document.getElementById('input-skillmd').value = '';
+  clearSkillFile(); // Reset file upload state
+  document.getElementById('add-modal').classList.add('active');
+  document.getElementById('input-name').focus();
+}
+function editSkill(id) {
+  const data = getData();
+  const s = data.find(x => x.id === id);
+  if (!s) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = '스킬 수정';
+  document.getElementById('input-name').value = s.name;
+  document.getElementById('input-author').value = s.author;
+  document.getElementById('input-desc').value = s.desc;
+  document.getElementById('input-skillmd').value = s.skillmd || '';
+  clearSkillFile(); // Reset file upload, show paste area
+  document.getElementById('add-modal').classList.add('active');
+}
+function closeAddModal() { document.getElementById('add-modal').classList.remove('active'); editingId = null; }
+
+let skillFileContent = null;
+
+function handleSkillFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  // Validate extension
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['md', 'txt'].includes(ext)) {
+    alert('.md 또는 .txt 파일만 업로드할 수 있어!');
+    input.value = '';
+    return;
+  }
+
+  // Validate size (500KB)
+  if (file.size > 512000) {
+    alert('파일이 너무 커! (최대 500KB)');
+    input.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = e.target.result;
+
+    // Check for binary/invalid content
+    if (/[\x00-\x08\x0E-\x1F]/.test(content)) {
+      alert('유효한 텍스트 파일이 아닌 것 같아!');
+      input.value = '';
+      return;
+    }
+
+    // Check minimum length
+    if (content.trim().length < 10) {
+      alert('파일 내용이 너무 짧아! SKILL.md가 맞는지 확인해봐.');
+      input.value = '';
+      return;
+    }
+
+    skillFileContent = content;
+    document.getElementById('skillmd-file-name').textContent = '📄 ' + file.name;
+    document.getElementById('skillmd-file-info').style.display = 'block';
+    document.getElementById('skillmd-paste-area').style.display = 'none';
+  };
+  reader.readAsText(file);
+}
+
+function clearSkillFile() {
+  skillFileContent = null;
+  document.getElementById('input-skillmd-file').value = '';
+  document.getElementById('skillmd-file-info').style.display = 'none';
+  document.getElementById('skillmd-paste-area').style.display = 'block';
+}
+
+function saveSkill() {
+  const name = document.getElementById('input-name').value.trim();
+  const author = document.getElementById('input-author').value.trim();
+  const desc = document.getElementById('input-desc').value.trim();
+  const skillmd = skillFileContent || document.getElementById('input-skillmd').value.trim();
+  if (!name || !author) { alert('이름과 만든 사람은 필수야!'); return; }
+
+  const data = getData();
+  if (editingId) {
+    const s = data.find(x => x.id === editingId);
+    if (s) { Object.assign(s, { name, author, desc, skillmd }); }
+  } else {
+    data.push({ id: 'skill-' + Date.now(), name, author, desc, skillmd, likes: 0, date: new Date().toISOString().split('T')[0] });
+  }
+  saveData(data);
+  closeAddModal();
+  render();
+}
+function deleteSkill(id) {
+  if (!confirm('정말 삭제할까?')) return;
+  saveData(getData().filter(x => x.id !== id));
+  render();
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+});
+
+render();
+</script>
+
+<footer style="text-align: center; padding: 40px 24px; border-top: 1px solid var(--gray-200); font-size: 0.8rem; color: var(--gray-400);">
+  <p>🏕️ Made with ❤️ by <a href="https://ablelabsinc.com" target="_blank" style="color: var(--navy); text-decoration: none; font-weight: 700;">ABLE Labs</a></p>
+</footer>
+
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 4: Harness — ABLE Native Camp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #1E3A5F; --navy-deep: #0F1F35; --sky: #4A90D9; --sky-light: #E8F1FB;
+      --green: #10B981; --green-light: #ECFDF5; --white: #FFFFFF;
+      --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF; --gray-500: #6B7280; --gray-600: #4B5563; --gray-800: #1F2937;
+      --radius: 16px; --radius-sm: 10px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif; color: var(--gray-800); line-height: 1.7; background: var(--white); -webkit-font-smoothing: antialiased; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--gray-200); }
+    .nav-inner { max-width: 800px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.1rem; font-weight: 800; color: var(--navy); text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--sky); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-right a { font-size: 0.85rem; font-weight: 500; color: var(--gray-600); text-decoration: none; }
+    .nav-right a:hover { color: var(--navy); }
+    .day-hero { padding: 100px 24px 48px; text-align: center; background: linear-gradient(170deg, var(--white) 0%, #EDE9FE 100%); }
+    .day-hero .badge { display: inline-block; padding: 4px 14px; border-radius: 20px; background: #EDE9FE; color: #5B21B6; font-size: 0.75rem; font-weight: 600; margin-bottom: 16px; }
+    .day-hero h1 { font-size: 2rem; font-weight: 900; color: var(--navy); margin-bottom: 8px; letter-spacing: -0.5px; }
+    .day-hero p { font-size: 1rem; color: var(--gray-600); max-width: 520px; margin: 0 auto; }
+    .progress-bar { max-width: 800px; margin: 0 auto; padding: 24px 24px 0; display: flex; gap: 8px; }
+    .progress-step { flex: 1; height: 6px; border-radius: 3px; background: var(--gray-200); transition: background 0.3s; }
+    .progress-step.done { background: var(--green); }
+    .progress-step.active { background: var(--sky); }
+    .progress-labels { max-width: 800px; margin: 0 auto; padding: 8px 24px 24px; display: flex; gap: 8px; }
+    .progress-labels span { flex: 1; font-size: 0.65rem; font-weight: 500; color: var(--gray-400); text-align: center; }
+    .progress-labels span.active { color: var(--sky); font-weight: 700; }
+    .progress-labels span.done { color: var(--green); }
+    .content { max-width: 800px; margin: 0 auto; padding: 0 24px 80px; }
+    .block { margin-bottom: 32px; border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; background: var(--white); }
+    .block.locked { opacity: 0.5; pointer-events: none; }
+    .block-header { padding: 20px 24px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s; }
+    .block-header:hover { background: var(--gray-50); }
+    .block-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 10px; }
+    .block-header .block-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: 700; background: var(--sky-light); color: var(--sky); }
+    .block-header .block-num.done { background: var(--green-light); color: var(--green); }
+    .block-header .chevron { font-size: 1.2rem; color: var(--gray-400); transition: transform 0.2s; }
+    .block.open .block-header .chevron { transform: rotate(180deg); }
+    .block-body { display: none; padding: 0 24px 24px; }
+    .block.open .block-body { display: block; }
+    .section-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--gray-100); }
+    .section-tab { padding: 10px 20px; font-size: 0.85rem; font-weight: 600; color: var(--gray-400); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; background: none; border-top: 0; border-left: 0; border-right: 0; font-family: inherit; }
+    .section-tab:hover { color: var(--gray-600); }
+    .section-tab.active { color: var(--sky); border-bottom-color: var(--sky); }
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+    .explain h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin: 28px 0 10px; padding-top: 20px; border-top: 1px solid var(--gray-200); }
+    .explain h3:first-child, .explain p + h3:first-of-type { border-top: none; padding-top: 0; margin-top: 16px; }
+    .explain p { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 12px; line-height: 1.7; }
+    .explain ul { padding-left: 20px; margin-bottom: 12px; }
+    .explain li { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 4px; }
+    .explain .highlight { background: var(--sky-light); border-radius: var(--radius-sm); padding: 16px 20px; margin: 16px 0; border-left: 4px solid var(--sky); }
+    .explain .highlight p { margin: 0; font-weight: 500; color: var(--navy); }
+    .explain .warning { background: #FEF3C7; border-radius: var(--radius-sm); padding: 16px 20px; margin: 16px 0; border-left: 4px solid #F59E0B; }
+    .explain .warning p { margin: 0; font-weight: 500; color: #92400E; }
+    .explain code { background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; }
+    .explain .code-block { background: var(--navy-deep); border-radius: var(--radius-sm); padding: 16px 20px; margin: 12px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; color: var(--green); line-height: 1.8; overflow-x: auto; position: relative; }
+    .explain table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    .explain th { text-align: left; padding: 8px 12px; font-size: 0.8rem; font-weight: 600; color: var(--gray-500); border-bottom: 2px solid var(--gray-200); background: var(--gray-50); }
+    .explain td { padding: 10px 12px; font-size: 0.85rem; border-bottom: 1px solid var(--gray-100); }
+    .execute .step-list { list-style: none; padding: 0; }
+    .execute .step-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--gray-100); align-items: flex-start; }
+    .execute .step-item:last-child { border-bottom: none; }
+    .execute .step-num { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--sky); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; margin-top: 2px; }
+    .execute .step-text { font-size: 0.9rem; color: var(--gray-600); line-height: 1.6; }
+    .execute .step-text code { background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; }
+    .execute .tip { background: var(--green-light); border-radius: var(--radius-sm); padding: 14px 18px; margin-top: 16px; border-left: 4px solid var(--green); }
+    .execute .tip p { font-size: 0.85rem; color: #065F46; margin: 0; }
+    .quiz-question { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+    .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-option { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: var(--radius-sm); border: 2px solid var(--gray-200); cursor: pointer; font-size: 0.9rem; color: var(--gray-600); transition: all 0.2s; background: var(--white); }
+    .quiz-option:hover { border-color: var(--sky); background: var(--sky-light); }
+    .quiz-option.selected { border-color: var(--sky); background: var(--sky-light); color: var(--navy); font-weight: 600; }
+    .quiz-option.correct { border-color: var(--green); background: var(--green-light); color: #065F46; }
+    .quiz-option.wrong { border-color: #EF4444; background: #FEF2F2; color: #991B1B; }
+    .quiz-option .letter { width: 28px; height: 28px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+    .quiz-option.correct .letter { background: var(--green); color: white; }
+    .quiz-option.wrong .letter { background: #EF4444; color: white; }
+    .quiz-answer { display: none; margin-top: 16px; padding: 16px 20px; background: var(--gray-50); border-radius: var(--radius-sm); font-size: 0.88rem; color: var(--gray-600); line-height: 1.6; }
+    .quiz-answer.show { display: block; }
+    .complete-btn { display: block; width: 100%; padding: 14px; margin-top: 20px; background: var(--sky); color: white; border: none; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .complete-btn:hover { background: var(--navy); }
+    .complete-btn.completed { background: var(--green); cursor: default; }
+    .footer-nav { max-width: 800px; margin: 0 auto; padding: 32px 24px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--gray-200); }
+    .footer-nav a { font-size: 0.9rem; font-weight: 600; color: var(--sky); text-decoration: none; padding: 10px 20px; border-radius: var(--radius-sm); transition: background 0.2s; }
+    .footer-nav a:hover { background: var(--sky-light); }
+    @media (max-width: 640px) { .section-tab { padding: 8px 12px; font-size: 0.78rem; } .day-hero h1 { font-size: 1.6rem; } }
+  </style>
+  <link rel="stylesheet" href="auth-styles.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span>ABLE</span> Native Camp</a>
+    <div class="nav-right">
+      <a href="day3.html">&larr; Day 3</a>
+      <a href="index.html">홈</a>
+      <a href="skills.html">스킬 허브</a>
+      <a href="leaderboard.html">리더보드</a>
+      <a href="reference.html">레퍼런스</a>
+    </div>
+    <div id="auth-ui"></div>
+  </div>
+</nav>
+
+<div class="day-hero">
+  <div class="badge">🔗 Level 4: Workflows</div>
+  <h1>Day 4 — 하네스</h1>
+  <p>"스킬을 연결해서 워크플로우를 만들어."<br>단일 스킬을 엮어서 여러 단계를 자동으로 실행하는 날이야.</p>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-step active" id="prog-0"></div>
+  <div class="progress-step" id="prog-1"></div>
+  <div class="progress-step" id="prog-2"></div>
+  <div class="progress-step" id="prog-3"></div>
+  <div class="progress-step" id="prog-4"></div>
+</div>
+<div class="progress-labels">
+  <span class="active" id="lbl-0">하네스란</span>
+  <span id="lbl-1">브리핑 예시</span>
+  <span id="lbl-2">설계</span>
+  <span id="lbl-3">실전 구축</span>
+  <span id="lbl-4">마무리</span>
+</div>
+
+<div class="content">
+
+  <!-- BLOCK 0: 하네스란 -->
+  <div class="block open" id="block-0">
+    <div class="block-header" onclick="toggleBlock(0)">
+      <h2><span class="block-num" id="num-0">1</span> 🔗 하네스란 — 스킬을 연결하는 기술</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(0, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(0, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(0, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-0-explain">
+        <p><strong>Harness(하네스)</strong>는 자동차의 와이어링 하네스처럼 스킬을 연결하는 거야. 자동차에서 수십 개의 전선을 하나로 묶어서 전기 신호를 전달하듯, AI 스킬도 연결해서 결과물을 전달할 수 있어.</p>
+        <p>핵심은 이거야: <strong>Skill A의 결과물이 Skill B의 입력이 되는 것.</strong></p>
+        <p>단일 스킬은 "한 가지"만 해. 하네스는 "여러 가지를 순서대로" 해.</p>
+        <h3>단일 스킬 vs 하네스</h3>
+        <table>
+          <thead><tr><th>단일 스킬</th><th>하네스 (워크플로우)</th></tr></thead>
+          <tbody>
+            <tr><td><code>/주간보고</code> → 보고서 1개 생성</td><td>캘린더→메일→Teams→요약→노션 전체 자동</td></tr>
+            <tr><td>한 번에 한 가지 작업</td><td>여러 단계를 순서대로 자동 실행</td></tr>
+            <tr><td>결과물이 거기서 끝</td><td>결과물이 다음 스킬의 입력이 됨</td></tr>
+            <tr><td>레고 블록 1개</td><td>레고로 만든 완성품</td></tr>
+          </tbody>
+        </table>
+        <div class="highlight">
+          <p>💡 스킬이 레고 블록이라면, 하네스는 레고로 만든 완성품이야.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-0-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">지금까지 만든 스킬 목록을 확인해봐. <code>ls ~/.claude/commands/</code> 또는 프로젝트의 <code>.claude/commands/</code> 확인</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">"이 스킬들을 순서대로 연결하면?" 생각해봐. 어떤 스킬의 결과물이 다른 스킬의 입력이 될 수 있을까?</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">연결 가능한 조합을 찾아봐. 예: 메일요약 → 보고서작성, 일정확인 → 미팅준비</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="section-content quiz" id="block-0-quiz">
+        <p class="quiz-question">하네스가 단일 스킬과 다른 점은?</p>
+        <div class="quiz-options" id="quiz-0">
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'A')"><span class="letter">A</span> 더 빠르다</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'B')"><span class="letter">B</span> 스킬 A의 결과물이 스킬 B의 입력이 된다</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'C')"><span class="letter">C</span> MCP가 필요없다</div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'D')"><span class="letter">D</span> 코딩이 필요하다</div>
+        </div>
+        <div class="quiz-answer" id="answer-0">✅ <strong>정답: B.</strong> 하네스의 핵심은 스킬 간 연결이야. Skill A의 결과물이 Skill B의 입력이 되면서, 여러 단계가 자동으로 이어져. 단순히 빠른 게 아니라 "연결"이 핵심이야.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-0" onclick="completeBlock(0)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 1: 워크플로우 예시 -->
+  <div class="block locked" id="block-1">
+    <div class="block-header" onclick="toggleBlock(1)">
+      <h2><span class="block-num" id="num-1">2</span> 📋 워크플로우 예시 — 데일리 브리핑</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(1, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(1, 'execute')">🏃 실습</button>
+      </div>
+
+      <div class="section-content active explain" id="block-1-explain">
+        <p>실제로 쓸 수 있는 워크플로우 예시를 보여줄게. <strong>데일리 브리핑</strong> — 한마디면 5단계가 자동으로 돌아가.</p>
+        <h3>5단계 연결 흐름</h3>
+        <div class="code-block">
+          Step 1: 📅 캘린더 확인 (오늘 일정)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ 일정 목록<br>
+          Step 2: 📬 메일 확인 (읽지 않은 + 중요)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ 메일 요약<br>
+          Step 3: 💬 Teams 확인 (멘션 + 미회신)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ 메시지 정리<br>
+          Step 4: 📊 종합 요약 (우선순위 정리)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ 요약 결과<br>
+          Step 5: 📓 노션 투두 생성 (체크리스트)
+        </div>
+        <h3>시간 비교</h3>
+        <table>
+          <thead><tr><th>방법</th><th>소요 시간</th></tr></thead>
+          <tbody>
+            <tr><td>수작업 (각각 열어서 확인)</td><td>약 20분</td></tr>
+            <tr><td>하네스 (한마디)</td><td>약 3분</td></tr>
+          </tbody>
+        </table>
+        <div class="highlight">
+          <p>💡 한 마디만 하면 5단계가 자동 실행돼. 이게 하네스의 힘이야.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-1-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">Claude에게 <strong>"오늘 업무 브리핑해줘. 캘린더→메일→Teams→종합요약→투두리스트 순서로"</strong> 라고 시켜봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">각 단계가 연결되는 과정을 관찰해. Step 1의 결과가 Step 4의 종합 요약에 포함되는지 확인해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">결과물이 어떻게 이어지는지 확인해. 캘린더 일정이 투두 체크리스트에 반영됐는지 봐</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 처음엔 각 단계별로 결과를 보여달라고 해. "각 단계 결과를 따로 보여주고, 마지막에 종합해줘"</p>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-1" onclick="completeBlock(1)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 2: 내 워크플로우 설계 -->
+  <div class="block locked" id="block-2">
+    <div class="block-header" onclick="toggleBlock(2)">
+      <h2><span class="block-num" id="num-2">3</span> 🗺️ 내 워크플로우 설계 — 연결점 찾기</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(2, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(2, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(2, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-2-explain">
+        <p>워크플로우를 설계하려면 3단계를 거쳐야 해:</p>
+        <h3>Step 1. 반복 패턴 찾기</h3>
+        <p>매주, 매월 같은 순서로 하는 일이 뭐야? 그게 워크플로우 후보야.</p>
+        <h3>Step 2. 단계 분리</h3>
+        <p>그 일을 개별 작업으로 쪼개. "주간보고 쓴다" → 메일 확인 + 일정 정리 + 팀즈 확인 + 보고서 작성 + 저장</p>
+        <h3>Step 3. 연결점 찾기</h3>
+        <p>어떤 결과물이 다음 단계의 입력이 되는지 파악해. 이게 하네스의 핵심이야.</p>
+        <h3>워크플로우 예시</h3>
+        <table>
+          <thead><tr><th>워크플로우</th><th>단계 흐름</th></tr></thead>
+          <tbody>
+            <tr><td>주간보고</td><td>메일요약 → 일정정리 → 팀즈확인 → 보고서작성 → 노션저장</td></tr>
+            <tr><td>생산일지</td><td>설비데이터 → 생산량집계 → 불량분석 → 일지작성</td></tr>
+            <tr><td>고객문의</td><td>문의접수 → CRM확인 → 답변초안 → 팀리뷰 → 발송</td></tr>
+          </tbody>
+        </table>
+        <div class="warning">
+          <p>⚠️ 처음부터 5단계 이상 만들지 마. 2-3단계부터 시작해서 점점 늘려가.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-2-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">내 반복 업무 중 <strong>"여러 단계를 순서대로"</strong> 하는 것 1개를 선택해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">그 업무를 단계별로 분리해봐. "이 일을 하려면 먼저 뭘 하고, 다음에 뭘 하지?"</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">각 단계의 <strong>입력(뭐가 필요해)</strong>과 <strong>출력(뭐가 나와)</strong>을 정리해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text">Claude에게 <strong>"이 워크플로우를 스킬로 만들어줘"</strong> 라고 말해봐</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="section-content quiz" id="block-2-quiz">
+        <p class="quiz-question">워크플로우 설계 시 가장 먼저 해야 할 것은?</p>
+        <div class="quiz-options" id="quiz-2">
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'A')"><span class="letter">A</span> 코드 작성</div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'B')"><span class="letter">B</span> 반복 패턴과 연결점 찾기</div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'C')"><span class="letter">C</span> MCP 추가 설치</div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'D')"><span class="letter">D</span> 새 프로젝트 생성</div>
+        </div>
+        <div class="quiz-answer" id="answer-2">✅ <strong>정답: B.</strong> 코드나 도구보다 먼저 해야 할 건 "어떤 일이 반복되는지" 패턴을 찾고, "어떤 결과물이 다음 단계로 이어지는지" 연결점을 파악하는 거야. 설계가 먼저, 구현은 나중이야.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-2" onclick="completeBlock(2)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 3: 워크플로우 만들기 -->
+  <div class="block locked" id="block-3">
+    <div class="block-header" onclick="toggleBlock(3)">
+      <h2><span class="block-num" id="num-3">4</span> 🛠️ 워크플로우 만들기 — 실전 구축</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(3, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(3, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(3, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-3-explain">
+        <p>이제 실제로 워크플로우 스킬을 만들어볼 거야. 핵심 원칙 3가지:</p>
+        <ul>
+          <li><strong>2-3단계로 시작해.</strong> 완벽하게 5단계부터 시작하면 디버깅이 어려워.</li>
+          <li><strong>각 단계의 입력/출력을 명확히 해.</strong> "뭘 받아서 뭘 내보내는지"가 핵심이야.</li>
+          <li><strong>필요하면 중간에 사람 확인 단계를 넣어.</strong> 안전장치야.</li>
+        </ul>
+        <h3>워크플로우 SKILL.md 예시</h3>
+        <div class="code-block">
+          # /daily-briefing<br><br>
+          ## 목적<br>
+          매일 아침 업무 현황을 종합 브리핑한다.<br><br>
+          ## 워크플로우<br><br>
+          ### Step 1: 캘린더 확인<br>
+          - 입력: 오늘 날짜<br>
+          - 실행: 다우오피스 캘린더에서 오늘 일정 조회<br>
+          - 출력: 일정 목록 → 다음 단계로 전달<br><br>
+          ### Step 2: 메일 확인<br>
+          - 입력: Step 1의 일정 목록 (관련 메일 필터용)<br>
+          - 실행: 읽지 않은 메일 + 중요 메일 조회<br>
+          - 출력: 메일 요약 → 다음 단계로 전달<br><br>
+          ### Step 3: 종합 요약<br>
+          - 입력: Step 1 일정 + Step 2 메일<br>
+          - 실행: 우선순위 정리, 투두 리스트 생성<br>
+          - 출력: 오늘의 브리핑 결과
+        </div>
+        <p>각 단계 마지막에 <strong>"→ 다음 단계로 전달"</strong> 형식을 써서 흐름을 명확히 해.</p>
+        <div class="highlight">
+          <p>💡 완벽하지 않아도 돼. 돌아가게 만들고, 쓰면서 개선하는 거야.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-3-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">Block 2에서 설계한 워크플로우를 SKILL.md 형식으로 작성해봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">Claude에게 <strong>"이 워크플로우 스킬 만들어줘"</strong> 라고 시켜봐</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">만들어진 스킬을 실행해봐. <code>/워크플로우이름</code></div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text">안 되는 부분이 있으면 수정해. "Step 2에서 결과가 안 넘어가" 같은 피드백을 줘</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">5</div>
+            <div class="step-text">2-3회 반복해서 다듬어. 처음부터 완벽할 필요 없어</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 "이 스킬 실행하고, 각 단계별 결과를 보여줘" 라고 하면 디버깅이 쉬워져.</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-3-quiz">
+        <p class="quiz-question">워크플로우 스킬 작성 시 핵심은?</p>
+        <div class="quiz-options" id="quiz-3">
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'A')"><span class="letter">A</span> 최대한 많은 단계</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'B')"><span class="letter">B</span> 각 단계의 입력/출력을 명확히</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'C')"><span class="letter">C</span> 영어로 작성</div>
+          <div class="quiz-option" onclick="selectAnswer(3, this, 'D')"><span class="letter">D</span> MCP 10개 이상 연결</div>
+        </div>
+        <div class="quiz-answer" id="answer-3">✅ <strong>정답: B.</strong> 단계가 많거나 MCP가 많다고 좋은 게 아니야. 각 단계에서 "뭘 받고 뭘 내보내는지"가 명확해야 스킬이 제대로 연결돼. 입력/출력이 불분명하면 연결이 끊겨.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-3" onclick="completeBlock(3)">✅ 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 4: 마무리 -->
+  <div class="block locked" id="block-4">
+    <div class="block-header" onclick="toggleBlock(4)">
+      <h2><span class="block-num" id="num-4">5</span> Day 4 마무리 🎉</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-content active explain" id="block-4-explain">
+        <h3>오늘 배운 것</h3>
+        <table>
+          <thead><tr><th>#</th><th>배운 것</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>하네스 = 스킬을 연결하는 기술 (결과물 → 입력)</td></tr>
+            <tr><td>2</td><td>워크플로우 = 여러 단계를 자동 연결</td></tr>
+            <tr><td>3</td><td>설계: 패턴 찾기 → 단계 분리 → 연결점 파악</td></tr>
+            <tr><td>4</td><td>핵심: 2-3단계부터 시작, 점점 확장</td></tr>
+            <tr><td>5</td><td>중간 확인 단계로 안전장치 추가</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin-top: 24px;">오늘의 미션 🎯</h3>
+        <p>Teams <strong>#able-native-camp</strong> 채널에 공유해:</p>
+        <div class="code-block">
+          [Day 4 완료]<br>
+          - 만든 워크플로우: [이름]<br>
+          - 연결한 스킬 수: [N]단계<br>
+          - 연결 흐름: [Step1] → [Step2] → [Step3]<br>
+          - 소감: [한줄]
+        </div>
+
+        <h3 style="margin-top: 24px;">내일 예고 👀</h3>
+        <p>Day 5에서는 <strong>Delegate</strong>를 배워. AI에게 "실행"만 시키는 게 아니라 <strong>"판단"까지 맡기는 법</strong>을 배워. 에이전트에게 위임하기 — 진짜 AI Native의 마지막 단계야.</p>
+      </div>
+
+      <button class="complete-btn" id="btn-4" onclick="completeDay()">🎓 Day 4 완료!</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-nav">
+  <a href="day3.html">&larr; Day 3: Automate</a>
+  <a href="day5.html" id="next-day" style="opacity: 0.3; pointer-events: none;">Day 5: Delegate →</a>
+</div>
+
+<script>
+const CORRECT = { 0: 'B', 2: 'B', 3: 'B' };
+const TOTAL = 5;
+const completed = new Array(TOTAL).fill(false);
+
+function toggleBlock(i) {
+  const block = document.getElementById('block-' + i);
+  if (block.classList.contains('locked')) return;
+  block.classList.toggle('open');
+}
+
+function showTab(block, tab) {
+  const tabs = document.querySelectorAll('#block-' + block + ' .section-tab');
+  const contents = document.querySelectorAll('#block-' + block + ' .section-content');
+  tabs.forEach(t => t.classList.remove('active'));
+  contents.forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('block-' + block + '-' + tab).classList.add('active');
+}
+
+function selectAnswer(quiz, el, answer) {
+  const options = document.querySelectorAll('#quiz-' + quiz + ' .quiz-option');
+  const answerBox = document.getElementById('answer-' + quiz);
+  if (answerBox.classList.contains('show')) return;
+  options.forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  if (answer === CORRECT[quiz]) {
+    el.classList.add('correct');
+  } else {
+    el.classList.add('wrong');
+    options.forEach(o => {
+      const letter = o.querySelector('.letter').textContent;
+      if (letter === CORRECT[quiz]) o.classList.add('correct');
+    });
+  }
+  answerBox.classList.add('show');
+}
+
+function completeBlock(i) {
+  completed[i] = true;
+  const btn = document.getElementById('btn-' + i);
+  btn.textContent = '✅ 완료!';
+  btn.classList.add('completed');
+  document.getElementById('prog-' + i).classList.add('done');
+  document.getElementById('prog-' + i).classList.remove('active');
+  document.getElementById('lbl-' + i).classList.add('done');
+  document.getElementById('lbl-' + i).classList.remove('active');
+  document.getElementById('num-' + i).classList.add('done');
+  const next = i + 1;
+  if (next < TOTAL) {
+    const nextBlock = document.getElementById('block-' + next);
+    nextBlock.classList.remove('locked');
+    nextBlock.classList.add('open');
+    document.getElementById('prog-' + next).classList.add('active');
+    document.getElementById('lbl-' + next).classList.add('active');
+    document.getElementById('block-' + i).classList.remove('open');
+    setTimeout(() => { nextBlock.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+  }
+}
+
+function completeDay() {
+  completed[TOTAL - 1] = true;
+  localStorage.setItem('day4Complete', 'true');
+  const btn = document.getElementById('btn-' + (TOTAL - 1));
+  btn.textContent = '🎉 Day 4 수료 완료!';
+  btn.classList.add('completed');
+  document.getElementById('prog-' + (TOTAL - 1)).classList.add('done');
+  document.getElementById('lbl-' + (TOTAL - 1)).classList.add('done');
+  document.getElementById('num-' + (TOTAL - 1)).classList.add('done');
+  const nextDay = document.getElementById('next-day');
+  nextDay.style.opacity = '1';
+  nextDay.style.pointerEvents = 'auto';
+}
+</script>
+
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>

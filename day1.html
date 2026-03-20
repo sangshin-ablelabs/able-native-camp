@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 1: Operate — ABLE Native Camp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #1E3A5F;
+      --navy-deep: #0F1F35;
+      --sky: #4A90D9;
+      --sky-light: #E8F1FB;
+      --green: #10B981;
+      --green-light: #ECFDF5;
+      --white: #FFFFFF;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-800: #1F2937;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+      color: var(--gray-800); line-height: 1.7; background: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .nav-inner {
+      max-width: 800px; margin: 0 auto; padding: 0 24px;
+      height: 64px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { font-size: 1.1rem; font-weight: 800; color: var(--navy); text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--sky); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-right a { font-size: 0.85rem; font-weight: 500; color: var(--gray-600); text-decoration: none; }
+    .nav-right a:hover { color: var(--navy); }
+
+    /* HERO */
+    .day-hero {
+      padding: 100px 24px 48px; text-align: center;
+      background: linear-gradient(170deg, var(--white) 0%, var(--sky-light) 100%);
+    }
+    .day-hero .badge {
+      display: inline-block; padding: 4px 14px; border-radius: 20px;
+      background: #DBEAFE; color: #1E40AF; font-size: 0.75rem; font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .day-hero h1 { font-size: 2rem; font-weight: 900; color: var(--navy); margin-bottom: 8px; letter-spacing: -0.5px; }
+    .day-hero p { font-size: 1rem; color: var(--gray-600); max-width: 520px; margin: 0 auto; }
+
+    /* PROGRESS */
+    .progress-bar {
+      max-width: 800px; margin: 0 auto; padding: 24px 24px 0;
+      display: flex; gap: 8px;
+    }
+    .progress-step {
+      flex: 1; height: 6px; border-radius: 3px; background: var(--gray-200);
+      transition: background 0.3s;
+    }
+    .progress-step.done { background: var(--green); }
+    .progress-step.active { background: var(--sky); }
+    .progress-labels {
+      max-width: 800px; margin: 0 auto; padding: 8px 24px 24px;
+      display: flex; gap: 8px;
+    }
+    .progress-labels span {
+      flex: 1; font-size: 0.68rem; font-weight: 500; color: var(--gray-400); text-align: center;
+    }
+    .progress-labels span.active { color: var(--sky); font-weight: 700; }
+    .progress-labels span.done { color: var(--green); }
+
+    /* CONTENT */
+    .content { max-width: 800px; margin: 0 auto; padding: 0 24px 80px; }
+
+    /* BLOCK */
+    .block {
+      margin-bottom: 32px; border: 1px solid var(--gray-200);
+      border-radius: var(--radius); overflow: hidden; background: var(--white);
+    }
+    .block.locked { opacity: 0.5; pointer-events: none; }
+    .block-header {
+      padding: 20px 24px; cursor: pointer; display: flex; align-items: center;
+      justify-content: space-between; transition: background 0.2s;
+    }
+    .block-header:hover { background: var(--gray-50); }
+    .block-header h2 {
+      font-size: 1.1rem; font-weight: 700; color: var(--navy);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .block-header .block-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: 700;
+      background: var(--sky-light); color: var(--sky);
+    }
+    .block-header .block-num.done { background: var(--green-light); color: var(--green); }
+    .block-header .chevron {
+      font-size: 1.2rem; color: var(--gray-400); transition: transform 0.2s;
+    }
+    .block.open .block-header .chevron { transform: rotate(180deg); }
+    .block-body { display: none; padding: 0 24px 24px; }
+    .block.open .block-body { display: block; }
+
+    /* SECTION TABS */
+    .section-tabs {
+      display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--gray-100);
+    }
+    .section-tab {
+      padding: 10px 20px; font-size: 0.85rem; font-weight: 600;
+      color: var(--gray-400); cursor: pointer; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; transition: all 0.2s; background: none; border-top: 0; border-left: 0; border-right: 0;
+    }
+    .section-tab:hover { color: var(--gray-600); }
+    .section-tab.active { color: var(--sky); border-bottom-color: var(--sky); }
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+
+    /* EXPLAIN */
+    .explain h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin: 28px 0 10px; padding-top: 20px; border-top: 1px solid var(--gray-200); }
+    .explain h3:first-child, .explain p + h3:first-of-type { border-top: none; padding-top: 0; margin-top: 16px; }
+    .explain p { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 12px; line-height: 1.7; }
+    .explain ul { padding-left: 20px; margin-bottom: 12px; }
+    .explain li { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 4px; }
+    .explain .highlight {
+      background: var(--sky-light); border-radius: var(--radius-sm);
+      padding: 16px 20px; margin: 16px 0; border-left: 4px solid var(--sky);
+    }
+    .explain .highlight p { margin: 0; font-weight: 500; color: var(--navy); }
+    .explain code {
+      background: var(--gray-100); padding: 2px 8px; border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem;
+    }
+    .explain .code-block {
+      background: var(--navy-deep); border-radius: var(--radius-sm); padding: 16px 20px;
+      margin: 12px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem;
+      color: var(--green); line-height: 1.8; overflow-x: auto;
+    }
+    .explain table {
+      width: 100%; border-collapse: collapse; margin: 12px 0;
+    }
+    .explain th {
+      text-align: left; padding: 8px 12px; font-size: 0.8rem; font-weight: 600;
+      color: var(--gray-500); border-bottom: 2px solid var(--gray-200); background: var(--gray-50);
+    }
+    .explain td {
+      padding: 10px 12px; font-size: 0.85rem; border-bottom: 1px solid var(--gray-100);
+    }
+
+    /* EXECUTE */
+    .execute .step-list { list-style: none; padding: 0; }
+    .execute .step-item {
+      display: flex; gap: 14px; padding: 14px 0;
+      border-bottom: 1px solid var(--gray-100); align-items: flex-start;
+    }
+    .execute .step-item:last-child { border-bottom: none; }
+    .execute .step-num {
+      flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+      background: var(--sky); color: var(--white); display: flex;
+      align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; margin-top: 2px;
+    }
+    .execute .step-text { font-size: 0.9rem; color: var(--gray-600); line-height: 1.6; }
+    .execute .step-text code {
+      background: var(--gray-100); padding: 2px 8px; border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem;
+    }
+    .execute .tip {
+      background: var(--green-light); border-radius: var(--radius-sm);
+      padding: 14px 18px; margin-top: 16px; border-left: 4px solid var(--green);
+    }
+    .execute .tip p { font-size: 0.85rem; color: #065F46; margin: 0; }
+
+    /* QUIZ */
+    .quiz-question {
+      font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 16px;
+    }
+    .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-option {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px; border-radius: var(--radius-sm);
+      border: 2px solid var(--gray-200); cursor: pointer;
+      font-size: 0.9rem; color: var(--gray-600); transition: all 0.2s;
+      background: var(--white);
+    }
+    .quiz-option:hover { border-color: var(--sky); background: var(--sky-light); }
+    .quiz-option.selected { border-color: var(--sky); background: var(--sky-light); color: var(--navy); font-weight: 600; }
+    .quiz-option.correct { border-color: var(--green); background: var(--green-light); color: #065F46; }
+    .quiz-option.wrong { border-color: #EF4444; background: #FEF2F2; color: #991B1B; }
+    .quiz-option .letter {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--gray-100);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+    }
+    .quiz-option.correct .letter { background: var(--green); color: white; }
+    .quiz-option.wrong .letter { background: #EF4444; color: white; }
+    .quiz-answer {
+      display: none; margin-top: 16px; padding: 16px 20px;
+      background: var(--gray-50); border-radius: var(--radius-sm);
+      font-size: 0.88rem; color: var(--gray-600); line-height: 1.6;
+    }
+    .quiz-answer.show { display: block; }
+
+    /* COMPLETE BUTTON */
+    .complete-btn {
+      display: block; width: 100%; padding: 14px; margin-top: 20px;
+      background: var(--sky); color: white; border: none; border-radius: var(--radius-sm);
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+      font-family: inherit;
+    }
+    .complete-btn:hover { background: var(--navy); }
+    .complete-btn.completed { background: var(--green); cursor: default; }
+
+    /* FOOTER NAV */
+    .footer-nav {
+      max-width: 800px; margin: 0 auto; padding: 32px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid var(--gray-200);
+    }
+    .footer-nav a {
+      font-size: 0.9rem; font-weight: 600; color: var(--sky);
+      text-decoration: none; padding: 10px 20px; border-radius: var(--radius-sm);
+      transition: background 0.2s;
+    }
+    .footer-nav a:hover { background: var(--sky-light); }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .section-tab { padding: 8px 12px; font-size: 0.78rem; }
+      .day-hero h1 { font-size: 1.6rem; }
+    }
+  </style>
+  <link rel="stylesheet" href="auth-styles.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span>ABLE</span> Native Camp</a>
+    <div class="nav-right">
+      <a href="index.html">← 홈</a>
+      <a href="skills.html">스킬 허브</a>
+      <a href="leaderboard.html">리더보드</a>
+      <a href="reference.html">레퍼런스</a>
+    </div>
+    <div id="auth-ui"></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="day-hero">
+  <div class="badge">🖥️ Level 1: Operate</div>
+  <h1>Day 1 — 첫 대화</h1>
+  <p>"나를 알려주고, 시켜봐."<br>Claude Code와 첫 대화를 나누고, 진짜 업무를 시켜보는 날이야.</p>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar">
+  <div class="progress-step active" id="prog-0"></div>
+  <div class="progress-step" id="prog-1"></div>
+  <div class="progress-step" id="prog-2"></div>
+  <div class="progress-step" id="prog-3"></div>
+  <div class="progress-step" id="prog-4"></div>
+</div>
+<div class="progress-labels">
+  <span class="active" id="lbl-0">첫 대화</span>
+  <span id="lbl-1">CLAUDE.md</span>
+  <span id="lbl-2">기본 도구</span>
+  <span id="lbl-3">실전 업무</span>
+  <span id="lbl-4">마무리</span>
+</div>
+
+<div class="content">
+
+  <!-- BLOCK: 캠프 연동 (리더보드 트래킹) -->
+  <div class="block open" id="block-setup" style="border-color: var(--sky);">
+    <div class="block-header" onclick="document.getElementById('block-setup').classList.toggle('open')">
+      <h2><span class="block-num" style="background:#DBEAFE;color:#1E40AF;">⚡</span> 캠프 연동 — 리더보드 트래킹 설정</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="explain">
+        <p>Claude Code 사용량이 <strong>자동으로 리더보드에 기록</strong>되도록 연동해. 1분이면 끝!</p>
+
+        <div id="setup-login-required" style="text-align:center;padding:24px;">
+          <p style="color:var(--gray-500);margin-bottom:16px;">먼저 오른쪽 위에서 <strong>MS 로그인</strong>을 해줘.</p>
+        </div>
+
+        <div id="setup-panel" style="display:none;">
+          <div id="setup-step1">
+            <h3>Step 1: 캠프 등록</h3>
+            <p>아래 버튼을 누르면 자동으로 등록돼.</p>
+            <button class="complete-btn" id="setup-register-btn" onclick="registerForCamp()" style="margin:12px 0;">🏕️ 캠프 등록하기</button>
+          </div>
+
+          <div id="setup-step2" style="display:none;">
+            <h3>Step 2: Hook 설치</h3>
+            <p>터미널에서 아래 명령어를 <strong>복사해서 붙여넣기</strong>하면 끝!</p>
+            <div style="position:relative;">
+              <div id="setup-install-cmd" class="code-block" style="font-size:0.78rem;word-break:break-all;user-select:all;"></div>
+              <button onclick="copyInstallCmd()" style="position:absolute;top:8px;right:8px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;font-size:0.72rem;cursor:pointer;">복사</button>
+            </div>
+            <div class="tip" style="margin-top:12px;">
+              <p>💡 이 명령어가 하는 일: Claude Code 세션 종료 시 사용량을 리더보드 서버로 자동 전송하는 hook을 설치해.</p>
+            </div>
+          </div>
+
+          <div id="setup-done" style="display:none;text-align:center;padding:16px;">
+            <p style="font-size:1.2rem;">🎉</p>
+            <p style="font-weight:700;color:var(--navy);">연동 완료!</p>
+            <p style="font-size:0.85rem;color:var(--gray-500);">이제부터 Claude Code를 쓸 때마다 자동으로 리더보드에 기록돼.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOCK 0: 첫 대화 -->
+  <div class="block open" id="block-0">
+    <div class="block-header" onclick="toggleBlock(0)">
+      <h2><span class="block-num" id="num-0">1</span> 첫 대화 — Claude Code 처음 만나기</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(0, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(0, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(0, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-0-explain">
+        <p>Claude Code는 터미널에서 실행하는 AI 도구야. 채팅창이 아니라 <strong>터미널</strong>이야.</p>
+        <h3>왜 터미널이야?</h3>
+        <ul>
+          <li>파일을 직접 읽고 쓸 수 있어</li>
+          <li>명령어를 실행할 수 있어</li>
+          <li>내 컴퓨터의 모든 도구에 접근할 수 있어</li>
+        </ul>
+        <div class="highlight">
+          <p>💡 채팅 AI는 "대화만" 해. Claude Code는 "대화하면서 실행"해.</p>
+        </div>
+        <h3>실행 방법</h3>
+        <div class="code-block">
+          # 터미널을 열고 이것만 치면 돼<br>
+          <span style="color: #fff;">claude</span>
+        </div>
+        <p>이것만 치면 돼. Claude가 인사해.</p>
+        <h3>첫 대화 예시</h3>
+        <p>아무거나 시켜봐:</p>
+        <ul>
+          <li>"안녕, 나는 [이름]이야. ABLE Labs [팀]에서 일해"</li>
+          <li>"오늘 날짜 알려줘"</li>
+          <li>"이 폴더에 어떤 파일이 있는지 보여줘"</li>
+        </ul>
+      </div>
+
+      <div class="section-content execute" id="block-0-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">터미널을 열어 (아까 배운 방법!)</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><code>claude</code> 를 입력해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">아무 말이나 걸어봐 — 자기소개, 간단한 질문, 뭐든 좋아</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>3번 이상</strong> 대화를 주고받아봐</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 처음엔 어색해도 괜찮아. "오늘 점심 뭐 먹을까?" 같은 가벼운 것도 좋아.</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-0-quiz">
+        <p class="quiz-question">Claude Code와 일반 ChatGPT/Claude 웹의 가장 큰 차이는 뭘까?</p>
+        <div class="quiz-options" id="quiz-0">
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'A')">
+            <span class="letter">A</span> 더 똑똑하다
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'B')">
+            <span class="letter">B</span> 내 컴퓨터의 파일을 직접 읽고 쓸 수 있다
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'C')">
+            <span class="letter">C</span> 무료다
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(0, this, 'D')">
+            <span class="letter">D</span> 한국어를 더 잘한다
+          </div>
+        </div>
+        <div class="quiz-answer" id="answer-0">
+          ✅ <strong>정답: B.</strong> Claude Code는 터미널에서 실행되기 때문에 파일을 직접 읽고, 쓰고, 명령어를 실행할 수 있어. 채팅 AI는 대화만 가능하지만, Claude Code는 "대화하면서 실행"해.
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-0" onclick="completeBlock(0)">✅ Block 1 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 1: CLAUDE.md -->
+  <div class="block locked" id="block-1">
+    <div class="block-header" onclick="toggleBlock(1)">
+      <h2><span class="block-num" id="num-1">2</span> CLAUDE.md — AI에게 주는 내 사용설명서</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(1, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(1, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(1, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-1-explain">
+        <p>CLAUDE.md는 프로젝트 폴더에 놓는 마크다운 파일이야. Claude Code가 대화를 시작할 때 <strong>자동으로 읽어</strong>.</p>
+        <div class="highlight">
+          <p>💡 비유: 신입이 들어왔는데 아무것도 안 알려주면 매번 같은 걸 물어봐. 하지만 "내 업무는 이거고, 이런 식으로 일해" 문서를 줘놓으면? 처음부터 맥락을 가지고 일해. CLAUDE.md가 그 문서야.</p>
+        </div>
+        <h3>뭘 쓰면 되나</h3>
+        <div class="code-block">
+          <span style="color: #9CA3AF;"># About Me</span><br><br>
+          - 이름: [이름]<br>
+          - 팀: [팀명]<br>
+          - 역할: [담당 업무 설명]<br>
+          - 선호 스타일: [예: 간결하게, 표로 정리, 평어 사용 등]<br><br>
+          <span style="color: #9CA3AF;"># My Work</span><br><br>
+          - 주요 업무: [매일/매주 하는 일]<br>
+          - 자주 쓰는 도구: [다우오피스, Teams, Notion 등]<br>
+          - 주의사항: [예: 고객명은 영문으로, 금액은 만원 단위로 등]<br><br>
+          <span style="color: #9CA3AF;"># ABLE Labs Context</span><br><br>
+          - 회사: ABLE Labs (에이블랩스) — 바이오 실험 자동화<br>
+          - 제품: NOTABLE (액체 핸들링 로봇)<br>
+          - 구성원 호칭: 에이블러 (ABLER)<br>
+          - 문화: 평어 문화, 코어타임 자유 출근
+        </div>
+        <h3>예를 들면 이런 걸 넣어</h3>
+        <p>제품 라인업, 자주 쓰는 양식, 팀 컨벤션, 업무 스타일 같은 걸 넣을 수 있어. 에이블러 각자가 자기 역할에 맞는 버전을 만들면 돼. 처음엔 간단하게, 쓰면서 점점 풍부하게.</p>
+      </div>
+
+      <div class="section-content execute" id="block-1-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">Claude Code에서 이렇게 말해봐:<br><code>CLAUDE.md 파일을 만들어줘. 나는 [이름]이고, ABLE Labs [팀]에서 [역할]을 맡고 있어.</code></div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">Claude가 초안을 만들어줘. 내용을 확인하고 추가하고 싶은 걸 말해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">완성된 CLAUDE.md를 저장해</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 처음부터 완벽하지 않아도 돼. 쓰다보면 뭘 넣어야 할지 감이 와. 나중에 계속 업데이트하면 돼.</p>
+        </div>
+      </div>
+
+      <div class="section-content quiz" id="block-1-quiz">
+        <p class="quiz-question">CLAUDE.md에 넣으면 가장 효과적인 정보는?</p>
+        <div class="quiz-options" id="quiz-1">
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'A')">
+            <span class="letter">A</span> 내 취미와 좋아하는 음식
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'B')">
+            <span class="letter">B</span> 내 역할, 업무, 선호 스타일, 회사 맥락
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'C')">
+            <span class="letter">C</span> Claude Code 사용법
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(1, this, 'D')">
+            <span class="letter">D</span> 비밀번호와 API 키
+          </div>
+        </div>
+        <div class="quiz-answer" id="answer-1">
+          ✅ <strong>정답: B.</strong> CLAUDE.md는 AI에게 "내가 누구고 어떤 일을 하는지" 알려주는 파일이야. 업무 맥락이 들어갈수록 AI가 더 정확하게 일해. (D는 절대 넣으면 안 돼! 🚫)
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-1" onclick="completeBlock(1)">✅ Block 2 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 2: 기본 도구 4가지 -->
+  <div class="block locked" id="block-2">
+    <div class="block-header" onclick="toggleBlock(2)">
+      <h2><span class="block-num" id="num-2">3</span> 기본 도구 4가지</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(2, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(2, 'execute')">🏃 실습</button>
+        <button class="section-tab" onclick="showTab(2, 'quiz')">❓ 퀴즈</button>
+      </div>
+
+      <div class="section-content active explain" id="block-2-explain">
+        <p>Claude Code에는 핵심 도구 4가지가 있어. 이것만 알면 대부분의 업무를 시킬 수 있어.</p>
+        <table>
+          <thead>
+            <tr><th>도구</th><th>하는 일</th><th>비유</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Read</strong></td><td>파일 읽기</td><td>📄 서류를 꺼내서 읽는 것</td></tr>
+            <tr><td><strong>Write</strong></td><td>파일 쓰기</td><td>✍️ 새 서류를 작성하는 것</td></tr>
+            <tr><td><strong>Edit</strong></td><td>파일 수정</td><td>✏️ 서류의 오타를 수정하는 것</td></tr>
+            <tr><td><strong>Bash</strong></td><td>명령어 실행</td><td>🖨️ 복사기 돌리기, 프린트 등</td></tr>
+          </tbody>
+        </table>
+        <div class="highlight">
+          <p>💡 직접 명령어를 외울 필요 없어. 자연어로 말하면 Claude가 알아서 적절한 도구를 써. "이 파일 읽어줘" → Claude가 Read 도구를 써.</p>
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-2-execute">
+        <p style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 16px;">아래 4가지를 순서대로 해봐:</p>
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Read:</strong> "이 폴더에 어떤 파일이 있는지 보여줘"</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Write:</strong> "오늘 할 일 목록을 todo.md 파일로 만들어줘"</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Edit:</strong> "todo.md에서 첫 번째 항목을 완료 표시해줘"</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Bash:</strong> "현재 날짜와 시간을 알려줘"</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="section-content quiz" id="block-2-quiz">
+        <p class="quiz-question">파일의 특정 부분만 수정하고 싶을 때 가장 적절한 도구는?</p>
+        <div class="quiz-options" id="quiz-2">
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'A')">
+            <span class="letter">A</span> Read
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'B')">
+            <span class="letter">B</span> Write
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'C')">
+            <span class="letter">C</span> Edit
+          </div>
+          <div class="quiz-option" onclick="selectAnswer(2, this, 'D')">
+            <span class="letter">D</span> Bash
+          </div>
+        </div>
+        <div class="quiz-answer" id="answer-2">
+          ✅ <strong>정답: C.</strong> Edit는 파일의 특정 부분만 수정해. Write는 파일 전체를 새로 쓰는 거고, Edit는 딱 바꿀 부분만 바꿔.
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-2" onclick="completeBlock(2)">✅ Block 3 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 3: 실제 업무 -->
+  <div class="block locked" id="block-3">
+    <div class="block-header" onclick="toggleBlock(3)">
+      <h2><span class="block-num" id="num-3">4</span> 실제 업무 1개 해보기</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-tabs">
+        <button class="section-tab active" onclick="showTab(3, 'explain')">📖 설명</button>
+        <button class="section-tab" onclick="showTab(3, 'execute')">🏃 실습</button>
+      </div>
+
+      <div class="section-content active explain" id="block-3-explain">
+        <p>이제 연습이 아니라 <strong>진짜 업무</strong>를 해봐. 아래에서 지금 당장 해야 하는 업무 1개를 골라서 Claude에게 시켜봐.</p>
+        <h3>업무 예시</h3>
+        <table>
+          <thead>
+            <tr><th>누구나</th><th>직군별</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>이메일 답장 초안 쓰기</td><td>생산 일보 양식 초안 (제조)</td></tr>
+            <tr><td>미팅 회의록 정리</td><td>실험 프로토콜 요약 (연구)</td></tr>
+            <tr><td>보고서/문서 초안 작성</td><td>경비 보고서 정리 (경영지원)</td></tr>
+            <tr><td>자료 번역 (한↔영)</td><td>기술 스펙 비교표 (개발)</td></tr>
+            <tr><td>데이터 정리/요약</td><td>계약서 조항 요약 (재무)</td></tr>
+          </tbody>
+        </table>
+        <h3>시키는 법</h3>
+        <p>그냥 자연어로 말하면 돼:</p>
+        <div class="code-block">
+          어제 [미팅명] 미팅에서 논의한 내용을 회의록으로 정리해줘.<br>
+          참석자는 [A, B, C]이고, 주요 안건은 [...]이야.
+        </div>
+        <div class="code-block">
+          이 메일에 대한 답장 초안 써줘. 톤은 정중하게.<br>
+          [메일 내용 붙여넣기]
+        </div>
+      </div>
+
+      <div class="section-content execute" id="block-3-execute">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">지금 해야 하는 업무 1개를 골라</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">Claude에게 자연어로 시켜</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">결과물을 확인해</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text">수정할 부분이 있으면 추가 지시해 — "이 부분 수정해줘", "톤을 바꿔줘" 등</div>
+          </li>
+          <li class="step-item">
+            <div class="step-num">5</div>
+            <div class="step-text">최종 결과물을 파일로 저장해</div>
+          </li>
+        </ol>
+        <div class="tip">
+          <p>💡 처음부터 완벽하지 않아도 돼. 대화로 다듬으면 돼. 그게 Claude Code의 진짜 힘이야.</p>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-3" onclick="completeBlock(3)">✅ Block 4 완료 — 다음으로</button>
+    </div>
+  </div>
+
+  <!-- BLOCK 4: 마무리 -->
+  <div class="block locked" id="block-4">
+    <div class="block-header" onclick="toggleBlock(4)">
+      <h2><span class="block-num" id="num-4">5</span> Day 1 마무리 🎉</h2>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="block-body">
+      <div class="section-content active explain" id="block-4-explain">
+        <h3>오늘 배운 것</h3>
+        <table>
+          <thead>
+            <tr><th>#</th><th>배운 것</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>Claude Code = 터미널에서 실행하는 AI (대화 + 실행)</td></tr>
+            <tr><td>2</td><td>CLAUDE.md = AI에게 주는 내 사용설명서</td></tr>
+            <tr><td>3</td><td>4가지 도구 = Read, Write, Edit, Bash</td></tr>
+            <tr><td>4</td><td>자연어로 시키면 된다</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin-top: 24px;">오늘의 미션 🎯</h3>
+        <p>Teams <strong>#able-native-camp</strong> 채널에 아래를 공유해:</p>
+        <div class="code-block">
+          [Day 1 완료]<br>
+          - 만든 것: CLAUDE.md<br>
+          - 해본 업무: [실제로 해본 업무 1개]<br>
+          - 소감: [한줄]
+        </div>
+
+        <h3 style="margin-top: 24px;">내일 예고 👀</h3>
+        <p>Day 2에서는 <strong>MCP</strong>를 배워. 다우오피스, Teams, Notion을 AI에 직접 연결해. 연결하면 "내 메일 확인해줘", "오늘 일정 뭐야", "노션에서 찾아줘"가 가능해져.</p>
+      </div>
+
+      <button class="complete-btn" id="btn-4" onclick="completeDay()">🎓 Day 1 완료!</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER NAV -->
+<div class="footer-nav">
+  <a href="index.html">← 홈으로</a>
+  <a href="day2.html" id="next-day" style="opacity: 0.3; pointer-events: none;">Day 2: Connect →</a>
+</div>
+
+<script>
+// ─── 캠프 연동 (Setup) ───
+let campToken = null;
+
+function checkSetupAuth() {
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  if (user) {
+    document.getElementById('setup-login-required').style.display = 'none';
+    document.getElementById('setup-panel').style.display = 'block';
+    // 이미 등록된 사용자인지 확인
+    const saved = localStorage.getItem('ableCampToken');
+    if (saved) {
+      campToken = saved;
+      showSetupDone();
+    }
+  } else {
+    document.getElementById('setup-login-required').style.display = 'block';
+    document.getElementById('setup-panel').style.display = 'none';
+  }
+}
+
+async function registerForCamp() {
+  const user = getCurrentUser();
+  if (!user) { alert('먼저 로그인해!'); return; }
+
+  const btn = document.getElementById('setup-register-btn');
+  btn.textContent = '등록 중...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/self-register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: user.name, email: user.email }),
+    });
+    const data = await res.json();
+    if (data.token) {
+      campToken = data.token;
+      localStorage.setItem('ableCampToken', campToken);
+      showInstallStep();
+    } else {
+      alert('등록 실패: ' + (data.error || 'unknown'));
+      btn.textContent = '🏕️ 캠프 등록하기';
+      btn.disabled = false;
+    }
+  } catch (err) {
+    alert('서버 연결 실패');
+    btn.textContent = '🏕️ 캠프 등록하기';
+    btn.disabled = false;
+  }
+}
+
+function showInstallStep() {
+  document.getElementById('setup-step1').style.display = 'none';
+  document.getElementById('setup-step2').style.display = 'block';
+  const serverUrl = window.location.origin;
+  const cmd = `curl -sL ${serverUrl}/api/install | bash -s -- ${campToken}`;
+  document.getElementById('setup-install-cmd').textContent = cmd;
+}
+
+function showSetupDone() {
+  document.getElementById('setup-step1').style.display = 'none';
+  document.getElementById('setup-step2').style.display = 'none';
+  document.getElementById('setup-done').style.display = 'block';
+}
+
+function copyInstallCmd() {
+  const cmd = document.getElementById('setup-install-cmd').textContent;
+  navigator.clipboard.writeText(cmd).then(() => {
+    const btn = event.target;
+    btn.textContent = '복사됨!';
+    setTimeout(() => { btn.textContent = '복사'; }, 2000);
+  });
+}
+
+// auth.js의 updateAuthUI에서 render()를 호출하므로, render에서 setup 체크
+const _origRender = typeof render === 'function' ? render : null;
+function render() {
+  if (_origRender) _origRender();
+  checkSetupAuth();
+}
+
+// 페이지 로드 시 체크 (auth.js 로드 후)
+setTimeout(checkSetupAuth, 500);
+
+const CORRECT = { 0: 'B', 1: 'B', 2: 'C' };
+const completed = [false, false, false, false, false];
+
+function toggleBlock(i) {
+  const block = document.getElementById('block-' + i);
+  if (block.classList.contains('locked')) return;
+  block.classList.toggle('open');
+}
+
+function showTab(block, tab) {
+  const tabs = document.querySelectorAll(`#block-${block} .section-tab`);
+  const contents = document.querySelectorAll(`#block-${block} .section-content`);
+  tabs.forEach(t => t.classList.remove('active'));
+  contents.forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(`block-${block}-${tab}`).classList.add('active');
+}
+
+function selectAnswer(quiz, el, answer) {
+  const options = document.querySelectorAll(`#quiz-${quiz} .quiz-option`);
+  const answerBox = document.getElementById('answer-' + quiz);
+  if (answerBox.classList.contains('show')) return;
+
+  options.forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+
+  if (answer === CORRECT[quiz]) {
+    el.classList.add('correct');
+  } else {
+    el.classList.add('wrong');
+    options.forEach(o => {
+      if (o.textContent.includes(CORRECT[quiz] + ' ')) return;
+    });
+    // Highlight correct
+    options.forEach(o => {
+      const letter = o.querySelector('.letter').textContent;
+      if (letter === CORRECT[quiz]) o.classList.add('correct');
+    });
+  }
+  answerBox.classList.add('show');
+}
+
+function completeBlock(i) {
+  completed[i] = true;
+  const btn = document.getElementById('btn-' + i);
+  btn.textContent = '✅ 완료!';
+  btn.classList.add('completed');
+
+  // Update progress
+  document.getElementById('prog-' + i).classList.add('done');
+  document.getElementById('prog-' + i).classList.remove('active');
+  document.getElementById('lbl-' + i).classList.add('done');
+  document.getElementById('lbl-' + i).classList.remove('active');
+  document.getElementById('num-' + i).classList.add('done');
+
+  // Unlock next
+  const next = i + 1;
+  if (next < 5) {
+    const nextBlock = document.getElementById('block-' + next);
+    nextBlock.classList.remove('locked');
+    nextBlock.classList.add('open');
+    document.getElementById('prog-' + next).classList.add('active');
+    document.getElementById('lbl-' + next).classList.add('active');
+
+    // Close current
+    document.getElementById('block-' + i).classList.remove('open');
+
+    // Scroll to next
+    setTimeout(() => {
+      nextBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  }
+}
+
+function completeDay() {
+  completed[4] = true;
+  localStorage.setItem('day1Complete', 'true');
+  const btn = document.getElementById('btn-4');
+  btn.textContent = '🎉 Day 1 수료 완료!';
+  btn.classList.add('completed');
+  document.getElementById('prog-4').classList.add('done');
+  document.getElementById('lbl-4').classList.add('done');
+  document.getElementById('num-4').classList.add('done');
+
+  // Enable next day link
+  const nextDay = document.getElementById('next-day');
+  nextDay.style.opacity = '1';
+  nextDay.style.pointerEvents = 'auto';
+}
+</script>
+
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>

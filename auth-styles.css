@@ -1,0 +1,102 @@
+/* ─── Auth UI Styles ─── */
+#auth-ui {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: 16px;
+}
+.auth-login-btn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1.5px solid #4A90D9;
+  background: transparent;
+  color: #4A90D9;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.auth-login-btn:hover {
+  background: #4A90D9;
+  color: #fff;
+}
+.auth-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.auth-profile:hover {
+  background: #F3F4F6;
+}
+.auth-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E3A5F, #4A90D9);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.auth-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1F2937;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.auth-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  padding: 12px;
+  min-width: 200px;
+  display: none;
+  z-index: 200;
+}
+.auth-dropdown.show {
+  display: block;
+}
+.auth-dropdown-info {
+  font-size: 0.75rem;
+  color: #6B7280;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #E5E7EB;
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+.auth-dropdown-btn {
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #FEE2E2;
+  color: #DC2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.auth-dropdown-btn:hover {
+  background: #FECACA;
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+  .auth-name { display: none; }
+  #auth-ui { margin-left: 8px; }
+}

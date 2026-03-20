@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Reference — ABLE Native Camp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #1E3A5F; --navy-deep: #0F1F35; --sky: #4A90D9; --sky-light: #E8F1FB;
+      --green: #10B981; --green-light: #ECFDF5; --white: #FFFFFF;
+      --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF; --gray-500: #6B7280; --gray-600: #4B5563; --gray-800: #1F2937;
+      --radius: 16px; --radius-sm: 10px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif; color: var(--gray-800); line-height: 1.7; background: var(--gray-50); -webkit-font-smoothing: antialiased; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--gray-200); }
+    .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.1rem; font-weight: 800; color: var(--navy); text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--sky); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-right a { font-size: 0.85rem; font-weight: 500; color: var(--gray-600); text-decoration: none; }
+    .nav-right a:hover { color: var(--navy); }
+
+    .hero { padding: 100px 24px 48px; text-align: center; background: linear-gradient(170deg, var(--white) 0%, #DBEAFE 40%, #60A5FA 100%); }
+    .hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 900; color: var(--navy); letter-spacing: -1px; margin-bottom: 8px; }
+    .hero p { font-size: 1rem; color: var(--gray-600); max-width: 500px; margin: 0 auto; }
+
+    .content { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* TOC */
+    .toc { background: var(--white); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 32px; border: 1px solid var(--gray-200); }
+    .toc h3 { font-size: 0.9rem; font-weight: 700; color: var(--navy); margin-bottom: 12px; }
+    .toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+    .toc a { font-size: 0.85rem; color: var(--sky); text-decoration: none; font-weight: 500; padding: 6px 0; display: block; }
+    .toc a:hover { color: var(--navy); }
+
+    /* SECTION */
+    .ref-section { background: var(--white); border-radius: var(--radius); padding: 32px; margin-bottom: 20px; border: 1px solid var(--gray-200); }
+    .ref-section h2 { font-size: 1.2rem; font-weight: 800; color: var(--navy); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .ref-section h3 { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin: 24px 0 8px; padding-top: 16px; border-top: 1px solid var(--gray-200); }
+    .ref-section h3:first-of-type { border-top: none; padding-top: 0; margin-top: 8px; }
+    .ref-section p { font-size: 0.88rem; color: var(--gray-600); margin-bottom: 10px; }
+    .ref-section ul { padding-left: 20px; margin-bottom: 12px; }
+    .ref-section li { font-size: 0.88rem; color: var(--gray-600); margin-bottom: 6px; }
+    .ref-section code { background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; }
+    .code-block { background: var(--navy-deep); border-radius: var(--radius-sm); padding: 16px 20px; margin: 12px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; color: var(--green); line-height: 1.8; overflow-x: auto; position: relative; }
+    .copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); border-radius: 6px; padding: 4px 10px; font-size: 0.72rem; cursor: pointer; font-family: inherit; font-weight: 500; transition: all 0.2s; }
+    .copy-btn:hover { background: rgba(255,255,255,0.25); color: #fff; }
+    .tip { background: var(--sky-light); border-radius: var(--radius-sm); padding: 14px 18px; margin: 12px 0; border-left: 4px solid var(--sky); }
+    .tip p { margin: 0; font-weight: 500; color: var(--navy); font-size: 0.85rem; }
+    .warning { background: #FEF3C7; border-radius: var(--radius-sm); padding: 14px 18px; margin: 12px 0; border-left: 4px solid #F59E0B; }
+    .warning p { margin: 0; font-weight: 500; color: #92400E; font-size: 0.85rem; }
+
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    th { text-align: left; padding: 10px 14px; font-size: 0.78rem; font-weight: 600; color: var(--gray-500); border-bottom: 2px solid var(--gray-200); background: var(--gray-50); }
+    td { padding: 10px 14px; font-size: 0.85rem; border-bottom: 1px solid var(--gray-100); }
+
+    @media (max-width: 640px) { .toc-grid { grid-template-columns: 1fr; } .ref-section { padding: 20px; } }
+  </style>
+  <link rel="stylesheet" href="auth-styles.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span>ABLE</span> Native Camp</a>
+    <div class="nav-right">
+      <a href="index.html">커리큘럼</a>
+      <a href="skills.html">스킬 허브</a>
+      <a href="leaderboard.html">리더보드</a>
+      <a href="reference.html" style="color: var(--navy); font-weight: 700;">레퍼런스</a>
+    </div>
+    <div id="auth-ui"></div>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>📖 Quick Reference</h1>
+  <p>캠프에서 배운 것들을 빠르게 찾아보는 곳.<br>새 입사자 온보딩에도 활용해!</p>
+</div>
+
+<div class="content">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>📑 목차</h3>
+    <div class="toc-grid">
+      <a href="#claude-code">① Claude Code 기본</a>
+      <a href="#claude-md">② CLAUDE.md 작성법</a>
+      <a href="#mcp">③ MCP 연결하기</a>
+      <a href="#skills">④ 스킬 만들기</a>
+      <a href="#workflow">⑤ 워크플로우 구성</a>
+      <a href="#agent">⑥ 에이전트 위임</a>
+      <a href="#memory">⑦ Memory 시스템</a>
+      <a href="#shortcuts">⑧ 자주 쓰는 명령어</a>
+    </div>
+  </div>
+
+  <!-- 1. Claude Code 기본 -->
+  <div class="ref-section" id="claude-code">
+    <h2>🖥️ Claude Code 기본</h2>
+    <h3>설치</h3>
+    <div class="code-block">npm install -g @anthropic-ai/claude-code</div>
+    <h3>실행</h3>
+    <div class="code-block">claude</div>
+    <p>터미널에서 <code>claude</code>를 입력하면 대화형 세션이 시작돼.</p>
+    <h3>기본 도구 4가지</h3>
+    <table>
+      <thead><tr><th>도구</th><th>설명</th><th>예시</th></tr></thead>
+      <tbody>
+        <tr><td><code>Read</code></td><td>파일 읽기</td><td>"이 파일 읽어줘"</td></tr>
+        <tr><td><code>Write</code></td><td>새 파일 만들기</td><td>"보고서 파일 만들어줘"</td></tr>
+        <tr><td><code>Edit</code></td><td>기존 파일 수정</td><td>"3번째 줄 고쳐줘"</td></tr>
+        <tr><td><code>Bash</code></td><td>터미널 명령 실행</td><td>"git status 확인해줘"</td></tr>
+      </tbody>
+    </table>
+    <div class="tip"><p>💡 자연어로 말하면 돼. "이 엑셀 파일 읽어서 요약해줘" 같은 식으로!</p></div>
+  </div>
+
+  <!-- 2. CLAUDE.md -->
+  <div class="ref-section" id="claude-md">
+    <h2>📝 CLAUDE.md 작성법</h2>
+    <p>CLAUDE.md는 AI에게 "나는 누구고, 어떻게 일하는지" 알려주는 파일이야. 프로젝트 루트에 두면 자동으로 읽어.</p>
+    <h3>필수 항목</h3>
+    <div class="code-block"># CLAUDE.md
+
+## 나는 누구인가
+- 이름: [이름]
+- 팀: [팀명]
+- 역할: [역할 설명]
+
+## 업무 맥락
+- 주요 업무: [업무 설명]
+- 자주 쓰는 도구: [다우오피스, Teams, Notion 등]
+
+## 선호 스타일
+- 답변은 간결하게
+- 한국어로 대화
+- 평어체 사용</div>
+    <div class="tip"><p>💡 CLAUDE.md는 계속 업데이트해. 쓰다 보면 "이것도 알려줘야겠다" 싶은 게 생겨.</p></div>
+  </div>
+
+  <!-- 3. MCP -->
+  <div class="ref-section" id="mcp">
+    <h2>🔌 MCP 연결하기</h2>
+    <p>MCP(Model Context Protocol)로 외부 도구를 AI에 직접 연결해. 연결하면 AI가 실시간 데이터를 조회할 수 있어.</p>
+    <h3>연결 방법</h3>
+    <p>Claude Code 대화 중에 자연어로 요청하면 돼:</p>
+    <div class="code-block">"다우오피스 MCP 연결해줘"
+"Teams MCP 연결해줘"
+"Notion MCP 연결해줘"</div>
+    <h3>연결 후 가능한 것</h3>
+    <table>
+      <thead><tr><th>MCP</th><th>할 수 있는 것</th></tr></thead>
+      <tbody>
+        <tr><td>다우오피스</td><td>메일 확인/검색, 일정 조회, 캘린더 파싱</td></tr>
+        <tr><td>Teams</td><td>채널 메시지 읽기/보내기, 멘션 확인, 파일 공유</td></tr>
+        <tr><td>Notion</td><td>페이지 검색/생성/수정, 데이터베이스 조회</td></tr>
+      </tbody>
+    </table>
+    <div class="warning"><p>⚠️ MCP 연결 시 인증이 필요해. 각 서비스의 API 키나 OAuth 설정을 미리 준비해두자.</p></div>
+  </div>
+
+  <!-- 4. 스킬 -->
+  <div class="ref-section" id="skills">
+    <h2>⚡ 스킬 만들기</h2>
+    <p>반복 업무를 <code>/명령어</code> 하나로 실행할 수 있게 만드는 거야.</p>
+    <h3>SKILL.md 기본 구조</h3>
+    <div class="code-block"># /weekly-report
+
+주간 업무 보고서를 자동으로 생성한다.
+
+## 트리거
+- "주간보고", "위클리 리포트", "/weekly-report"
+
+## 실행 단계
+1. 이번 주 완료한 업무를 정리한다
+2. 다음 주 계획을 작성한다
+3. 보고서 포맷에 맞춰 출력한다
+
+## 출력 형식
+- 마크다운 표 형태
+- 주요 성과 / 이슈 / 다음 주 계획</div>
+    <h3>스킬 파일 위치</h3>
+    <div class="code-block">.claude/skills/[스킬이름]/SKILL.md</div>
+    <div class="tip"><p>💡 좋은 스킬을 만들었으면 <a href="skills.html" style="color:var(--sky);">스킬 허브</a>에 등록해서 동료와 공유하자!</p></div>
+  </div>
+
+  <!-- 5. 워크플로우 -->
+  <div class="ref-section" id="workflow">
+    <h2>🔗 워크플로우 구성</h2>
+    <p>스킬 A의 출력이 스킬 B의 입력이 되는 멀티스텝 흐름을 만드는 거야.</p>
+    <h3>예시: 데일리 브리핑 워크플로우</h3>
+    <div class="code-block">Step 1: 메일 확인 (다우오피스 MCP)
+   ↓ 안 읽은 메일 목록
+Step 2: 일정 파싱 (다우오피스 MCP)
+   ↓ 오늘 미팅 리스트
+Step 3: 팀즈 멘션 확인 (Teams MCP)
+   ↓ 답장 필요한 메시지
+Step 4: 투두 생성 (종합)
+   → 오늘의 할 일 체크리스트</div>
+    <h3>워크플로우 설계 팁</h3>
+    <ul>
+      <li>2~3단계로 시작해. 너무 복잡하면 디버깅이 어려워.</li>
+      <li>각 단계의 입력/출력을 명확하게 정의해.</li>
+      <li>실패 시 대안(fallback)을 생각해둬.</li>
+    </ul>
+  </div>
+
+  <!-- 6. 에이전트 -->
+  <div class="ref-section" id="agent">
+    <h2>🤖 에이전트 위임</h2>
+    <p>스킬은 "이거 해줘". 에이전트는 <strong>"이 목표를 달성해줘, 방법은 네가 정해."</strong></p>
+    <h3>좋은 에이전트 지시문 예시</h3>
+    <div class="code-block">목표: 이번 주 금요일까지 고객 A사 미팅 준비 완료
+
+해야 할 것:
+- CRM에서 A사 최근 활동 이력 조회
+- 이전 미팅 기록 요약
+- 제안할 사항 3가지 정리
+- 브리핑 문서 1장으로 만들기
+
+제약:
+- 내부 정보만 사용
+- 본인 확인 후 최종 발송</div>
+    <h3>위임 가능한 업무 체크리스트</h3>
+    <ul>
+      <li>✅ 데이터 수집 + 정리 + 보고서 작성</li>
+      <li>✅ 정기적인 모니터링 + 알림</li>
+      <li>✅ 여러 소스를 조합한 분석</li>
+      <li>❌ 최종 의사결정 (사람이 해야 해)</li>
+      <li>❌ 외부 발송/게시 (확인 후에)</li>
+    </ul>
+  </div>
+
+  <!-- 7. Memory -->
+  <div class="ref-section" id="memory">
+    <h2>🧠 Memory 시스템</h2>
+    <p>Memory는 대화 간 맥락을 기억하게 해주는 시스템이야. 매번 처음부터 설명할 필요가 없어져.</p>
+    <h3>메모리 저장하기</h3>
+    <div class="code-block">"이거 기억해: 보고서는 항상 마크다운 표로 만들어줘"
+"기억해둬: 내 팀장은 김철수고, CC에 항상 넣어야 해"</div>
+    <h3>메모리 종류</h3>
+    <table>
+      <thead><tr><th>종류</th><th>용도</th><th>예시</th></tr></thead>
+      <tbody>
+        <tr><td>User</td><td>내 역할/선호도</td><td>"난 마케팅팀이야"</td></tr>
+        <tr><td>Feedback</td><td>교정/지시</td><td>"요약은 3줄 이내로"</td></tr>
+        <tr><td>Project</td><td>프로젝트 맥락</td><td>"이번 분기 목표는 X"</td></tr>
+        <tr><td>Reference</td><td>외부 정보 위치</td><td>"버그는 Linear에서 추적"</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 8. 자주 쓰는 명령어 -->
+  <div class="ref-section" id="shortcuts">
+    <h2>⌨️ 자주 쓰는 명령어</h2>
+    <table>
+      <thead><tr><th>명령어</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>claude</code></td><td>Claude Code 시작</td></tr>
+        <tr><td><code>/cost</code></td><td>현재 세션 토큰 사용량 확인</td></tr>
+        <tr><td><code>/clear</code></td><td>대화 초기화</td></tr>
+        <tr><td><code>/help</code></td><td>도움말</td></tr>
+        <tr><td><code>/[스킬이름]</code></td><td>등록한 스킬 실행</td></tr>
+        <tr><td><code>Ctrl+C</code></td><td>현재 작업 중단</td></tr>
+        <tr><td><code>Esc</code></td><td>입력 취소</td></tr>
+      </tbody>
+    </table>
+    <div class="tip"><p>💡 <code>/cost</code>로 확인한 사용량을 <a href="leaderboard.html" style="color:var(--sky);">리더보드</a>에 입력하면 순위에 반영돼!</p></div>
+  </div>
+
+</div>
+
+<footer style="text-align: center; padding: 40px 24px; border-top: 1px solid var(--gray-200); font-size: 0.8rem; color: var(--gray-400);">
+  <p>🏕️ Made with ❤️ by <a href="https://ablelabsinc.com" target="_blank" style="color: var(--navy); text-decoration: none; font-weight: 700;">ABLE Labs</a></p>
+</footer>
+
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>
