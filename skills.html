@@ -136,7 +136,7 @@
 
 <div class="content">
   <div class="search-bar">
-    <input type="text" class="search-input" id="search-input" placeholder="스킬 이름, 설명, 만든 사람으로 검색..." oninput="render()" />
+    <input type="text" class="search-input" id="search-input" placeholder="스킬 이름, 설명, 만든 사람으로 검색..." />
     <div class="filter-group">
       <button class="filter-btn active" onclick="setFilter('all')">전체</button>
       <button class="filter-btn" onclick="setFilter('popular')">인기</button>
@@ -188,12 +188,22 @@
 </div>
 
 <script>
-const SKILLS_KEY = 'ableCampSkills';
 let currentFilter = 'all';
 let editingId = null;
+let skillsCache = []; // Local cache of skills data from server
 
-function getData() { try { return JSON.parse(localStorage.getItem(SKILLS_KEY)) || []; } catch { return []; } }
-function saveData(d) { localStorage.setItem(SKILLS_KEY, JSON.stringify(d)); }
+async function fetchSkills() {
+  try {
+    const res = await fetch('/api/skills');
+    if (!res.ok) throw new Error('서버 응답 오류: ' + res.status);
+    skillsCache = await res.json();
+    return skillsCache;
+  } catch (err) {
+    console.error('Skills fetch error:', err);
+    alert('스킬 목록을 불러오지 못했어! ' + err.message);
+    return skillsCache; // return stale cache on error
+  }
+}
 
 function setFilter(f) {
   currentFilter = f;
@@ -202,8 +212,8 @@ function setFilter(f) {
   render();
 }
 
-function render() {
-  let data = getData();
+async function render() {
+  let data = await fetchSkills();
   const query = document.getElementById('search-input').value.toLowerCase();
 
   // Stats
@@ -213,6 +223,9 @@ function render() {
   document.getElementById('stat-authors').textContent = new Set(data.map(s => s.author)).size;
   document.getElementById('stat-popular').textContent = data.filter(s => (s.likes || 0) >= 3).length;
   document.getElementById('stat-new').textContent = data.filter(s => s.date >= weekStr).length;
+
+  // Make a working copy for filtering
+  data = [...data];
 
   // Filter
   if (query) {
@@ -268,17 +281,19 @@ function render() {
 
 function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
-function toggleLike(id) {
-  const data = getData();
-  const s = data.find(x => x.id === id);
-  if (s) { s.likes = (s.likes || 0) + 1; }
-  saveData(data);
-  render();
+async function toggleLike(id) {
+  try {
+    const res = await fetch(`/api/skills/${id}/like`, { method: 'POST' });
+    if (!res.ok) throw new Error('좋아요 실패: ' + res.status);
+    await render();
+  } catch (err) {
+    console.error('Like error:', err);
+    alert('좋아요 처리 중 오류가 발생했어! ' + err.message);
+  }
 }
 
 function showDetail(id) {
-  const data = getData();
-  const s = data.find(x => x.id === id);
+  const s = skillsCache.find(x => x.id === id);
   if (!s) return;
   document.getElementById('detail-title').textContent = s.name;
   document.getElementById('detail-body').innerHTML = `
@@ -316,8 +331,7 @@ function openAddModal() {
   document.getElementById('input-name').focus();
 }
 function editSkill(id) {
-  const data = getData();
-  const s = data.find(x => x.id === id);
+  const s = skillsCache.find(x => x.id === id);
   if (!s) return;
   editingId = id;
   document.getElementById('modal-title').textContent = '스킬 수정';
@@ -384,32 +398,59 @@ function clearSkillFile() {
   document.getElementById('skillmd-paste-area').style.display = 'block';
 }
 
-function saveSkill() {
+async function saveSkill() {
   const name = document.getElementById('input-name').value.trim();
   const author = document.getElementById('input-author').value.trim();
   const desc = document.getElementById('input-desc').value.trim();
   const skillmd = skillFileContent || document.getElementById('input-skillmd').value.trim();
   if (!name || !author) { alert('이름과 만든 사람은 필수야!'); return; }
 
-  const data = getData();
-  if (editingId) {
-    const s = data.find(x => x.id === editingId);
-    if (s) { Object.assign(s, { name, author, desc, skillmd }); }
-  } else {
-    data.push({ id: 'skill-' + Date.now(), name, author, desc, skillmd, likes: 0, date: new Date().toISOString().split('T')[0] });
+  try {
+    if (editingId) {
+      const res = await fetch(`/api/skills/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, author, desc, skillmd }),
+      });
+      if (!res.ok) throw new Error('수정 실패: ' + res.status);
+    } else {
+      const res = await fetch('/api/skills', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, author, desc, skillmd }),
+      });
+      if (!res.ok) throw new Error('등록 실패: ' + res.status);
+    }
+    closeAddModal();
+    await render();
+  } catch (err) {
+    console.error('Save error:', err);
+    alert('스킬 저장 중 오류가 발생했어! ' + err.message);
   }
-  saveData(data);
-  closeAddModal();
-  render();
 }
-function deleteSkill(id) {
+
+async function deleteSkill(id) {
   if (!confirm('정말 삭제할까?')) return;
-  saveData(getData().filter(x => x.id !== id));
-  render();
+  try {
+    const res = await fetch(`/api/skills/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('삭제 실패: ' + res.status);
+    await render();
+  } catch (err) {
+    console.error('Delete error:', err);
+    alert('스킬 삭제 중 오류가 발생했어! ' + err.message);
+  }
 }
 
 document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+});
+
+// Debounce search to avoid excessive API calls
+let searchTimeout = null;
+document.getElementById('search-input').removeAttribute('oninput');
+document.getElementById('search-input').addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => render(), 300);
 });
 
 render();

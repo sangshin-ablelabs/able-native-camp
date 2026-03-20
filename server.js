@@ -356,6 +356,101 @@ echo "  이제 Claude Code 세션 종료 시 자동으로 사용량이 기록돼
   res.type('text/plain').send(script);
 });
 
+// ═══════════════════════════════════════════
+// Skills Hub API — data/skills.json
+// ═══════════════════════════════════════════
+const SKILLS_FILE = 'skills.json';
+if (!fs.existsSync(path.join(DATA_DIR, SKILLS_FILE))) {
+  writeJSON(SKILLS_FILE, []);
+}
+
+function getSkills() { return readJSON(SKILLS_FILE) || []; }
+
+// GET /api/skills — 전체 스킬 목록
+app.get('/api/skills', (req, res) => {
+  try {
+    res.json(getSkills());
+  } catch (err) {
+    console.error('Skills GET error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/skills — 스킬 등록
+app.post('/api/skills', (req, res) => {
+  try {
+    const { name, author, desc, skillmd } = req.body;
+    if (!name || !author) {
+      return res.status(400).json({ error: 'name and author required' });
+    }
+    const skills = getSkills();
+    const newSkill = {
+      id: 'skill-' + Date.now(),
+      name,
+      author,
+      desc: desc || '',
+      skillmd: skillmd || '',
+      likes: 0,
+      date: new Date().toISOString().split('T')[0],
+    };
+    skills.push(newSkill);
+    writeJSON(SKILLS_FILE, skills);
+    res.json(newSkill);
+  } catch (err) {
+    console.error('Skills POST error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/skills/:id — 스킬 수정
+app.put('/api/skills/:id', (req, res) => {
+  try {
+    const skills = getSkills();
+    const idx = skills.findIndex(s => s.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'skill not found' });
+    const { name, author, desc, skillmd } = req.body;
+    if (name !== undefined) skills[idx].name = name;
+    if (author !== undefined) skills[idx].author = author;
+    if (desc !== undefined) skills[idx].desc = desc;
+    if (skillmd !== undefined) skills[idx].skillmd = skillmd;
+    writeJSON(SKILLS_FILE, skills);
+    res.json(skills[idx]);
+  } catch (err) {
+    console.error('Skills PUT error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/skills/:id — 스킬 삭제
+app.delete('/api/skills/:id', (req, res) => {
+  try {
+    const skills = getSkills();
+    const idx = skills.findIndex(s => s.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'skill not found' });
+    skills.splice(idx, 1);
+    writeJSON(SKILLS_FILE, skills);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Skills DELETE error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/skills/:id/like — 좋아요 토글
+app.post('/api/skills/:id/like', (req, res) => {
+  try {
+    const skills = getSkills();
+    const s = skills.find(x => x.id === req.params.id);
+    if (!s) return res.status(404).json({ error: 'skill not found' });
+    s.likes = (s.likes || 0) + 1;
+    writeJSON(SKILLS_FILE, skills);
+    res.json(s);
+  } catch (err) {
+    console.error('Skills LIKE error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Start ───
 app.listen(PORT, () => {
   console.log(`ABLE Native Camp server running on http://localhost:${PORT}`);
