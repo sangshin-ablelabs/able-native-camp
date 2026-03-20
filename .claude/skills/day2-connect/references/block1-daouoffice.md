@@ -13,27 +13,34 @@ MCP로 다우오피스를 연결하면 Claude가 이런 것들을 할 수 있다
 
 ### 연결 방법
 
-`.mcp.json` 파일에 다우오피스 서버를 추가한다:
+> **사전 준비**: 다우오피스 MCP 서버 파일과 `.env` 설정이 필요하다. 캠프 진행자가 사전에 배포한다.
+
+**Step 1**: 진행자가 배포한 `daouoffice-mcp` 폴더를 내 Documents 아래에 둔다.
+
+**Step 2**: `.mcp.json` 파일에 다우오피스 서버를 추가한다:
 
 ```json
 {
   "mcpServers": {
     "daouoffice-mcp": {
-      "command": "python",
-      "args": ["/path/to/daouoffice-mcp/server.py"],
-      "env": {
-        "DAOU_EMAIL": "내이메일@ablelabs.io",
-        "DAOU_PASSWORD": "비밀번호"
-      }
+      "type": "stdio",
+      "command": "python3",
+      "args": ["/Users/[내아이디]/Documents/Claude/daouoffice-mcp/server.py"],
+      "env": {}
     }
   }
 }
 ```
 
-또는 CLI로:
-```bash
-claude mcp add daouoffice-mcp python /path/to/daouoffice-mcp/server.py
+`[내아이디]` 부분을 본인 Mac 사용자명으로 바꾼다. 모르면 터미널에서 `whoami`를 입력하면 나온다.
+
+**Step 3**: 서버 폴더 안의 `.env` 파일에 내 다우오피스 계정을 설정한다:
 ```
+DAOU_EMAIL=내이메일@ablelabs.io
+DAOU_PASSWORD=내비밀번호
+```
+
+> Claude에게 "내 다우오피스 MCP 연결 도와줘"라고 하면, 위 과정을 대화로 진행할 수도 있다.
 
 ### 연결 후 할 수 있는 것
 
@@ -58,7 +65,7 @@ claude mcp add daouoffice-mcp python /path/to/daouoffice-mcp/server.py
 claude mcp list
 ```
 
-2. 연결이 안 되어 있으면 IT팀 또는 진행자에게 문의한다 (계정 설정 필요)
+2. 연결이 안 되어 있으면 위 연결 방법을 따라 설정한다. 막히면 Claude에게 "다우오피스 MCP 연결 도와줘"라고 한다
 
 3. 연결이 되어 있으면 아래를 직접 해본다:
    - "오늘 온 메일 보여줘"

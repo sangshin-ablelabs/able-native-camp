@@ -5,10 +5,11 @@
 Day 1에서 배운 것:
 
 ```
-1. Claude Code = 터미널에서 실행하는 AI (대화 + 실행)
+1. Claude Code = 터미널(또는 VS Code)에서 실행하는 AI (대화 + 실행)
 2. CLAUDE.md = AI에게 주는 내 사용설명서
 3. 4가지 도구 = Read, Write, Edit, Bash
 4. 자연어로 시키면 된다
+5. 모르면 Claude에게 물어보면 된다
 ```
 
 ### 오늘의 미션
@@ -37,5 +38,23 @@ Day 2에서는 **MCP**를 배운다. 다우오피스, Teams, Notion을 AI에 직
 2. CLAUDE.md가 저장되어 있는지 확인한다
 
 ---
+위 내용을 직접 실행해보세요.
+실행이 끝나면 "완료" 또는 "다음"이라고 입력해주세요.
 
-Day 1: Operate 완료! Level 1 달성.
+## QUIZ
+
+```json
+AskUserQuestion({
+  "questions": [{
+    "question": "Day 1 미션을 완료했나요?",
+    "header": "Day 1 마무리",
+    "options": [
+      {"label": "Teams에 공유 완료!", "description": "Day 1 달성"},
+      {"label": "아직 진행 중", "description": "더 시간이 필요함"}
+    ],
+    "multiSelect": false
+  }]
+})
+```
+
+어떤 답이든 격려한다. Day 1: Operate 완료! Level 1 달성.

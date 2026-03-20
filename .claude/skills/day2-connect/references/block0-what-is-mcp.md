@@ -32,27 +32,24 @@ MCP는 Claude Code의 "앱스토어"다.
 
 ### 어떻게 연결하나
 
-두 가지 방법이 있다:
+**`.mcp.json` 파일**을 프로젝트 폴더에 만들면 된다. 이 파일이 있으면 Claude Code가 자동으로 인식한다:
 
-**방법 1: 명령어로 추가**
-```bash
-claude mcp add [서버이름] [실행명령]
-```
-
-**방법 2: .mcp.json 파일**
-프로젝트 루트에 `.mcp.json` 파일을 만들어서 설정한다:
 ```json
 {
   "mcpServers": {
     "서버이름": {
+      "type": "stdio",
       "command": "실행명령",
-      "args": ["인자1", "인자2"],
-      "env": {
-        "API_KEY": "키값"
-      }
+      "args": ["인자"],
+      "env": { "API_KEY": "키값" }
     }
   }
 }
+```
+
+또는 CLI로 추가할 수도 있다:
+```bash
+claude mcp add [서버이름] [실행명령] [인자]
 ```
 
 Day 2에서는 3개의 MCP를 연결한다:
@@ -60,16 +57,19 @@ Day 2에서는 3개의 MCP를 연결한다:
 2. **Microsoft Teams** — 채팅 + 채널
 3. **Notion** — 문서 + 데이터베이스
 
+> 모르는 게 있으면 Claude에게 "MCP가 뭐야?" 하고 물어봐도 된다. Claude가 자기 기능을 설명해준다.
+
 ## EXECUTE
 
-1. 터미널에서 Claude Code를 실행한다
-2. 아래 명령어를 입력해서 현재 연결된 MCP 목록을 확인한다:
+1. 터미널(또는 VS Code)에서 Claude Code를 실행한다
+2. 아래를 입력해서 현재 연결된 MCP 목록을 확인한다:
 
 ```bash
 claude mcp list
 ```
 
 3. 아직 아무것도 없을 수 있다 — 정상이다. 지금부터 하나씩 연결할 거다.
+4. (선택) Claude에게 "MCP가 뭔지 설명해줘"라고 물어본다
 
 ---
 위 내용을 직접 실행해보세요.

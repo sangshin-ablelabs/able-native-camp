@@ -56,5 +56,23 @@ Day 4에서는 **Harness**를 배운다. 스킬 하나가 아니라, **스킬들
 3. SKILL.md가 저장되어 있는지 확인한다
 
 ---
+위 내용을 직접 실행해보세요.
+실행이 끝나면 "완료" 또는 "다음"이라고 입력해주세요.
 
-Day 3: Automate 완료! Level 3 달성.
+## QUIZ
+
+```json
+AskUserQuestion({
+  "questions": [{
+    "question": "Day 3 미션을 완료했나요?",
+    "header": "Day 3 마무리",
+    "options": [
+      {"label": "Teams에 공유 완료!", "description": "Day 3 달성"},
+      {"label": "아직 진행 중", "description": "더 시간이 필요함"}
+    ],
+    "multiSelect": false
+  }]
+})
+```
+
+어떤 답이든 격려한다. Day 3: Automate 완료! Level 3 달성.

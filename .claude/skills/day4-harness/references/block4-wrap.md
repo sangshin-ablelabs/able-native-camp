@@ -52,5 +52,23 @@ Day 5에서는 **에이전트에게 위임**한다.
 2. 만든 워크플로우 스킬 파일이 저장되어 있는지 확인한다
 
 ---
+위 내용을 직접 실행해보세요.
+실행이 끝나면 "완료" 또는 "다음"이라고 입력해주세요.
 
-Day 4: Harness 완료! Level 4 달성.
+## QUIZ
+
+```json
+AskUserQuestion({
+  "questions": [{
+    "question": "Day 4 미션을 완료했나요?",
+    "header": "Day 4 마무리",
+    "options": [
+      {"label": "Teams에 공유 완료!", "description": "Day 4 달성"},
+      {"label": "아직 진행 중", "description": "더 시간이 필요함"}
+    ],
+    "multiSelect": false
+  }]
+})
+```
+
+어떤 답이든 격려한다. Day 4: Harness 완료! Level 4 달성.

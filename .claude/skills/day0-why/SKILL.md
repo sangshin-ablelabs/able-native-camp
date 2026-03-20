@@ -59,9 +59,12 @@ CEO가 직접 시연하며 동기를 부여한다.
 
 ---
 
-### Block 3: 설치 확인
+### Block 3: 설치 + 첫 실행 + 환경 설정
 
-`references/block3-setup.md`를 읽고, Claude Code 설치를 확인한다.
+**이 블록은 STOP PROTOCOL을 따른다 (2턴 진행).**
+
+Phase A: `references/block3-setup.md`의 EXPLAIN + EXECUTE를 안내한 뒤 STOP.
+Phase B: 사용자가 "완료"하면 QUIZ 섹션을 읽고 확인한다.
 
 ---
 

@@ -14,36 +14,43 @@ MCP로 Notion을 연결하면 Claude가 이런 것들을 할 수 있다:
 
 ### 연결 방법
 
-Notion MCP를 `.mcp.json`에 추가한다:
+**Step 1: Notion API 키 발급**
+
+1. https://www.notion.so/my-integrations 접속
+2. "새 인테그레이션" 클릭
+3. 이름 입력: `Claude Code`
+4. 워크스페이스 선택 → ABLE Labs
+5. 생성 후 **API 키 복사** (ntn_으로 시작하는 문자열)
+
+**Step 2: `.mcp.json`에 추가**
 
 ```json
 {
   "mcpServers": {
     "notion": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "@notionhq/notion-mcp-server"],
       "env": {
-        "NOTION_API_KEY": "노션API키",
-        "OPENAPI_MCP_HEADERS": "{\"Authorization\":\"Bearer 노션API키\",\"Notion-Version\":\"2022-06-28\"}"
+        "OPENAPI_MCP_HEADERS": "{\"Authorization\":\"Bearer ntn_여기에API키붙여넣기\",\"Notion-Version\":\"2022-06-28\"}"
       }
     }
   }
 }
 ```
 
-또는 CLI로:
-```bash
-claude mcp add notion -- npx -y @notionhq/notion-mcp-server
-```
+> `ntn_여기에API키붙여넣기` 부분을 Step 1에서 복사한 API 키로 바꾼다.
 
-### Notion API 키 발급 방법
+**Step 3: 페이지 연결 (이게 핵심!)**
 
-1. https://www.notion.so/my-integrations 접속
-2. "새 인테그레이션" 클릭
-3. 이름 입력 (예: "Claude Code")
-4. 워크스페이스 선택 → ABLE Labs
-5. 생성 후 API 키 복사
-6. **중요**: 연결하고 싶은 페이지/데이터베이스에서 "연결" → 방금 만든 인테그레이션 추가
+API 키를 만들었다고 자동으로 모든 페이지에 접근할 수 있는 게 **아니다**.
+접근하고 싶은 페이지/데이터베이스에서 직접 인테그레이션을 연결해야 한다:
+
+1. Notion에서 원하는 페이지 열기
+2. 우측 상단 `⋯` 클릭
+3. "연결" → "Claude Code" 선택
+
+> 이 과정을 잊으면 "페이지를 찾을 수 없습니다" 에러가 난다. 가장 흔한 실수다!
 
 ### 연결 후 할 수 있는 것
 

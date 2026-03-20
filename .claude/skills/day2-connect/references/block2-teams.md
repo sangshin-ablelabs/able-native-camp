@@ -15,28 +15,28 @@ MCP로 Teams를 연결하면 Claude가 이런 것들을 할 수 있다:
 
 ### 연결 방법
 
-Teams MCP도 `.mcp.json`에 추가한다:
+> **사전 준비**: Teams MCP 서버 파일과 Azure AD 인증 토큰이 필요하다. 캠프 진행자가 사전에 배포한다.
+
+**Step 1**: 진행자가 배포한 `teams-mcp` 폴더를 내 Documents 아래에 둔다.
+
+**Step 2**: `.mcp.json`에 Teams 서버를 추가한다:
 
 ```json
 {
   "mcpServers": {
     "teams-mcp": {
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@anthropic/teams-mcp"],
-      "env": {
-        "TEAMS_TOKEN": "토큰값"
-      }
+      "args": ["-y", "teams-mcp-server"],
+      "env": {}
     }
   }
 }
 ```
 
-또는 CLI로:
-```bash
-claude mcp add teams-mcp -- npx -y @anthropic/teams-mcp
-```
+**Step 3**: 처음 실행하면 Microsoft 로그인 화면이 뜬다. 회사 계정으로 로그인하면 연결 완료.
 
-(실제 설정은 캠프 진행자가 안내하는 방식을 따른다)
+> 연결이 안 되면 Claude에게 "Teams MCP 연결 도와줘"라고 한다. 설정 방식은 캠프 진행자가 배포한 가이드를 따른다.
 
 ### 연결 후 할 수 있는 것
 
