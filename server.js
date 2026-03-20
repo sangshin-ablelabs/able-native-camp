@@ -20,13 +20,14 @@ app.use(express.json());
 
 // 민감 디렉토리/파일 접근 차단
 app.use((req, res, next) => {
-  const blocked = ['/data/', '/.env', '/scripts/', '/.git'];
-  if (blocked.some(p => req.path.toLowerCase().startsWith(p))) {
+  const p = decodeURIComponent(req.path).toLowerCase();
+  const blocked = ['/data', '/.env', '/scripts', '/.git', '/package', '/server.js', '/node_modules'];
+  if (blocked.some(b => p.startsWith(b))) {
     return res.status(404).send('Not found');
   }
   next();
 });
-app.use(express.static(path.join(__dirname), { extensions: ['html'] }));
+app.use(express.static(path.join(__dirname), { extensions: ['html'], dotfiles: 'deny' }));
 
 // ─── Data Helpers ───
 function readJSON(file) {
