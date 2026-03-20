@@ -1,6 +1,6 @@
 ---
 name: day0-why
-description: ABLE Native Camp Day 0 킥오프. "왜 AI Native인가"를 보여주고 설치까지 완료한다. "Day 0", "킥오프", "왜" 요청에 사용.
+description: ABLE Native Camp Day 0 킥오프. "왜 AI Native인가"를 보여주고 설치까지 완료해. "Day 0", "킥오프", "왜" 요청에 사용.
 ---
 
 # Day 0: Why — 왜 AI Native인가
