@@ -339,10 +339,10 @@
     <h2>📊 순위</h2>
     <div class="board-controls">
       <div class="toggle-group">
-        <button class="toggle-btn active" onclick="setView('cumulative')" id="btn-cumulative">누적</button>
-        <button class="toggle-btn" onclick="setView('daily')" id="btn-daily">일간</button>
+        <button class="toggle-btn active" onclick="setView('daily')" id="btn-daily">일간</button>
         <button class="toggle-btn" onclick="setView('weekly')" id="btn-weekly">주간</button>
         <button class="toggle-btn" onclick="setView('monthly')" id="btn-monthly">월간</button>
+        <button class="toggle-btn" onclick="setView('cumulative')" id="btn-cumulative">누적</button>
       </div>
       <div class="board-actions">
         <button class="btn btn-outline" onclick="exportData()">📋 내보내기</button>
@@ -463,7 +463,7 @@ function isMyEntry(member) {
   return user && member.email === user.email;
 }
 
-let currentView = 'cumulative';
+let currentView = 'daily';
 function today() { return new Date().toISOString().split('T')[0]; }
 
 function getWeeklyAvg(member) {
@@ -623,7 +623,8 @@ function renderBoard(data) {
     }
 
     // Cost
-    html += `<td><span class="token-val">$${tokens.toFixed(2)}</span></td>`;
+    const costStyle = currentView === 'cumulative' ? 'font-size:0.88rem;color:var(--gray-500);' : 'font-size:1rem;font-weight:800;color:var(--navy);';
+    html += `<td><span style="${costStyle}">$${tokens.toFixed(2)}</span></td>`;
 
     // Input + Output tokens
     const io = (member.totalInput || 0) + (member.totalOutput || 0);
