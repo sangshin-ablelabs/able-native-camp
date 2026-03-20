@@ -357,6 +357,180 @@ echo "  이제 Claude Code 세션 종료 시 자동으로 사용량이 기록돼
 });
 
 // ═══════════════════════════════════════════
+// GET /api/weekly-awards — 자동 주간 어워드 계산
+// ═══════════════════════════════════════════
+app.get('/api/weekly-awards', (req, res) => {
+  try {
+    const usage = getUsage();
+    const tokens = getTokens();
+    const submissions = Object.values(usage.submissions);
+
+    // KST (UTC+9) 기준 현재 시간
+    const now = new Date();
+    const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+
+    // 이번 주 월요일 00:00 KST ~ 일요일 23:59 KST
+    const kstDay = kstNow.getUTCDay(); // 0=Sun, 1=Mon, ...
+    const daysSinceMonday = kstDay === 0 ? 6 : kstDay - 1;
+
+    const weekStartKST = new Date(kstNow);
+    weekStartKST.setUTCDate(kstNow.getUTCDate() - daysSinceMonday);
+    weekStartKST.setUTCHours(0, 0, 0, 0);
+    const weekStartDate = weekStartKST.toISOString().split('T')[0]; // YYYY-MM-DD
+
+    const weekEndKST = new Date(weekStartKST);
+    weekEndKST.setUTCDate(weekStartKST.getUTCDate() + 6);
+    const weekEndDate = weekEndKST.toISOString().split('T')[0];
+
+    // 지난 주 범위
+    const lastWeekStartKST = new Date(weekStartKST);
+    lastWeekStartKST.setUTCDate(weekStartKST.getUTCDate() - 7);
+    const lastWeekStartDate = lastWeekStartKST.toISOString().split('T')[0];
+    const lastWeekEndDate = (() => {
+      const d = new Date(weekStartKST);
+      d.setUTCDate(weekStartKST.getUTCDate() - 1);
+      return d.toISOString().split('T')[0];
+    })();
+
+    // 이번 주 / 지난 주 submissions 필터
+    const thisWeekSubs = submissions.filter(s => s.date >= weekStartDate && s.date <= weekEndDate);
+    const lastWeekSubs = submissions.filter(s => s.date >= lastWeekStartDate && s.date <= lastWeekEndDate);
+
+    // ─── 1. Best ABLER: 이번 주 총 사용량($) 1위 ───
+    const thisWeekCostByUser = {};
+    thisWeekSubs.forEach(s => {
+      thisWeekCostByUser[s.username] = (thisWeekCostByUser[s.username] || 0) + (s.total_cost || 0);
+    });
+    let bestAbler = null;
+    let bestAblerCost = 0;
+    for (const [username, cost] of Object.entries(thisWeekCostByUser)) {
+      if (cost > bestAblerCost) {
+        bestAblerCost = cost;
+        bestAbler = username;
+      }
+    }
+
+    // ─── 2. Best Skill: 이번 주 스킬 다운로드 1위 작성자 ───
+    const skills = readJSON(SKILLS_FILE) || [];
+    let bestSkill = null;
+    let bestSkillName = null;
+    // 이번 주 생성된 스킬 중 다운로드 수 1위
+    const thisWeekSkills = skills.filter(s => s.date >= weekStartDate && s.date <= weekEndDate);
+    if (thisWeekSkills.length > 0) {
+      const top = thisWeekSkills.sort((a, b) => (b.downloads || 0) - (a.downloads || 0))[0];
+      if ((top.downloads || 0) > 0) {
+        bestSkill = top.author;
+        bestSkillName = top.name;
+      }
+    }
+    // fallback: 전체 스킬 중 다운로드 수 1위
+    if (!bestSkill && skills.length > 0) {
+      const top = [...skills].sort((a, b) => (b.downloads || 0) - (a.downloads || 0))[0];
+      if ((top.downloads || 0) > 0) {
+        bestSkill = top.author;
+        bestSkillName = top.name;
+      }
+    }
+
+    // ─── 3. Best Workflow: 이번 주 세션 수 1위 ───
+    const thisWeekSessionsByUser = {};
+    thisWeekSubs.forEach(s => {
+      thisWeekSessionsByUser[s.username] = (thisWeekSessionsByUser[s.username] || 0) + 1;
+    });
+    let bestWorkflow = null;
+    let bestWorkflowSessions = 0;
+    for (const [username, count] of Object.entries(thisWeekSessionsByUser)) {
+      if (count > bestWorkflowSessions) {
+        bestWorkflowSessions = count;
+        bestWorkflow = username;
+      }
+    }
+
+    // ─── 4. Best Delegator: 세션당 평균 토큰 최고 (최소 2세션) ───
+    const thisWeekTokensByUser = {};
+    thisWeekSubs.forEach(s => {
+      if (!thisWeekTokensByUser[s.username]) {
+        thisWeekTokensByUser[s.username] = { totalTokens: 0, sessions: 0 };
+      }
+      thisWeekTokensByUser[s.username].totalTokens += (s.total_tokens || 0);
+      thisWeekTokensByUser[s.username].sessions += 1;
+    });
+    let bestDelegator = null;
+    let bestDelegatorAvg = 0;
+    for (const [username, data] of Object.entries(thisWeekTokensByUser)) {
+      if (data.sessions >= 2) {
+        const avg = data.totalTokens / data.sessions;
+        if (avg > bestDelegatorAvg) {
+          bestDelegatorAvg = avg;
+          bestDelegator = username;
+        }
+      }
+    }
+
+    // ─── 5. Most Improved: 전주 대비 사용량 증가율 1위 ───
+    const lastWeekCostByUser = {};
+    lastWeekSubs.forEach(s => {
+      lastWeekCostByUser[s.username] = (lastWeekCostByUser[s.username] || 0) + (s.total_cost || 0);
+    });
+    let mostImproved = null;
+    let mostImprovedRate = 0;
+    for (const [username, thisWeekCost] of Object.entries(thisWeekCostByUser)) {
+      const lastWeekCost = lastWeekCostByUser[username];
+      if (lastWeekCost && lastWeekCost > 0) {
+        const rate = ((thisWeekCost - lastWeekCost) / lastWeekCost) * 100;
+        if (rate > mostImprovedRate) {
+          mostImprovedRate = rate;
+          mostImproved = username;
+        }
+      }
+    }
+
+    // username → displayName 매핑
+    const userDisplayNames = {};
+    Object.values(tokens).forEach(u => { userDisplayNames[u.username] = u.displayName; });
+    // submissions에서도 수집 (토큰 삭제된 경우 대비)
+    submissions.forEach(s => { if (!userDisplayNames[s.username]) userDisplayNames[s.username] = s.displayName; });
+
+    const getName = (username) => username ? (userDisplayNames[username] || username) : null;
+
+    res.json({
+      weekStart: weekStartDate,
+      weekEnd: weekEndDate,
+      awards: {
+        'best-abler': {
+          winner: getName(bestAbler),
+          winnerId: bestAbler,
+          detail: bestAbler ? `$${bestAblerCost.toFixed(2)}` : null,
+        },
+        'best-skill': {
+          winner: bestSkill || null,
+          winnerId: null,
+          detail: bestSkillName || null,
+        },
+        'best-workflow': {
+          winner: getName(bestWorkflow),
+          winnerId: bestWorkflow,
+          detail: bestWorkflow ? `${bestWorkflowSessions}회 세션` : null,
+        },
+        'best-delegator': {
+          winner: getName(bestDelegator),
+          winnerId: bestDelegator,
+          detail: bestDelegator ? `평균 ${Math.round(bestDelegatorAvg).toLocaleString()} tokens/세션` : null,
+        },
+        'most-improved': {
+          winner: getName(mostImproved),
+          winnerId: mostImproved,
+          detail: mostImproved ? `+${mostImprovedRate.toFixed(0)}%` : null,
+        },
+      },
+    });
+  } catch (err) {
+    console.error('Weekly awards error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════
 // Skills Hub API — data/skills.json
 // ═══════════════════════════════════════════
 const SKILLS_FILE = 'skills.json';

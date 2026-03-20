@@ -74,9 +74,7 @@
     .award-card {
       background: var(--white); border-radius: var(--radius); padding: 18px 14px;
       text-align: center; border: 2px solid var(--gray-200); transition: all 0.2s;
-      cursor: pointer;
     }
-    .award-card:hover { border-color: #FBBF24; box-shadow: 0 4px 20px rgba(251,191,36,0.15); }
     .award-card.assigned { border-color: #FBBF24; background: linear-gradient(to bottom, #FFFBEB, var(--white)); }
     .award-card .trophy { font-size: 1.6rem; margin-bottom: 6px; }
     .award-card h4 { font-size: 0.78rem; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
@@ -294,39 +292,44 @@
 
   <!-- AWARDS -->
   <div style="margin-bottom: 8px;">
-    <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--navy);">🏅 어워드</h2>
-    <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 4px;">졸업식에서 발표! 클릭해서 수상자를 지정할 수 있어.</p>
+    <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--navy);">🏅 주간 어워드</h2>
+    <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 4px;" id="awards-subtitle">이번 주 자동 선정 | 매주 일요일 자정에 리셋</p>
   </div>
   <div class="awards" id="awards-grid">
-    <div class="award-card" onclick="assignAward('best-abler')">
+    <div class="award-card" id="card-best-abler">
       <div class="trophy">🏆</div>
       <h4>Best ABLER</h4>
       <div class="desc">종합 1위</div>
       <div class="winner" id="award-best-abler" style="display:none;"></div>
+      <div class="award-detail" id="detail-best-abler" style="font-size:0.65rem;color:var(--gray-400);margin-top:4px;"></div>
     </div>
-    <div class="award-card" onclick="assignAward('best-skill')">
+    <div class="award-card" id="card-best-skill">
       <div class="trophy">⚡</div>
       <h4>Best Skill</h4>
       <div class="desc">최고의 스킬</div>
       <div class="winner" id="award-best-skill" style="display:none;"></div>
+      <div class="award-detail" id="detail-best-skill" style="font-size:0.65rem;color:var(--gray-400);margin-top:4px;"></div>
     </div>
-    <div class="award-card" onclick="assignAward('best-workflow')">
+    <div class="award-card" id="card-best-workflow">
       <div class="trophy">🔗</div>
       <h4>Best Workflow</h4>
       <div class="desc">최고의 워크플로우</div>
       <div class="winner" id="award-best-workflow" style="display:none;"></div>
+      <div class="award-detail" id="detail-best-workflow" style="font-size:0.65rem;color:var(--gray-400);margin-top:4px;"></div>
     </div>
-    <div class="award-card" onclick="assignAward('best-delegator')">
+    <div class="award-card" id="card-best-delegator">
       <div class="trophy">🤖</div>
       <h4>Best Delegator</h4>
       <div class="desc">위임의 달인</div>
       <div class="winner" id="award-best-delegator" style="display:none;"></div>
+      <div class="award-detail" id="detail-best-delegator" style="font-size:0.65rem;color:var(--gray-400);margin-top:4px;"></div>
     </div>
-    <div class="award-card" onclick="assignAward('most-improved')">
+    <div class="award-card" id="card-most-improved">
       <div class="trophy">🚀</div>
       <h4>Most Improved</h4>
       <div class="desc">가장 크게 성장</div>
       <div class="winner" id="award-most-improved" style="display:none;"></div>
+      <div class="award-detail" id="detail-most-improved" style="font-size:0.65rem;color:var(--gray-400);margin-top:4px;"></div>
     </div>
   </div>
 
@@ -348,20 +351,6 @@
 
   <div id="board-content"></div>
 
-</div>
-
-<!-- AWARD MODAL -->
-<div class="modal-overlay" id="award-modal">
-  <div class="modal">
-    <h3 id="award-modal-title">수상자 지정</h3>
-    <label>수상자 선택</label>
-    <select id="award-select"><option value="">선택...</option></select>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeAwardModal()">취소</button>
-      <button class="btn btn-danger" onclick="clearAward()" id="btn-clear-award" style="display:none;">해제</button>
-      <button class="btn btn-primary" onclick="saveAward()">저장</button>
-    </div>
-  </div>
 </div>
 
 <!-- PROFILE MODAL -->
@@ -404,7 +393,6 @@
 
 <script>
 // ─── CONFIG ───
-const AWARDS_KEY = 'ableCampAwards';
 // 등급: 주간 평균 토큰 사용량 기준
 const TIERS = [
   { name: 'Diamond', min: 200, icon: '💎', cls: 'badge-diamond' },
@@ -423,13 +411,17 @@ const LEVELS = [
 ];
 
 let apiData = []; // API에서 가져온 데이터
+let weeklyAwardsData = null; // 주간 어워드 데이터
 
 // ─── API에서 데이터 가져오기 ───
 async function fetchLeaderboard() {
   try {
     document.getElementById('board-content').innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray-400);">데이터 로딩 중...</div>';
-    const res = await fetch('/api/leaderboard');
-    const json = await res.json();
+    const [leaderboardRes, awardsRes] = await Promise.all([
+      fetch('/api/leaderboard'),
+      fetch('/api/weekly-awards'),
+    ]);
+    const json = await leaderboardRes.json();
     apiData = (json.members || []).map(m => ({
       id: m.id,
       name: m.name,
@@ -442,6 +434,12 @@ async function fetchLeaderboard() {
       totalTokens: m.totalTokens,
       activeDays: m.activeDays,
     }));
+    try {
+      weeklyAwardsData = await awardsRes.json();
+    } catch (e) {
+      console.error('Failed to parse weekly awards:', e);
+      weeklyAwardsData = null;
+    }
     render();
   } catch (err) {
     console.error('Failed to fetch leaderboard:', err);
@@ -457,9 +455,6 @@ function isMyEntry(member) {
 }
 
 let currentView = 'cumulative';
-let currentAwardKey = null;
-function getAwards() { try { return JSON.parse(localStorage.getItem(AWARDS_KEY)) || {}; } catch { return {}; } }
-function saveAwards(a) { localStorage.setItem(AWARDS_KEY, JSON.stringify(a)); }
 function today() { return new Date().toISOString().split('T')[0]; }
 
 function getWeeklyAvg(member) {
@@ -516,10 +511,9 @@ function setView(view) {
 // ─── RENDER ───
 function render() {
   const data = getData();
-  const awards = getAwards();
   renderStats(data);
   renderTiers(data);
-  renderAwards(awards, data);
+  renderWeeklyAwards();
   renderBoard(data);
 }
 
@@ -546,18 +540,36 @@ function renderTiers(data) {
   document.getElementById('tier-bronze-count').textContent = counts.Bronze;
 }
 
-function renderAwards(awards, data) {
-  ['best-abler', 'best-skill', 'best-workflow', 'best-delegator', 'most-improved'].forEach(key => {
+function renderWeeklyAwards() {
+  const keys = ['best-abler', 'best-skill', 'best-workflow', 'best-delegator', 'most-improved'];
+  const awards = weeklyAwardsData && weeklyAwardsData.awards ? weeklyAwardsData.awards : {};
+
+  // 날짜 범위 표시
+  if (weeklyAwardsData && weeklyAwardsData.weekStart && weeklyAwardsData.weekEnd) {
+    const startParts = weeklyAwardsData.weekStart.split('-');
+    const endParts = weeklyAwardsData.weekEnd.split('-');
+    const dateRange = `${parseInt(startParts[1])}/${parseInt(startParts[2])} ~ ${parseInt(endParts[1])}/${parseInt(endParts[2])}`;
+    document.getElementById('awards-subtitle').textContent = `이번 주 (${dateRange}) | 매주 일요일 자정에 리셋`;
+  }
+
+  keys.forEach(key => {
     const el = document.getElementById('award-' + key);
-    const card = el.parentElement;
-    if (awards[key]) {
-      const member = data.find(m => m.id === awards[key]);
-      el.textContent = member ? member.name : '(삭제됨)';
+    const card = document.getElementById('card-' + key);
+    const detailEl = document.getElementById('detail-' + key);
+    const award = awards[key];
+
+    if (award && award.winner) {
+      el.textContent = award.winner;
       el.style.display = 'inline-block';
       card.classList.add('assigned');
+      detailEl.textContent = award.detail || '';
     } else {
-      el.style.display = 'none';
+      el.textContent = '아직 없어';
+      el.style.display = 'inline-block';
+      el.style.background = 'var(--gray-100)';
+      el.style.color = 'var(--gray-400)';
       card.classList.remove('assigned');
+      detailEl.textContent = '';
     }
   });
 }
@@ -683,39 +695,6 @@ function openProfileModal(id) {
 
 function closeProfileModal() {
   document.getElementById('profile-modal').classList.remove('active');
-}
-
-// ─── AWARDS ───
-function assignAward(key) {
-  const data = getData();
-  if (data.length === 0) { alert('참가자를 먼저 추가해!'); return; }
-  currentAwardKey = key;
-  const labels = { 'best-abler': '🏆 Best ABLER', 'best-skill': '⚡ Best Skill', 'best-workflow': '🔗 Best Workflow', 'best-delegator': '🤖 Best Delegator', 'most-improved': '🚀 Most Improved' };
-  document.getElementById('award-modal-title').textContent = labels[key] + ' 수상자';
-  const select = document.getElementById('award-select');
-  select.innerHTML = '<option value="">선택...</option>';
-  data.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.name; select.appendChild(o); });
-  const awards = getAwards();
-  if (awards[key]) { select.value = awards[key]; document.getElementById('btn-clear-award').style.display = 'inline-block'; }
-  else { document.getElementById('btn-clear-award').style.display = 'none'; }
-  document.getElementById('award-modal').classList.add('active');
-}
-function closeAwardModal() { document.getElementById('award-modal').classList.remove('active'); currentAwardKey = null; }
-function saveAward() {
-  const val = document.getElementById('award-select').value;
-  if (!val) { closeAwardModal(); return; }
-  const awards = getAwards();
-  awards[currentAwardKey] = val;
-  saveAwards(awards);
-  closeAwardModal();
-  render();
-}
-function clearAward() {
-  const awards = getAwards();
-  delete awards[currentAwardKey];
-  saveAwards(awards);
-  closeAwardModal();
-  render();
 }
 
 // ─── EXPORT ───
