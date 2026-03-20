@@ -246,11 +246,11 @@ function render() {
     html += `
     <div class="skill-card" onclick="showDetail('${skill.id}')">
       <div class="skill-card-header">
-        <h3>${skill.name}</h3>
+        <h3>${esc(skill.name)}</h3>
       </div>
-      <p>${skill.desc}</p>
+      <p>${esc(skill.desc)}</p>
       <div class="skill-meta">
-        <span class="author">👤 ${skill.author}</span>
+        <span class="author">👤 ${esc(skill.author)}</span>
         ${isNew ? '<span class="tag new">🆕 NEW</span>' : ''}
         ${isPopular ? '<span class="tag popular">🔥 인기</span>' : ''}
         ${skill.skillmd ? '<span class="tag">📄 SKILL.md</span>' : ''}
@@ -265,6 +265,8 @@ function render() {
   html += '</div>';
   container.innerHTML = html;
 }
+
+function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
 function toggleLike(id) {
   const data = getData();
@@ -281,17 +283,20 @@ function showDetail(id) {
   document.getElementById('detail-title').textContent = s.name;
   document.getElementById('detail-body').innerHTML = `
     <div style="margin-bottom:12px;">
-      <span style="font-size:0.82rem;color:var(--gray-500);">by ${s.author}</span>
+      <span style="font-size:0.82rem;color:var(--gray-500);">by ${esc(s.author)}</span>
       <span style="margin-left:12px;font-size:0.75rem;color:var(--gray-400);">${s.date}</span>
       <span style="margin-left:12px;font-size:0.82rem;color:var(--gray-400);">❤️ ${s.likes || 0}</span>
     </div>
     <div style="margin-bottom:16px;">
-      <p style="font-size:0.9rem;color:var(--gray-600);line-height:1.7;">${s.desc}</p>
+      <p style="font-size:0.9rem;color:var(--gray-600);line-height:1.7;">${esc(s.desc)}</p>
     </div>
     ${s.skillmd ? `
-    <div style="background:var(--navy-deep);border-radius:var(--radius-sm);padding:16px 20px;font-family:'SF Mono','Fira Code',monospace;font-size:0.82rem;color:var(--green);line-height:1.8;white-space:pre-wrap;overflow-x:auto;">${s.skillmd}</div>
+    <div id="skillmd-render" style="background:var(--navy-deep);border-radius:var(--radius-sm);padding:16px 20px;font-family:'SF Mono','Fira Code',monospace;font-size:0.82rem;color:var(--green);line-height:1.8;white-space:pre-wrap;overflow-x:auto;"></div>
     ` : ''}
   `;
+  // XSS 방지: textContent로 삽입
+  const mdEl = document.getElementById('skillmd-render');
+  if (mdEl && s.skillmd) mdEl.textContent = s.skillmd;
   document.getElementById('detail-modal').classList.add('active');
 }
 function closeDetailModal() { document.getElementById('detail-modal').classList.remove('active'); }

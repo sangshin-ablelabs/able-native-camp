@@ -463,11 +463,11 @@ function toggleBlock(i) {
 }
 
 function showTab(block, tab) {
-  const tabs = document.querySelectorAll('#block-' + block + ' .section-tab');
-  const contents = document.querySelectorAll('#block-' + block + ' .section-content');
-  tabs.forEach(t => t.classList.remove('active'));
+  const container = document.getElementById('block-' + block) || document.querySelector('[id^="block-' + block + '"]');
+  const tabs = container.querySelectorAll('.section-tab');
+  const contents = container.querySelectorAll('.section-content');
+  tabs.forEach(t => { t.classList.remove('active'); if (t.getAttribute('onclick')?.includes("'" + tab + "'")) t.classList.add('active'); });
   contents.forEach(c => c.classList.remove('active'));
-  event.target.classList.add('active');
   document.getElementById('block-' + block + '-' + tab).classList.add('active');
 }
 

@@ -15,7 +15,17 @@ if (!fs.existsSync(path.join(DATA_DIR, 'tokens.json'))) fs.writeFileSync(path.jo
 if (!fs.existsSync(path.join(DATA_DIR, 'usage.json'))) fs.writeFileSync(path.join(DATA_DIR, 'usage.json'), '{"submissions":{}}');
 
 // ─── Middleware ───
+app.set('trust proxy', 1);
 app.use(express.json());
+
+// 민감 디렉토리/파일 접근 차단
+app.use((req, res, next) => {
+  const blocked = ['/data/', '/.env', '/scripts/', '/.git'];
+  if (blocked.some(p => req.path.toLowerCase().startsWith(p))) {
+    return res.status(404).send('Not found');
+  }
+  next();
+});
 app.use(express.static(path.join(__dirname), { extensions: ['html'] }));
 
 // ─── Data Helpers ───
