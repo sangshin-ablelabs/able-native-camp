@@ -270,7 +270,7 @@ async function render() {
     <div class="skill-card" onclick="showDetail('${skill.id}')">
       <div class="skill-card-header">
         <h3>${isEssential ? '<span style="color:#6D28D9;">🛡️</span> ' : ''}${esc(skill.name)}</h3>
-        ${skill.skillmd ? `<button class="btn btn-primary" style="font-size:0.72rem;padding:5px 12px;" onclick="event.stopPropagation(); downloadSkill('${skill.id}')">⬇ 다운로드</button>` : ''}
+        ${skill.skillmd ? `<button class="btn btn-primary" style="font-size:0.78rem;padding:5px 10px;line-height:1;" onclick="event.stopPropagation(); downloadSkill('${skill.id}')" title="다운로드">⬇</button>` : ''}
       </div>
       <p>${esc(skill.desc)}</p>
       <div class="skill-meta">
