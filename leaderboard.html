@@ -247,19 +247,19 @@
 <div class="stats-row">
   <div class="stat-card">
     <div class="num" id="stat-total">0</div>
-    <div class="label">참가자</div>
+    <div class="label">이번 주 활성</div>
   </div>
   <div class="stat-card">
     <div class="num" id="stat-tokens">0</div>
-    <div class="label">총 토큰</div>
+    <div class="label">이번 주 토큰</div>
   </div>
   <div class="stat-card">
     <div class="num" id="stat-completed">$0</div>
-    <div class="label">총 비용</div>
+    <div class="label">이번 주 비용</div>
   </div>
   <div class="stat-card">
     <div class="num" id="stat-avg-level">-</div>
-    <div class="label">총 활성일</div>
+    <div class="label" id="stat-since-label">집계 시작</div>
   </div>
 </div>
 
@@ -596,14 +596,23 @@ function render() {
 }
 
 function renderStats(data) {
-  const total = data.length;
-  const totalCost = data.reduce((s, m) => s + getTotalCost(m), 0);
-  const totalTk = data.reduce((s, m) => s + getTotalTokens(m), 0);
-  const activeDays = data.reduce((s, m) => s + (m.activeDays || 0), 0);
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-tokens').textContent = formatTokenCount(totalTk);
-  document.getElementById('stat-completed').textContent = '$' + totalCost.toFixed(0);
-  document.getElementById('stat-avg-level').textContent = activeDays;
+  // 이번 주 활성 참가자 (이번 주에 토큰 사용한 사람)
+  const weekActive = data.filter(m => getWeekTokens(m) > 0).length;
+  const weekCost = data.reduce((s, m) => s + getWeekCost(m), 0);
+  const weekTk = data.reduce((s, m) => s + getWeekTokens(m), 0);
+  // 집계 시작일 (전체 데이터에서 가장 이른 날짜)
+  let earliest = null;
+  data.forEach(m => {
+    if (m.tokenCountLog) {
+      Object.keys(m.tokenCountLog).forEach(d => {
+        if (!earliest || d < earliest) earliest = d;
+      });
+    }
+  });
+  document.getElementById('stat-total').textContent = weekActive;
+  document.getElementById('stat-tokens').textContent = formatTokenCount(weekTk);
+  document.getElementById('stat-completed').textContent = '$' + weekCost.toFixed(0);
+  document.getElementById('stat-avg-level').textContent = earliest ? earliest.slice(5).replace('-', '/') + '~' : '-';
 }
 
 function renderTiers(data) {
