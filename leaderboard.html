@@ -611,7 +611,7 @@ function renderStats(data) {
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-sessions').textContent = totalSessions.toLocaleString();
   document.getElementById('stat-cost').textContent = '$' + weekCost.toFixed(0);
-  document.getElementById('stat-since').textContent = earliest || '-';
+  document.getElementById('stat-since').textContent = earliest ? earliest.slice(5).replace('-', '.') + '~' : '-';
 }
 
 function renderTiers(data) {
