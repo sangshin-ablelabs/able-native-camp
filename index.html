@@ -249,11 +249,16 @@
     .possible-card h4 { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
     .possible-card p { font-size: 0.82rem; color: var(--gray-500); line-height: 1.6; }
 
+    /* HAMBURGER */
+    .hamburger { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--navy); padding: 4px 8px; }
+    .nav-links.mobile-open { display: flex !important; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: var(--white); border-bottom: 1px solid var(--gray-200); padding: 16px 24px; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 999; }
+
     /* RESPONSIVE */
     @media (max-width: 640px) {
       .day-card { grid-template-columns: 1fr; }
       .day-num { flex-direction: row; gap: 8px; padding: 8px 16px; }
       .nav-links { display: none; }
+      .hamburger { display: block; }
       .setup-box { padding: 24px; }
       .possible-grid { grid-template-columns: 1fr; }
     }
@@ -266,6 +271,7 @@
 <nav>
   <div class="nav-inner">
     <a href="#" class="logo"><span>ABLE</span> Native Camp</a>
+    <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('mobile-open')">☰</button>
     <div class="nav-links">
       <a href="#possible">이런 게 가능해</a>
       <a href="#curriculum">커리큘럼</a>
@@ -605,7 +611,7 @@
       <div class="step-num">1</div>
       <div class="step-content">
         <h4 style="color:#fff;font-size:1.05rem;margin:0 0 8px;">Claude Code 설치</h4>
-        <p>터미널을 열고, 아래를 <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong></p>
+        <p>터미널을 열고, 아래를 <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong><br><span style="font-size:0.78rem;color:#FBBF24;">⚠️ Windows는 cmd가 아니라 반드시 <strong>PowerShell</strong>을 사용해!</span></p>
         <p style="font-size: 0.85rem; color: #D1D5DB; margin: 10px 0 6px;">🍎 Mac / Linux:</p>
         <div class="code-wrap">
           <code id="cmd1">curl -fsSL https://claude.ai/install.sh | bash</code>
@@ -622,22 +628,39 @@
       <div class="step-num">2</div>
       <div class="step-content">
         <h4 style="color:#fff;font-size:1.05rem;margin:0 0 8px;">캠프 저장소 다운로드</h4>
-        <p>캠프 교안과 실습 파일을 내 컴퓨터로 가져와. <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong></p>
+        <p>먼저 Git이 설치되어 있어야 해. 아래 명령어로 확인하고, 없으면 설치부터:</p>
+        <div style="background: #1E293B; border-radius: 8px; padding: 14px 16px; margin: 8px 0 12px; font-size: 0.85rem; color: #D1D5DB; line-height: 1.8;">
+          <strong style="color: #fff;">Git 설치 확인:</strong> <code style="background:#0F172A;padding:2px 6px;border-radius:4px;">git --version</code> — 버전이 나오면 OK<br>
+          🪟 <strong style="color: #fff;">Windows 설치:</strong> <code style="background:#0F172A;padding:2px 6px;border-radius:4px;color:#10B981;">winget install Git.Git</code> (PowerShell에서 실행, 설치 후 터미널 재시작)<br>
+          🍎 <strong style="color: #fff;">Mac 설치:</strong> <code style="background:#0F172A;padding:2px 6px;border-radius:4px;color:#10B981;">xcode-select --install</code> 또는 <a href="https://git-scm.com/downloads" target="_blank" style="color:var(--sky);">git-scm.com</a>
+        </div>
+        <p>Git이 준비됐으면, 캠프 자료를 다운로드해. <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong></p>
         <div class="code-wrap">
           <code id="cmd2">git clone https://github.com/sangshin-ablelabs/able-native-camp.git</code>
           <button class="copy-btn" onclick="copyCmd('cmd2', this)">복사</button>
         </div>
-        <p style="font-size: 0.8rem; color: #9CA3AF; margin-top: 6px;">💡 git이 없다면? Mac: <code style="background:#1E293B;padding:2px 6px;border-radius:4px;">xcode-select --install</code> / Windows: <a href="https://git-scm.com/downloads" target="_blank" style="color:var(--sky);">git-scm.com</a></p>
-        <p style="font-size: 0.8rem; color: #9CA3AF; margin-top: 4px;">💡 "already exists" 에러가 나면? 이미 받은 거야. <code style="background:#1E293B;padding:2px 6px;border-radius:4px;">cd able-native-camp && git pull</code> 로 최신 버전만 받으면 돼.</p>
+        <p style="font-size: 0.8rem; color: #9CA3AF; margin-top: 4px;">💡 "already exists" 에러가 나면? 이미 받은 거야. 해당 폴더에서 <code style="background:#1E293B;padding:2px 6px;border-radius:4px;">git pull</code> 로 최신 버전만 받으면 돼.</p>
       </div>
     </div>
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-content">
+        <h4 style="color:#fff;font-size:1.05rem;margin:0 0 8px;">캠프 폴더에서 터미널 열기</h4>
+        <p>다운받은 <code style="background:#1E293B;padding:2px 6px;border-radius:4px;">able-native-camp</code> 폴더에서 터미널을 열어야 해.</p>
+        <div style="background: #1E293B; border-radius: 8px; padding: 14px 16px; margin-top: 8px; font-size: 0.85rem; color: #D1D5DB; line-height: 1.8;">
+          🪟 <strong style="color: #fff;">Windows:</strong> 파일 탐색기에서 폴더 찾기 → 빈 공간 <strong>우클릭</strong> → <strong>"터미널에서 열기"</strong><br>
+          🍎 <strong style="color: #fff;">Mac:</strong> Finder에서 폴더 <strong>우클릭</strong> → <strong>"폴더에서 새로운 터미널 열기"</strong><br>
+          💻 <strong style="color: #fff;">VS Code (추천!):</strong> 파일 → 폴더 열기 → 선택 후 <code style="background:#0F172A;padding:2px 6px;border-radius:4px;">Ctrl + `</code>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
         <h4 style="color:#fff;font-size:1.05rem;margin:0 0 8px;">Claude Code 실행 + 로그인</h4>
-        <p>캠프 폴더로 들어가서 Claude를 시작해. <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong></p>
+        <p>캠프 폴더 터미널에서 아래 명령어를 실행해. <strong style="color: var(--green);">복사 → 붙여넣기 → Enter</strong></p>
         <div class="code-wrap">
-          <code id="cmd3">cd able-native-camp && claude</code>
+          <code id="cmd3">claude</code>
           <button class="copy-btn" onclick="copyCmd('cmd3', this)">복사</button>
         </div>
         <div style="background: #1E293B; border-radius: 8px; padding: 14px 16px; margin-top: 12px; font-size: 0.85rem; color: #D1D5DB; line-height: 1.6;">
@@ -649,7 +672,7 @@
       </div>
     </div>
     <div class="step">
-      <div class="step-num">4</div>
+      <div class="step-num">5</div>
       <div class="step-content">
         <h4 style="color:#fff;font-size:1.05rem;margin:0 0 8px;">Day 0 캠프 시작!</h4>
         <p>Claude가 뜨면 아래를 입력해. <strong style="color: var(--green);">입력 → Enter</strong></p>
@@ -717,6 +740,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </footer>
 
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="nav.js"></script>
 <script src="auth.js"></script>
 </body>
 </html>

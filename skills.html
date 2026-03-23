@@ -93,14 +93,29 @@
       .search-bar { flex-direction: column; }
       .stats-row { grid-template-columns: 1fr 1fr; }
     }
+    /* Hamburger */
+    .hamburger { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--navy); padding: 4px 8px; }
+    .nav-right.mobile-open { display: flex !important; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: var(--white); border-bottom: 1px solid var(--gray-200); padding: 16px 24px; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 999; }
+    @media (max-width: 640px) {
+      .nav-right { display: none; }
+      .hamburger { display: block; }
+    }
+    /* Toast */
+    .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; z-index: 300; opacity: 0; transition: opacity 0.3s; pointer-events: none; max-width: 90%; text-align: center; }
+    .toast.show { opacity: 1; }
+    .toast.error { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+    .toast.success { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
   </style>
   <link rel="stylesheet" href="auth-styles.css" />
 </head>
 <body>
 
+<div class="toast" id="toast-el"></div>
+
 <nav>
   <div class="nav-inner">
     <a href="index.html" class="logo"><span>ABLE</span> Native Camp</a>
+    <button class="hamburger" onclick="document.querySelector('.nav-right').classList.toggle('mobile-open')">☰</button>
     <div class="nav-right">
       <a href="index.html">커리큘럼</a>
       <a href="skills.html" style="color: var(--navy); font-weight: 700;">스킬 허브</a>
@@ -184,13 +199,20 @@
     <h3 id="detail-title"></h3>
     <div id="detail-body"></div>
     <div class="modal-actions" style="margin-top: 16px;">
-      <button class="btn btn-primary" onclick="downloadSkill(document.getElementById('detail-title').dataset.id)">⬇ 다운로드</button>
+      <button class="btn btn-primary" onclick="downloadSkill(document.getElementById('detail-title').dataset.id)" title="다운로드">⬇</button>
       <button class="btn btn-outline" onclick="closeDetailModal()">닫기</button>
     </div>
   </div>
 </div>
 
 <script>
+function showToast(msg, type = 'error') {
+  const el = document.getElementById('toast-el');
+  el.textContent = msg;
+  el.className = 'toast ' + type + ' show';
+  setTimeout(() => { el.classList.remove('show'); }, 4000);
+}
+
 let currentFilter = 'all';
 let editingId = null;
 let skillsCache = []; // Local cache of skills data from server
@@ -203,7 +225,7 @@ async function fetchSkills() {
     return skillsCache;
   } catch (err) {
     console.error('Skills fetch error:', err);
-    alert('스킬 목록을 불러오지 못했어! ' + err.message);
+    showToast('스킬 목록을 불러오지 못했어. 잠시 후 다시 시도해봐.', 'error');
     return skillsCache; // return stale cache on error
   }
 }
@@ -252,7 +274,7 @@ async function render() {
     return;
   }
   if (data.length === 0 && query) {
-    container.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><h3>"${query}"에 맞는 스킬이 없어</h3><p>다른 키워드로 검색하거나 새 스킬을 등록해봐!</p></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><h3>"${esc(query)}"에 맞는 스킬이 없어</h3><p>다른 키워드로 검색하거나 새 스킬을 등록해봐!</p></div>`;
     return;
   }
 
@@ -267,10 +289,10 @@ async function render() {
     const isEssential = skill.essential;
     const isAuthor = currentEmail && (skill.email || '').toLowerCase() === currentEmail;
     html += `
-    <div class="skill-card" onclick="showDetail('${skill.id}')">
+    <div class="skill-card" data-id="${esc(String(skill.id))}" onclick="showDetail(this.dataset.id)">
       <div class="skill-card-header">
         <h3>${isEssential ? '<span style="color:#6D28D9;">🛡️</span> ' : ''}${esc(skill.name)}</h3>
-        ${skill.skillmd ? `<button class="btn btn-primary" style="font-size:0.78rem;padding:5px 10px;line-height:1;" onclick="event.stopPropagation(); downloadSkill('${skill.id}')" title="다운로드">⬇</button>` : ''}
+        ${skill.skillmd ? `<button class="btn btn-primary" style="font-size:0.78rem;padding:5px 10px;line-height:1;" onclick="event.stopPropagation(); downloadSkill(this.closest('.skill-card').dataset.id)" title="다운로드">⬇</button>` : ''}
       </div>
       <p>${esc(skill.desc)}</p>
       <div class="skill-meta">
@@ -279,10 +301,10 @@ async function render() {
         ${isNew ? '<span class="tag new">🆕 NEW</span>' : ''}
         ${isPopular ? '<span class="tag popular">🔥 인기</span>' : ''}
         <span style="font-size:0.75rem;color:var(--gray-400);">⬇ ${skill.downloads || 0}</span>
-        <span class="likes" onclick="event.stopPropagation(); toggleLike('${skill.id}')">❤️ ${skill.likes || 0}</span>
+        <span class="likes" onclick="event.stopPropagation(); toggleLike(this.closest('.skill-card').dataset.id)">❤️ ${skill.likes || 0}</span>
         ${isAuthor ? `<span style="margin-left:auto;font-size:0.7rem;color:var(--gray-400);">
-          ✏️ <span onclick="event.stopPropagation(); editSkill('${skill.id}')" style="cursor:pointer;">수정</span>
-          🗑️ <span onclick="event.stopPropagation(); deleteSkill('${skill.id}')" style="cursor:pointer;">삭제</span>
+          ✏️ <span onclick="event.stopPropagation(); editSkill(this.closest('.skill-card').dataset.id)" style="cursor:pointer;">수정</span>
+          🗑️ <span onclick="event.stopPropagation(); deleteSkill(this.closest('.skill-card').dataset.id)" style="cursor:pointer;">삭제</span>
         </span>` : ''}
       </div>
     </div>`;
@@ -293,14 +315,21 @@ async function render() {
 
 function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
+function getAuthHeaders() {
+  const token = localStorage.getItem('ableCampToken');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
+
 async function toggleLike(id) {
   try {
-    const res = await fetch(`/api/skills/${id}/like`, { method: 'POST' });
+    const res = await fetch(`/api/skills/${id}/like`, { method: 'POST', headers: getAuthHeaders() });
     if (!res.ok) throw new Error('좋아요 실패: ' + res.status);
     await render();
   } catch (err) {
     console.error('Like error:', err);
-    alert('좋아요 처리 중 오류가 발생했어! ' + err.message);
+    showToast('좋아요 처리 중 오류가 발생했어.', 'error');
   }
 }
 
@@ -331,10 +360,11 @@ function showDetail(id) {
 function closeDetailModal() { document.getElementById('detail-modal').classList.remove('active'); }
 
 function openAddModal() {
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  if (!user) { alert('로그인이 필요해!'); return; }
   editingId = null;
   document.getElementById('modal-title').textContent = '스킬 등록';
   document.getElementById('input-name').value = '';
-  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
   const authorInput = document.getElementById('input-author');
   authorInput.value = user ? user.name : '';
   if (user) authorInput.readOnly = true; else authorInput.readOnly = false;
@@ -419,15 +449,12 @@ async function saveSkill() {
   const skillmd = skillFileContent || document.getElementById('input-skillmd').value.trim();
   if (!name || !author) { alert('이름과 만든 사람은 필수야!'); return; }
 
-  const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-  const email = currentUser ? (currentUser.email || '') : '';
-
   try {
     if (editingId) {
       const res = await fetch(`/api/skills/${editingId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-User-Email': email },
-        body: JSON.stringify({ name, author, desc, skillmd, email }),
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ name, author, desc, skillmd }),
       });
       if (res.status === 403) {
         const body = await res.json();
@@ -438,8 +465,8 @@ async function saveSkill() {
     } else {
       const res = await fetch('/api/skills', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, author, desc, skillmd, email }),
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ name, author, desc, skillmd }),
       });
       if (!res.ok) throw new Error('등록 실패: ' + res.status);
     }
@@ -447,7 +474,7 @@ async function saveSkill() {
     await render();
   } catch (err) {
     console.error('Save error:', err);
-    alert('스킬 저장 중 오류가 발생했어! ' + err.message);
+    showToast('스킬 저장 중 오류가 발생했어.', 'error');
   }
 }
 
@@ -456,7 +483,7 @@ async function downloadSkill(id) {
   if (!s || !s.skillmd) { alert('SKILL.md가 없는 스킬이야!'); return; }
   try {
     // 다운로드 카운트 증가
-    await fetch(`/api/skills/${id}/download`, { method: 'POST' });
+    await fetch(`/api/skills/${id}/download`, { method: 'POST', headers: getAuthHeaders() });
     // 파일 다운로드
     const blob = new Blob([s.skillmd], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
@@ -475,13 +502,10 @@ async function downloadSkill(id) {
 
 async function deleteSkill(id) {
   if (!confirm('정말 삭제할까?')) return;
-  const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-  const email = currentUser ? (currentUser.email || '') : '';
   try {
     const res = await fetch(`/api/skills/${id}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json', 'X-User-Email': email },
-      body: JSON.stringify({ email }),
+      headers: getAuthHeaders(),
     });
     if (res.status === 403) {
       const body = await res.json();
@@ -492,12 +516,15 @@ async function deleteSkill(id) {
     await render();
   } catch (err) {
     console.error('Delete error:', err);
-    alert('스킬 삭제 중 오류가 발생했어! ' + err.message);
+    showToast('스킬 삭제 중 오류가 발생했어.', 'error');
   }
 }
 
 document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(o => o.classList.remove('active'));
 });
 
 // Debounce search to avoid excessive API calls
@@ -516,6 +543,7 @@ render();
 </footer>
 
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="nav.js"></script>
 <script src="auth.js"></script>
 </body>
 </html>

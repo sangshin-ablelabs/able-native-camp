@@ -3,10 +3,15 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_KEY = process.env.ADMIN_KEY || 'able-native-camp-admin';
+const ADMIN_KEY = process.env.ADMIN_KEY;
+if (!ADMIN_KEY) {
+  console.error('❌ ADMIN_KEY 환경변수가 설정되지 않았습니다. .env 파일에 ADMIN_KEY=<강력한_키>를 추가하세요.');
+  process.exit(1);
+}
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 
 // ─── Data 디렉토리 초기화 ───
@@ -14,9 +19,52 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(path.join(DATA_DIR, 'tokens.json'))) fs.writeFileSync(path.join(DATA_DIR, 'tokens.json'), '{}');
 if (!fs.existsSync(path.join(DATA_DIR, 'usage.json'))) fs.writeFileSync(path.join(DATA_DIR, 'usage.json'), '{"submissions":{}}');
 
+// ─── Daily Snapshot (매일 1회 data/*.json → data/backups/YYYY-MM-DD/) ───
+const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+
+function dailySnapshot() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const todayDir = path.join(BACKUP_DIR, today);
+    if (fs.existsSync(todayDir)) return; // 오늘 이미 했으면 스킵
+    fs.mkdirSync(todayDir, { recursive: true });
+    ['tokens.json', 'usage.json', 'skills.json'].forEach(f => {
+      const src = path.join(DATA_DIR, f);
+      if (fs.existsSync(src)) fs.copyFileSync(src, path.join(todayDir, f));
+    });
+    // 14일 초과 백업 삭제
+    const dirs = fs.readdirSync(BACKUP_DIR).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+    while (dirs.length > 14) {
+      const old = dirs.shift();
+      fs.rmSync(path.join(BACKUP_DIR, old), { recursive: true, force: true });
+    }
+    console.log(`[Backup] Daily snapshot: ${today}`);
+  } catch (e) { console.error('Daily snapshot failed:', e.message); }
+}
+dailySnapshot();
+setInterval(dailySnapshot, 60 * 60 * 1000); // 매 1시간마다 체크 (중복 실행 안됨)
+
 // ─── Middleware ───
 app.set('trust proxy', 1);
 app.use(express.json());
+
+// Rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15분
+  max: 100,                  // IP당 100회
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, try again later' },
+});
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,                    // 인증 관련은 15분에 20회
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many auth attempts' },
+});
+app.use('/api/', apiLimiter);
 
 // 민감 디렉토리/파일 접근 차단
 app.use((req, res, next) => {
@@ -27,6 +75,13 @@ app.use((req, res, next) => {
   }
   next();
 });
+// Favicon (inline SVG → prevent 404)
+app.get('/favicon.ico', (req, res) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#1E3A5F"/><text x="16" y="23" font-size="20" text-anchor="middle" fill="#4A90D9" font-family="Arial,sans-serif" font-weight="bold">A</text></svg>`;
+  const buf = Buffer.from(svg);
+  res.set({ 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' });
+  res.send(buf);
+});
 app.use(express.static(path.join(__dirname), { extensions: ['html'], dotfiles: 'deny' }));
 
 // ─── Data Helpers ───
@@ -36,7 +91,14 @@ function readJSON(file) {
 }
 
 function writeJSON(file, data) {
-  fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2));
+  const filePath = path.join(DATA_DIR, file);
+  // 기존 파일이 있으면 .bak으로 백업 (덮어쓰기 전 보존)
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.copyFileSync(filePath, filePath + '.bak');
+    }
+  } catch (e) { console.error('Backup failed:', file, e.message); }
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
 function getTokens() { return readJSON('tokens.json') || {}; }
@@ -75,8 +137,11 @@ app.post('/api/usage/submit', authenticateToken, (req, res) => {
             cache_creation_tokens, cache_read_tokens,
             total_tokens, total_cost, models_used } = req.body;
 
-    if (!session_id || !date) {
-      return res.status(400).json({ error: 'session_id and date required' });
+    if (!session_id || typeof session_id !== 'string' || !date) {
+      return res.status(400).json({ error: 'session_id (string) and date required' });
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ error: 'date must be YYYY-MM-DD format' });
     }
 
     // 숫자 필드 검증
@@ -141,6 +206,7 @@ app.get('/api/leaderboard', (req, res) => {
         totalOutput: 0,
         totalCacheCreate: 0,
         totalCacheRead: 0,
+        sessions: 0,
         activeDays: 0,
         dailyCost: {},
       };
@@ -159,6 +225,7 @@ app.get('/api/leaderboard', (req, res) => {
           totalOutput: 0,
           totalCacheCreate: 0,
           totalCacheRead: 0,
+          sessions: 0,
           activeDays: 0,
           dailyCost: {},
         };
@@ -171,6 +238,7 @@ app.get('/api/leaderboard', (req, res) => {
       u.totalOutput += s.output_tokens || 0;
       u.totalCacheCreate += s.cache_creation_tokens || 0;
       u.totalCacheRead += s.cache_read_tokens || 0;
+      u.sessions += 1;
 
       if (!u.dailyCost[s.date]) {
         u.dailyCost[s.date] = { cost: 0, tokens: 0 };
@@ -243,7 +311,7 @@ app.post('/api/register', authenticateAdmin, (req, res) => {
 // ═══════════════════════════════════════════
 // POST /api/self-register — 참가자 셀프 등록 (MS 로그인 후)
 // ═══════════════════════════════════════════
-app.post('/api/self-register', (req, res) => {
+app.post('/api/self-register', authLimiter, (req, res) => {
   try {
     const { name, email } = req.body;
     if (!name || !email) {
@@ -252,10 +320,10 @@ app.post('/api/self-register', (req, res) => {
 
     const tokens = getTokens();
 
-    // 이미 등록된 email 확인 → 기존 토큰 반환
+    // 이미 등록된 email 확인
     const existing = Object.entries(tokens).find(([, v]) => v.email === email);
     if (existing) {
-      return res.json({ token: existing[0], user: existing[1], registered: false });
+      return res.status(409).json({ error: 'already_registered', message: 'Already registered. Use existing token.' });
     }
 
     // username: email의 @ 앞 부분
@@ -474,16 +542,18 @@ app.get('/api/weekly-awards', (req, res) => {
     const thisWeekSubs = submissions.filter(s => s.date >= weekStartDate && s.date <= weekEndDate);
     const lastWeekSubs = submissions.filter(s => s.date >= lastWeekStartDate && s.date <= lastWeekEndDate);
 
-    // ─── 1. Best ABLER: 이번 주 총 사용량($) 1위 ───
+    // ─── 1. Best ABLER: 이번 주 총 토큰 1위 ───
+    const thisWeekTokensTotalByUser = {};
     const thisWeekCostByUser = {};
     thisWeekSubs.forEach(s => {
+      thisWeekTokensTotalByUser[s.username] = (thisWeekTokensTotalByUser[s.username] || 0) + (s.total_tokens || 0);
       thisWeekCostByUser[s.username] = (thisWeekCostByUser[s.username] || 0) + (s.total_cost || 0);
     });
     let bestAbler = null;
-    let bestAblerCost = 0;
-    for (const [username, cost] of Object.entries(thisWeekCostByUser)) {
-      if (cost > bestAblerCost) {
-        bestAblerCost = cost;
+    let bestAblerTokens = 0;
+    for (const [username, totalTk] of Object.entries(thisWeekTokensTotalByUser)) {
+      if (totalTk > bestAblerTokens) {
+        bestAblerTokens = totalTk;
         bestAbler = username;
       }
     }
@@ -501,61 +571,41 @@ app.get('/api/weekly-awards', (req, res) => {
         bestSkillName = top.name;
       }
     }
-    // fallback: 전체 스킬 중 다운로드 수 1위
-    if (!bestSkill && skills.length > 0) {
-      const top = [...skills].sort((a, b) => (b.downloads || 0) - (a.downloads || 0))[0];
-      if ((top.downloads || 0) > 0) {
-        bestSkill = top.author;
-        bestSkillName = top.name;
-      }
-    }
-
-    // ─── 3. Best Workflow: 이번 주 세션 수 1위 ───
-    const thisWeekSessionsByUser = {};
+    // ─── 3. Power Session: 단일 세션 최대 토큰 ───
+    let powerSession = null;
+    let powerSessionTokens = 0;
     thisWeekSubs.forEach(s => {
-      thisWeekSessionsByUser[s.username] = (thisWeekSessionsByUser[s.username] || 0) + 1;
-    });
-    let bestWorkflow = null;
-    let bestWorkflowSessions = 0;
-    for (const [username, count] of Object.entries(thisWeekSessionsByUser)) {
-      if (count > bestWorkflowSessions) {
-        bestWorkflowSessions = count;
-        bestWorkflow = username;
+      if ((s.total_tokens || 0) > powerSessionTokens) {
+        powerSessionTokens = s.total_tokens || 0;
+        powerSession = s.username;
       }
-    }
+    });
 
-    // ─── 4. Best Delegator: 세션당 평균 토큰 최고 (최소 2세션) ───
-    const thisWeekTokensByUser = {};
+    // ─── 4. Most Productive: output 토큰 총량 1위 ───
+    const thisWeekOutputByUser = {};
     thisWeekSubs.forEach(s => {
-      if (!thisWeekTokensByUser[s.username]) {
-        thisWeekTokensByUser[s.username] = { totalTokens: 0, sessions: 0 };
-      }
-      thisWeekTokensByUser[s.username].totalTokens += (s.total_tokens || 0);
-      thisWeekTokensByUser[s.username].sessions += 1;
+      thisWeekOutputByUser[s.username] = (thisWeekOutputByUser[s.username] || 0) + (s.output_tokens || 0);
     });
-    let bestDelegator = null;
-    let bestDelegatorAvg = 0;
-    for (const [username, data] of Object.entries(thisWeekTokensByUser)) {
-      if (data.sessions >= 2) {
-        const avg = data.totalTokens / data.sessions;
-        if (avg > bestDelegatorAvg) {
-          bestDelegatorAvg = avg;
-          bestDelegator = username;
-        }
+    let mostProductive = null;
+    let mostProductiveOutput = 0;
+    for (const [username, output] of Object.entries(thisWeekOutputByUser)) {
+      if (output > mostProductiveOutput) {
+        mostProductiveOutput = output;
+        mostProductive = username;
       }
     }
 
-    // ─── 5. Most Improved: 전주 대비 사용량 증가율 1위 ───
-    const lastWeekCostByUser = {};
+    // ─── 5. Most Improved: 전주 대비 토큰 증가율 1위 ───
+    const lastWeekTokensTotalByUser = {};
     lastWeekSubs.forEach(s => {
-      lastWeekCostByUser[s.username] = (lastWeekCostByUser[s.username] || 0) + (s.total_cost || 0);
+      lastWeekTokensTotalByUser[s.username] = (lastWeekTokensTotalByUser[s.username] || 0) + (s.total_tokens || 0);
     });
     let mostImproved = null;
     let mostImprovedRate = 0;
-    for (const [username, thisWeekCost] of Object.entries(thisWeekCostByUser)) {
-      const lastWeekCost = lastWeekCostByUser[username];
-      if (lastWeekCost && lastWeekCost > 0) {
-        const rate = ((thisWeekCost - lastWeekCost) / lastWeekCost) * 100;
+    for (const [username, thisWeekTokens] of Object.entries(thisWeekTokensTotalByUser)) {
+      const lastWeekTokens = lastWeekTokensTotalByUser[username];
+      if (lastWeekTokens && lastWeekTokens > 0) {
+        const rate = ((thisWeekTokens - lastWeekTokens) / lastWeekTokens) * 100;
         if (rate > mostImprovedRate) {
           mostImprovedRate = rate;
           mostImproved = username;
@@ -578,7 +628,7 @@ app.get('/api/weekly-awards', (req, res) => {
         'best-abler': {
           winner: getName(bestAbler),
           winnerId: bestAbler,
-          detail: bestAbler ? `$${bestAblerCost.toFixed(2)}` : null,
+          detail: bestAbler ? `${Math.round(bestAblerTokens / 1_000_000)}M tokens` : null,
         },
         'best-skill': {
           winner: bestSkill || null,
@@ -586,14 +636,14 @@ app.get('/api/weekly-awards', (req, res) => {
           detail: bestSkillName || null,
         },
         'best-workflow': {
-          winner: getName(bestWorkflow),
-          winnerId: bestWorkflow,
-          detail: bestWorkflow ? `${bestWorkflowSessions}회 세션` : null,
+          winner: getName(powerSession),
+          winnerId: powerSession,
+          detail: powerSession ? `${Math.round(powerSessionTokens / 1_000_000)}M tokens` : null,
         },
         'best-delegator': {
-          winner: getName(bestDelegator),
-          winnerId: bestDelegator,
-          detail: bestDelegator ? `평균 ${Math.round(bestDelegatorAvg).toLocaleString()} tokens/세션` : null,
+          winner: getName(mostProductive),
+          winnerId: mostProductive,
+          detail: mostProductive ? `output ${Math.round(mostProductiveOutput / 1_000).toLocaleString()}K` : null,
         },
         'most-improved': {
           winner: getName(mostImproved),
@@ -622,23 +672,24 @@ app.get('/api/skills', (req, res) => {
   }
 });
 
-// POST /api/skills — 스킬 등록
-app.post('/api/skills', (req, res) => {
+// POST /api/skills — 스킬 등록 (로그인 사용자만)
+app.post('/api/skills', authenticateToken, (req, res) => {
   try {
-    const { name, author, email, desc, skillmd } = req.body;
-    if (!name || !author) {
-      return res.status(400).json({ error: 'name and author required' });
+    const { name, desc, skillmd } = req.body;
+    if (!name) {
+      return res.status(400).json({ error: 'name required' });
     }
     const skills = getSkills();
     const newSkill = {
       id: 'skill-' + Date.now(),
       name,
-      author,
-      email: email || '',
+      author: req.user.displayName,
+      email: req.user.email,
       desc: desc || '',
       skillmd: skillmd || '',
       essential: false,
       likes: 0,
+      downloads: 0,
       date: new Date().toISOString().split('T')[0],
     };
     skills.push(newSkill);
@@ -650,23 +701,22 @@ app.post('/api/skills', (req, res) => {
   }
 });
 
-// PUT /api/skills/:id — 스킬 수정 (작성자 본인만 가능)
-app.put('/api/skills/:id', (req, res) => {
+// PUT /api/skills/:id — 스킬 수정 (작성자 본인만 — 토큰 인증 기반)
+app.put('/api/skills/:id', authenticateToken, (req, res) => {
   try {
     const skills = getSkills();
     const idx = skills.findIndex(s => s.id === req.params.id);
     if (idx === -1) return res.status(404).json({ error: 'skill not found' });
 
-    // 작성자 권한 확인: 요청의 email이 원작성자 email과 일치해야 함
-    const reqEmail = (req.headers['x-user-email'] || req.body.email || '').toLowerCase().trim();
+    // 작성자 권한 확인: 토큰의 email과 스킬 작성자 email 비교
+    const reqEmail = (req.user.email || '').toLowerCase().trim();
     const skillEmail = (skills[idx].email || '').toLowerCase().trim();
     if (!reqEmail || !skillEmail || reqEmail !== skillEmail) {
       return res.status(403).json({ error: '작성자 본인만 수정할 수 있어' });
     }
 
-    const { name, author, desc, skillmd } = req.body;
+    const { name, desc, skillmd } = req.body;
     if (name !== undefined) skills[idx].name = name;
-    if (author !== undefined) skills[idx].author = author;
     if (desc !== undefined) skills[idx].desc = desc;
     if (skillmd !== undefined) skills[idx].skillmd = skillmd;
     writeJSON(SKILLS_FILE, skills);
@@ -677,15 +727,15 @@ app.put('/api/skills/:id', (req, res) => {
   }
 });
 
-// DELETE /api/skills/:id — 스킬 삭제 (작성자 본인만 가능)
-app.delete('/api/skills/:id', (req, res) => {
+// DELETE /api/skills/:id — 스킬 삭제 (작성자 본인만 — 토큰 인증 기반)
+app.delete('/api/skills/:id', authenticateToken, (req, res) => {
   try {
     const skills = getSkills();
     const idx = skills.findIndex(s => s.id === req.params.id);
     if (idx === -1) return res.status(404).json({ error: 'skill not found' });
 
     // 작성자 권한 확인
-    const reqEmail = (req.headers['x-user-email'] || req.body.email || '').toLowerCase().trim();
+    const reqEmail = (req.user.email || '').toLowerCase().trim();
     const skillEmail = (skills[idx].email || '').toLowerCase().trim();
     if (!reqEmail || !skillEmail || reqEmail !== skillEmail) {
       return res.status(403).json({ error: '작성자 본인만 삭제할 수 있어' });
@@ -720,13 +770,19 @@ app.put('/api/skills/:id/essential', authenticateAdmin, (req, res) => {
   }
 });
 
-// POST /api/skills/:id/download — 다운로드 카운트 증가
-app.post('/api/skills/:id/download', (req, res) => {
+// POST /api/skills/:id/download — 다운로드 카운트 증가 (인증 필요)
+app.post('/api/skills/:id/download', authenticateToken, (req, res) => {
   try {
     const skills = getSkills();
     const s = skills.find(x => x.id === req.params.id);
     if (!s) return res.status(404).json({ error: 'skill not found' });
-    s.downloads = (s.downloads || 0) + 1;
+    // 유저별 중복 다운로드 방지
+    if (!s.downloadedBy) s.downloadedBy = [];
+    if (s.downloadedBy.includes(req.user.username)) {
+      return res.json(s); // 이미 카운트됨, 조용히 반환
+    }
+    s.downloadedBy.push(req.user.username);
+    s.downloads = s.downloadedBy.length;
     writeJSON(SKILLS_FILE, skills);
     res.json(s);
   } catch (err) {
@@ -735,19 +791,62 @@ app.post('/api/skills/:id/download', (req, res) => {
   }
 });
 
-// POST /api/skills/:id/like — 좋아요 토글
-app.post('/api/skills/:id/like', (req, res) => {
+// POST /api/skills/:id/like — 좋아요 토글 (인증 필요)
+app.post('/api/skills/:id/like', authenticateToken, (req, res) => {
   try {
     const skills = getSkills();
     const s = skills.find(x => x.id === req.params.id);
     if (!s) return res.status(404).json({ error: 'skill not found' });
-    s.likes = (s.likes || 0) + 1;
+    // 유저별 좋아요 토글
+    if (!s.likedBy) s.likedBy = [];
+    const idx = s.likedBy.indexOf(req.user.username);
+    if (idx >= 0) {
+      s.likedBy.splice(idx, 1); // 좋아요 취소
+    } else {
+      s.likedBy.push(req.user.username); // 좋아요
+    }
+    s.likes = s.likedBy.length;
     writeJSON(SKILLS_FILE, skills);
     res.json(s);
   } catch (err) {
     console.error('Skills LIKE error:', err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// ─── Backup API (Admin) ───
+// GET /api/backups — 백업 목록 조회
+app.get('/api/backups', authenticateAdmin, (req, res) => {
+  try {
+    const dirs = fs.readdirSync(BACKUP_DIR).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort().reverse();
+    res.json(dirs.map(d => ({
+      date: d,
+      files: fs.readdirSync(path.join(BACKUP_DIR, d)),
+    })));
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// POST /api/backups/restore — 특정 날짜 백업 복구
+app.post('/api/backups/restore', authenticateAdmin, (req, res) => {
+  try {
+    const { date, file } = req.body;
+    if (!date || !file) return res.status(400).json({ error: 'date and file required' });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'invalid date' });
+    const allowed = ['tokens.json', 'usage.json', 'skills.json'];
+    if (!allowed.includes(file)) return res.status(400).json({ error: 'invalid file' });
+    const src = path.join(BACKUP_DIR, date, file);
+    if (!fs.existsSync(src)) return res.status(404).json({ error: 'backup not found' });
+    const dest = path.join(DATA_DIR, file);
+    // 복구 전 현재 파일을 .pre-restore로 보존
+    if (fs.existsSync(dest)) fs.copyFileSync(dest, dest + '.pre-restore');
+    fs.copyFileSync(src, dest);
+    res.json({ ok: true, restored: `${date}/${file}` });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Health Check ───
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
 });
 
 // ─── Start ───

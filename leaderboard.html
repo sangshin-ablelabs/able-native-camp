@@ -51,6 +51,7 @@
       background: var(--white); border-radius: var(--radius); padding: 20px 16px;
       text-align: center; border: 2px solid var(--gray-200); transition: all 0.2s;
     }
+    .tier-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .tier-card .icon { font-size: 2rem; margin-bottom: 6px; }
     .tier-card h4 { font-size: 0.9rem; font-weight: 800; margin-bottom: 2px; }
     .tier-card .threshold { font-size: 0.75rem; color: var(--gray-400); font-weight: 600; margin-bottom: 6px; }
@@ -73,8 +74,9 @@
     .awards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 40px; }
     .award-card {
       background: var(--white); border-radius: var(--radius); padding: 18px 14px;
-      text-align: center; border: 2px solid var(--gray-200); transition: all 0.2s;
+      text-align: center; border: 2px solid var(--gray-200); transition: all 0.2s; cursor: pointer;
     }
+    .award-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .award-card.assigned { border-color: #FBBF24; background: linear-gradient(to bottom, #FFFBEB, var(--white)); }
     .award-card .trophy { font-size: 1.6rem; margin-bottom: 6px; }
     .award-card h4 { font-size: 0.78rem; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
@@ -118,6 +120,7 @@
       background: var(--gray-50); border-bottom: 2px solid var(--gray-200);
       text-align: center; white-space: nowrap;
     }
+    .board-table th[onclick]:hover { color: var(--navy); background: var(--gray-100); }
     .board-table th:first-child { text-align: center; width: 50px; }
     .board-table th:nth-child(2) { text-align: left; }
     .board-table td {
@@ -197,7 +200,7 @@
       .tiers { grid-template-columns: repeat(2, 1fr); }
       .awards { grid-template-columns: repeat(2, 1fr); }
       .awards .award-card:last-child { grid-column: span 2; }
-      .board-table { font-size: 0.8rem; min-width: 700px; }
+      .board-table { font-size: 0.8rem; min-width: 900px; }
       .board-table th, .board-table td { padding: 8px 10px; }
     }
     @media (max-width: 480px) {
@@ -206,6 +209,13 @@
       .awards { grid-template-columns: 1fr; }
       .awards .award-card:last-child { grid-column: span 1; }
       .board-controls { flex-wrap: wrap; }
+    }
+    /* Hamburger */
+    .hamburger { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--navy); padding: 4px 8px; }
+    .nav-right.mobile-open { display: flex !important; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: var(--white); border-bottom: 1px solid var(--gray-200); padding: 16px 24px; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 999; }
+    @media (max-width: 640px) {
+      .nav-right { display: none; }
+      .hamburger { display: block; }
     }
   </style>
   <link rel="stylesheet" href="auth-styles.css" />
@@ -216,6 +226,7 @@
 <nav>
   <div class="nav-inner">
     <a href="index.html" class="logo"><span>ABLE</span> Native Camp</a>
+    <button class="hamburger" onclick="document.querySelector('.nav-right').classList.toggle('mobile-open')">☰</button>
     <div class="nav-right">
       <a href="index.html">커리큘럼</a>
       <a href="skills.html">스킬 허브</a>
@@ -258,34 +269,34 @@
   <!-- TIER SYSTEM -->
   <div style="margin-bottom: 8px;">
     <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--navy);">🎖️ 등급 시스템</h2>
-    <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 4px;">주간 평균 토큰 사용량($)에 따라 등급이 자동으로 올라가!</p>
+    <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 4px;">주간 평균 토큰 사용량에 따라 등급이 자동으로 올라가!</p>
   </div>
   <div class="tiers">
-    <div class="tier-card tier-bronze">
+    <div class="tier-card tier-bronze" >
       <div class="icon">🥉</div>
       <h4>Bronze</h4>
-      <div class="threshold">$20/week 이상</div>
+      <div class="threshold">10M/week 이상</div>
       <div class="count" id="tier-bronze-count">0</div>
       <div class="count-label">명</div>
     </div>
-    <div class="tier-card tier-silver">
+    <div class="tier-card tier-silver" >
       <div class="icon">🥈</div>
       <h4>Silver</h4>
-      <div class="threshold">$50/week 이상</div>
+      <div class="threshold">50M/week 이상</div>
       <div class="count" id="tier-silver-count">0</div>
       <div class="count-label">명</div>
     </div>
-    <div class="tier-card tier-gold">
+    <div class="tier-card tier-gold" >
       <div class="icon">🥇</div>
       <h4>Gold</h4>
-      <div class="threshold">$100/week 이상</div>
+      <div class="threshold">200M/week 이상</div>
       <div class="count" id="tier-gold-count">0</div>
       <div class="count-label">명</div>
     </div>
-    <div class="tier-card tier-diamond">
+    <div class="tier-card tier-diamond" >
       <div class="icon">💎</div>
       <h4>Diamond</h4>
-      <div class="threshold">$200/week 이상</div>
+      <div class="threshold">500M/week 이상</div>
       <div class="count" id="tier-diamond-count">0</div>
       <div class="count-label">명</div>
     </div>
@@ -297,38 +308,38 @@
     <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 4px;" id="awards-subtitle">이번 주 자동 선정 | 매주 일요일 자정에 리셋</p>
   </div>
   <div class="awards" id="awards-grid">
-    <div class="award-card" id="card-best-abler">
+    <div class="award-card" id="card-best-abler" onclick="openAwardModal('best-abler')">
       <div class="trophy">🏆</div>
       <h4>Best ABLER</h4>
-      <div class="desc">종합 1위</div>
+      <div class="desc">주간 토큰 1위</div>
       <div class="winner" id="award-best-abler" style="display:none;"></div>
       <div class="award-detail" id="detail-best-abler" style="font-size:0.65rem;color:var(--gray-400);margin-top:4px;"></div>
     </div>
-    <div class="award-card" id="card-best-skill">
+    <div class="award-card" id="card-best-skill" onclick="openAwardModal('best-skill')">
       <div class="trophy">⚡</div>
       <h4>Best Skill</h4>
       <div class="desc">최고의 스킬</div>
       <div class="winner" id="award-best-skill" style="display:none;"></div>
       <div class="award-detail" id="detail-best-skill" style="font-size:0.65rem;color:var(--gray-400);margin-top:4px;"></div>
     </div>
-    <div class="award-card" id="card-best-workflow">
-      <div class="trophy">🔗</div>
-      <h4>Best Workflow</h4>
-      <div class="desc">최고의 워크플로우</div>
+    <div class="award-card" id="card-best-workflow" onclick="openAwardModal('best-workflow')">
+      <div class="trophy">💪</div>
+      <h4>Power Session</h4>
+      <div class="desc">단일 세션 최대</div>
       <div class="winner" id="award-best-workflow" style="display:none;"></div>
       <div class="award-detail" id="detail-best-workflow" style="font-size:0.65rem;color:var(--gray-400);margin-top:4px;"></div>
     </div>
-    <div class="award-card" id="card-best-delegator">
-      <div class="trophy">🤖</div>
-      <h4>Best Delegator</h4>
-      <div class="desc">위임의 달인</div>
+    <div class="award-card" id="card-best-delegator" onclick="openAwardModal('best-delegator')">
+      <div class="trophy">📦</div>
+      <h4>Most Productive</h4>
+      <div class="desc">최고 산출량</div>
       <div class="winner" id="award-best-delegator" style="display:none;"></div>
       <div class="award-detail" id="detail-best-delegator" style="font-size:0.65rem;color:var(--gray-400);margin-top:4px;"></div>
     </div>
-    <div class="award-card" id="card-most-improved">
+    <div class="award-card" id="card-most-improved" onclick="openAwardModal('most-improved')">
       <div class="trophy">🚀</div>
       <h4>Most Improved</h4>
-      <div class="desc">가장 크게 성장</div>
+      <div class="desc">전주 대비 토큰 증가</div>
       <div class="winner" id="award-most-improved" style="display:none;"></div>
       <div class="award-detail" id="detail-most-improved" style="font-size:0.65rem;color:var(--gray-400);margin-top:4px;"></div>
     </div>
@@ -354,6 +365,39 @@
 
 </div>
 
+<!-- AWARD MODAL -->
+<div class="modal-overlay" id="award-modal">
+  <div class="modal" style="max-width: 480px;">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div id="award-modal-icon" style="font-size:2.5rem;"></div>
+      <h3 id="award-modal-title" style="margin-bottom:4px;"></h3>
+      <div id="award-modal-desc" style="font-size:0.85rem;color:var(--gray-500);"></div>
+    </div>
+    <!-- 왜 중요한가 -->
+    <div style="background:var(--sky-light);border-radius:10px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:0.75rem;font-weight:700;color:var(--sky);margin-bottom:4px;">왜 이 어워드가 중요한가?</div>
+      <div id="award-modal-why" style="font-size:0.82rem;color:var(--gray-600);line-height:1.6;"></div>
+    </div>
+    <!-- 수상자 정보 -->
+    <div id="award-modal-winner-section" style="margin-bottom:16px;">
+      <div style="font-size:0.75rem;font-weight:700;color:var(--navy);margin-bottom:8px;">🏅 이번 주 수상자</div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:linear-gradient(to right,#FFFBEB,var(--white));border-radius:10px;border:1px solid #FBBF24;">
+        <div id="award-modal-avatar" class="profile-avatar" style="width:44px;height:44px;font-size:1.1rem;"></div>
+        <div style="flex:1;">
+          <div id="award-modal-winner-name" style="font-weight:700;color:var(--navy);"></div>
+          <div id="award-modal-winner-detail" style="font-size:0.78rem;color:var(--gray-500);"></div>
+        </div>
+      </div>
+    </div>
+    <!-- 수상자 vs 평균 비교 -->
+    <div id="award-modal-comparison" style="margin-bottom:16px;"></div>
+    <!-- 닫기 -->
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeAwardModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- PROFILE MODAL -->
 <div class="modal-overlay" id="profile-modal">
   <div class="modal" style="max-width: 480px;">
@@ -370,20 +414,20 @@
     <!-- Stats grid -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
       <div class="profile-stat">
-        <div class="profile-stat-num" id="profile-total-cost">$0</div>
-        <div class="profile-stat-label">누적 비용</div>
-      </div>
-      <div class="profile-stat">
         <div class="profile-stat-num" id="profile-total-tokens">0</div>
-        <div class="profile-stat-label">입출력</div>
+        <div class="profile-stat-label">누적 토탈</div>
       </div>
       <div class="profile-stat">
-        <div class="profile-stat-num" id="profile-cache-rate">-</div>
-        <div class="profile-stat-label">캐시율</div>
+        <div class="profile-stat-num" id="profile-output">0</div>
+        <div class="profile-stat-label">Output</div>
       </div>
       <div class="profile-stat">
-        <div class="profile-stat-num" id="profile-streak">0</div>
-        <div class="profile-stat-label">연속 사용일</div>
+        <div class="profile-stat-num" id="profile-sessions">0</div>
+        <div class="profile-stat-label">세션</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-num" id="profile-efficiency">-</div>
+        <div class="profile-stat-label">$/M</div>
       </div>
     </div>
     <!-- Badges -->
@@ -400,19 +444,10 @@
 // ─── CONFIG ───
 // 등급: 주간 평균 토큰 사용량 기준
 const TIERS = [
-  { name: 'Diamond', min: 200, icon: '💎', cls: 'badge-diamond' },
-  { name: 'Gold', min: 100, icon: '🥇', cls: 'badge-gold' },
-  { name: 'Silver', min: 50, icon: '🥈', cls: 'badge-silver' },
-  { name: 'Bronze', min: 20, icon: '🥉', cls: 'badge-bronze' },
-];
-const LEVELS = [
-  { name: '시작 전', icon: '⬜', cls: 'lvl-0' },
-  { name: 'Operate', icon: '🖥️', cls: 'lvl-1' },
-  { name: 'Connect', icon: '🔌', cls: 'lvl-2' },
-  { name: 'Automate', icon: '⚡', cls: 'lvl-3' },
-  { name: 'Harness', icon: '🔗', cls: 'lvl-4' },
-  { name: 'Delegate', icon: '🤖', cls: 'lvl-5' },
-  { name: 'Sustain', icon: '🌱', cls: 'lvl-6' },
+  { name: 'Diamond', min: 500_000_000, icon: '💎', cls: 'badge-diamond' },
+  { name: 'Gold', min: 200_000_000, icon: '🥇', cls: 'badge-gold' },
+  { name: 'Silver', min: 50_000_000, icon: '🥈', cls: 'badge-silver' },
+  { name: 'Bronze', min: 10_000_000, icon: '🥉', cls: 'badge-bronze' },
 ];
 
 let apiData = []; // API에서 가져온 데이터
@@ -422,31 +457,35 @@ let weeklyAwardsData = null; // 주간 어워드 데이터
 async function fetchLeaderboard() {
   try {
     document.getElementById('board-content').innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray-400);">데이터 로딩 중...</div>';
-    const [leaderboardRes, awardsRes] = await Promise.all([
+    const [leaderboardRes, awardsRes] = await Promise.allSettled([
       fetch('/api/leaderboard'),
       fetch('/api/weekly-awards'),
     ]);
-    const json = await leaderboardRes.json();
+    if (leaderboardRes.status !== 'fulfilled' || !leaderboardRes.value.ok) {
+      throw new Error('리더보드 데이터 로딩 실패');
+    }
+    const json = await leaderboardRes.value.json();
     apiData = (json.members || []).map(m => ({
       id: m.id,
       name: m.name,
       email: m.email,
       role: m.role,
-      level: 0,
       tokenLog: Object.fromEntries(Object.entries(m.dailyCost || {}).map(([d, v]) => [d, v.cost])),
       tokenCountLog: Object.fromEntries(Object.entries(m.dailyCost || {}).map(([d, v]) => [d, v.tokens])),
       totalCost: m.totalCost,
       totalTokens: m.totalTokens,
-      totalInput: m.totalInput || 0,
       totalOutput: m.totalOutput || 0,
-      totalCacheCreate: m.totalCacheCreate || 0,
-      totalCacheRead: m.totalCacheRead || 0,
+      sessions: m.sessions || 0,
       activeDays: m.activeDays,
     }));
     try {
-      weeklyAwardsData = await awardsRes.json();
+      if (awardsRes.status === 'fulfilled' && awardsRes.value.ok) {
+        weeklyAwardsData = await awardsRes.value.json();
+      } else {
+        weeklyAwardsData = null;
+      }
     } catch (e) {
-      console.error('Failed to parse weekly awards:', e);
+      console.warn('Weekly awards unavailable:', e.message);
       weeklyAwardsData = null;
     }
     render();
@@ -464,16 +503,28 @@ function isMyEntry(member) {
 }
 
 let currentView = 'daily';
+let sortColumn = 'tokens'; // default sort
+let sortAsc = false; // default descending
+
+function toggleSort(col) {
+  if (sortColumn === col) { sortAsc = !sortAsc; }
+  else { sortColumn = col; sortAsc = false; }
+  render();
+}
+function sortIndicator(col) {
+  if (sortColumn !== col) return ' <span style="opacity:0.3;">⇅</span>';
+  return sortAsc ? ' ↑' : ' ↓';
+}
 function today() { return new Date().toISOString().split('T')[0]; }
 
 function getWeeklyAvg(member) {
-  if (!member.tokenLog) return 0;
-  const dates = Object.keys(member.tokenLog).sort();
+  if (!member.tokenCountLog) return 0;
+  const dates = Object.keys(member.tokenCountLog).sort();
   if (dates.length === 0) return 0;
   const first = new Date(dates[0]);
   const now = new Date();
   const weeks = Math.max(1, (now - first) / (7 * 24 * 60 * 60 * 1000));
-  return getTotalCost(member) / weeks;
+  return getTotalTokens(member) / weeks;
 }
 function getTier(member) {
   const avg = typeof member === 'number' ? member : getWeeklyAvg(member);
@@ -482,7 +533,6 @@ function getTier(member) {
 }
 function getTotalCost(member) { return member.totalCost || 0; }
 function getTotalTokens(member) { return member.totalTokens || 0; }
-function getTotalTokenCount(member) { return member.totalTokens || 0; }
 function formatTokenCount(n) {
   if (n >= 1000000000) return (n / 1000000000).toFixed(1) + 'B';
   if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
@@ -548,7 +598,7 @@ function render() {
 function renderStats(data) {
   const total = data.length;
   const totalCost = data.reduce((s, m) => s + getTotalCost(m), 0);
-  const totalTk = data.reduce((s, m) => s + getTotalTokenCount(m), 0);
+  const totalTk = data.reduce((s, m) => s + getTotalTokens(m), 0);
   const activeDays = data.reduce((s, m) => s + (m.activeDays || 0), 0);
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-tokens').textContent = formatTokenCount(totalTk);
@@ -614,15 +664,38 @@ function renderBoard(data) {
   const getViewTokens = tokenFns[currentView] || getTotalTokens;
   const getViewCost = costFns[currentView] || getTotalCost;
   const viewLabels = { cumulative: '누적 토탈', daily: '오늘 토탈', weekly: '주간 토탈', monthly: '월간 토탈' };
+  // Sort functions per column
+  const colVal = {
+    tokens: m => getViewTokens(m),
+    output: m => m.totalOutput || 0,
+    sessions: m => m.sessions || 0,
+    efficiency: m => { const t = getTotalTokens(m); return t > 0 ? (getTotalCost(m) / t) * 1_000_000 : 0; },
+    cost: m => getViewCost(m),
+    activeDays: m => m.activeDays || 0,
+    name: m => m.name,
+  };
   const sorted = [...data].sort((a, b) => {
-    const diff = getViewTokens(b) - getViewTokens(a);
+    const fn = colVal[sortColumn] || colVal.tokens;
+    const va = fn(a), vb = fn(b);
+    let diff = sortColumn === 'name'
+      ? a.name.localeCompare(b.name, 'ko')
+      : (vb - va);
+    if (sortAsc) diff = -diff;
     if (diff !== 0) return diff;
-    return (b.level || 0) - (a.level || 0) || a.name.localeCompare(b.name, 'ko');
+    return a.name.localeCompare(b.name, 'ko');
   });
 
+  const thStyle = 'cursor:pointer;user-select:none;white-space:nowrap;';
   let html = `<div class="board-table-wrap"><table class="board-table"><thead><tr>
-    <th>#</th><th>이름</th><th>등급</th>
-    <th>${viewLabels[currentView]}</th><th>입출력</th><th>캐시</th><th>캐시율</th><th>비용</th><th>활성일</th>
+    <th>#</th>
+    <th style="${thStyle}" onclick="toggleSort('name')">이름${sortIndicator('name')}</th>
+    <th>등급</th>
+    <th style="${thStyle}" onclick="toggleSort('tokens')">${viewLabels[currentView]}${sortIndicator('tokens')}</th>
+    <th style="${thStyle}" onclick="toggleSort('output')" title="누적">Output${sortIndicator('output')}</th>
+    <th style="${thStyle}" onclick="toggleSort('sessions')" title="누적">세션${sortIndicator('sessions')}</th>
+    <th style="${thStyle}" onclick="toggleSort('efficiency')" title="누적">$/M${sortIndicator('efficiency')}</th>
+    <th style="${thStyle}" onclick="toggleSort('cost')">비용${sortIndicator('cost')}</th>
+    <th style="${thStyle}" onclick="toggleSort('activeDays')">활성일${sortIndicator('activeDays')}</th>
   </tr></thead><tbody>`;
 
   sorted.forEach((member, idx) => {
@@ -648,19 +721,19 @@ function renderBoard(data) {
     const tokenStyle = currentView === 'cumulative' ? 'font-size:0.88rem;color:var(--gray-500);' : 'font-size:1rem;font-weight:800;color:var(--navy);';
     html += `<td><span style="${tokenStyle}">${viewTokenCount > 0 ? formatTokenCount(viewTokenCount) : '-'}</span></td>`;
 
-    // Input + Output tokens
-    const io = (member.totalInput || 0) + (member.totalOutput || 0);
-    html += `<td><span style="font-size:0.8rem;color:var(--gray-500);">${io > 0 ? formatTokenCount(io) : '-'}</span></td>`;
+    // Output tokens
+    const out = member.totalOutput || 0;
+    html += `<td><span style="font-size:0.8rem;color:var(--gray-500);">${out > 0 ? formatTokenCount(out) : '-'}</span></td>`;
 
-    // Cache tokens (create + read)
-    const cache = (member.totalCacheCreate || 0) + (member.totalCacheRead || 0);
-    html += `<td><span style="font-size:0.8rem;color:var(--gray-500);">${cache > 0 ? formatTokenCount(cache) : '-'}</span></td>`;
+    // Sessions
+    const sessions = member.sessions || 0;
+    html += `<td><span style="font-size:0.8rem;color:var(--gray-500);">${sessions > 0 ? sessions : '-'}</span></td>`;
 
-    // Cache rate
-    const totalAll = io + cache;
-    const cacheRate = totalAll > 0 ? Math.round((cache / totalAll) * 100) : 0;
-    const cacheColor = cacheRate >= 80 ? 'var(--green)' : cacheRate >= 50 ? '#FBBF24' : 'var(--gray-400)';
-    html += `<td><span style="font-size:0.8rem;font-weight:700;color:${cacheColor};">${totalAll > 0 ? cacheRate + '%' : '-'}</span></td>`;
+    // $/M tokens (cost efficiency — higher = Opus heavy)
+    const totalTk = getTotalTokens(member);
+    const efficiency = totalTk > 0 ? (getTotalCost(member) / totalTk) * 1_000_000 : 0;
+    const effColor = efficiency >= 2.0 ? '#DC2626' : '#2563EB';
+    html += `<td><span style="font-size:0.8rem;font-weight:600;color:${effColor};">${totalTk > 0 ? '$' + efficiency.toFixed(2) : '-'}</span></td>`;
 
     // Cost (reference, subdued)
     html += `<td><span style="font-size:0.8rem;color:var(--gray-500);">$${viewCost.toFixed(0)}</span></td>`;
@@ -689,6 +762,11 @@ function getStreak(member) {
   if (!member.tokenLog) return 0;
   const dates = Object.keys(member.tokenLog).sort().reverse();
   if (dates.length === 0) return 0;
+  // Verify streak connects to today or yesterday
+  const todayStr = new Date().toISOString().split('T')[0];
+  const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+  if (dates[0] !== todayStr && dates[0] !== yesterdayStr) return 0;
   let streak = 1;
   for (let i = 1; i < dates.length; i++) {
     const prev = new Date(dates[i-1]);
@@ -719,14 +797,12 @@ function openProfileModal(id) {
   document.getElementById('profile-badges').innerHTML = badgesHtml;
 
   // Stats
-  document.getElementById('profile-total-cost').textContent = '$' + getTotalCost(m).toFixed(2);
-  const profileIO = (m.totalInput || 0) + (m.totalOutput || 0);
-  document.getElementById('profile-total-tokens').textContent = formatTokenCount(profileIO);
-  const profileCache = (m.totalCacheCreate || 0) + (m.totalCacheRead || 0);
-  const profileTotal = profileIO + profileCache;
-  const profileCacheRate = profileTotal > 0 ? Math.round((profileCache / profileTotal) * 100) : 0;
-  document.getElementById('profile-cache-rate').textContent = profileTotal > 0 ? profileCacheRate + '%' : '-';
-  document.getElementById('profile-streak').textContent = getStreak(m);
+  document.getElementById('profile-total-tokens').textContent = formatTokenCount(getTotalTokens(m));
+  document.getElementById('profile-output').textContent = formatTokenCount(m.totalOutput || 0);
+  document.getElementById('profile-sessions').textContent = m.sessions || 0;
+  const profileTk = getTotalTokens(m);
+  const profileEff = profileTk > 0 ? ((getTotalCost(m) / profileTk) * 1_000_000).toFixed(2) : '-';
+  document.getElementById('profile-efficiency').textContent = profileTk > 0 ? '$' + profileEff : '-';
 
   // Badges
   let badgeListHtml = '';
@@ -747,19 +823,109 @@ function closeProfileModal() {
   document.getElementById('profile-modal').classList.remove('active');
 }
 
+// ─── AWARD MODAL ───
+const AWARD_META = {
+  'best-abler': {
+    icon: '🏆', title: 'Best ABLER', desc: '이번 주 가장 많은 토큰을 사용한 에이블러',
+    why: 'AI를 가장 적극적으로 활용하고 있다는 증거. 토큰 총량은 Claude와의 대화 깊이와 빈도를 반영한다. 많이 쓸수록 AI가 일하는 비중이 높아진다.',
+    metric: (m) => getWeekTokens(m), metricLabel: '주간 토큰', metricFmt: formatTokenCount,
+    avgMetric: (data) => { const vals = data.map(m => getWeekTokens(m)).filter(v => v > 0); return vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : 0; },
+  },
+  'best-skill': {
+    icon: '⚡', title: 'Best Skill', desc: '이번 주 가장 인기 있는 스킬을 만든 에이블러',
+    why: '좋은 스킬은 팀 전체의 생산성을 올린다. 한 사람이 만든 자동화가 27명에게 퍼지면, 그 임팩트는 개인 사용량의 수십 배.',
+    metric: null, metricLabel: null, metricFmt: null, avgMetric: null,
+  },
+  'best-workflow': {
+    icon: '💪', title: 'Power Session', desc: '단일 세션에서 가장 많은 토큰을 쓴 에이블러',
+    why: '한 세션에 많은 토큰 = 복잡한 작업을 AI에게 통째로 맡겼다는 뜻. 단순 질문이 아니라 실제 업무 위임이 일어나고 있다.',
+    metric: (m) => m.sessions || 0, metricLabel: '총 세션 수', metricFmt: (v) => v + '회',
+    avgMetric: (data) => { const vals = data.map(m => m.sessions || 0).filter(v => v > 0); return vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : 0; },
+  },
+  'best-delegator': {
+    icon: '📦', title: 'Most Productive', desc: '이번 주 가장 많은 output 토큰을 생성한 에이블러',
+    why: 'Output 토큰 = Claude가 실제로 만들어낸 결과물의 양. 코드, 문서, 분석 — AI가 일한 만큼 output이 나온다. 산출량의 직접 지표.',
+    metric: (m) => m.totalOutput || 0, metricLabel: '누적 Output', metricFmt: formatTokenCount,
+    avgMetric: (data) => { const vals = data.map(m => m.totalOutput || 0).filter(v => v > 0); return vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : 0; },
+  },
+  'most-improved': {
+    icon: '🚀', title: 'Most Improved', desc: '전주 대비 토큰 사용량이 가장 크게 늘어난 에이블러',
+    why: 'AI 활용은 습관이다. 지난주보다 올라갔다는 건 AI를 업무에 더 깊이 통합하고 있다는 신호. 꾸준한 성장이 진짜 AX.',
+    metric: (m) => getTotalTokens(m), metricLabel: '누적 토탈', metricFmt: formatTokenCount,
+    avgMetric: (data) => { const vals = data.map(m => getTotalTokens(m)).filter(v => v > 0); return vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : 0; },
+  },
+};
+
+function openAwardModal(key) {
+  const meta = AWARD_META[key];
+  if (!meta) return;
+  const awards = weeklyAwardsData && weeklyAwardsData.awards ? weeklyAwardsData.awards : {};
+  const award = awards[key];
+  const data = getData();
+
+  document.getElementById('award-modal-icon').textContent = meta.icon;
+  document.getElementById('award-modal-title').textContent = meta.title;
+  document.getElementById('award-modal-desc').textContent = meta.desc;
+  document.getElementById('award-modal-why').textContent = meta.why;
+
+  const winnerSection = document.getElementById('award-modal-winner-section');
+  const comparison = document.getElementById('award-modal-comparison');
+
+  if (award && award.winner) {
+    winnerSection.style.display = 'block';
+    const initial = (award.winner || '?')[0].toUpperCase();
+    document.getElementById('award-modal-avatar').textContent = initial;
+    document.getElementById('award-modal-winner-name').textContent = award.winner;
+    document.getElementById('award-modal-winner-detail').textContent = award.detail || '';
+
+    // 수상자 vs 평균 비교
+    if (meta.metric && meta.avgMetric) {
+      const winner = data.find(m => m.id === award.winnerId || m.name === award.winner);
+      const winnerVal = winner ? meta.metric(winner) : 0;
+      const avgVal = meta.avgMetric(data);
+      const ratio = avgVal > 0 ? ((winnerVal / avgVal) * 100).toFixed(0) : '-';
+
+      comparison.innerHTML = `
+        <div style="font-size:0.75rem;font-weight:700;color:var(--navy);margin-bottom:8px;">📊 수상자 vs 전체 평균</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="profile-stat" style="border:2px solid #FBBF24;">
+            <div class="profile-stat-num" style="color:#B45309;">${meta.metricFmt(winnerVal)}</div>
+            <div class="profile-stat-label">수상자 ${meta.metricLabel}</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-num">${meta.metricFmt(Math.round(avgVal))}</div>
+            <div class="profile-stat-label">전체 평균</div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:8px;font-size:0.78rem;color:var(--gray-500);">
+          평균 대비 <strong style="color:${ratio > 100 ? '#10B981' : 'var(--gray-500)'};">${ratio}%</strong>
+        </div>`;
+    } else {
+      comparison.innerHTML = '';
+    }
+  } else {
+    winnerSection.style.display = 'none';
+    comparison.innerHTML = `<div style="text-align:center;padding:20px;color:var(--gray-400);font-size:0.85rem;">아직 이번 주 수상자가 없어.<br>활동하면 자동으로 선정돼!</div>`;
+  }
+
+  document.getElementById('award-modal').classList.add('active');
+}
+
+function closeAwardModal() {
+  document.getElementById('award-modal').classList.remove('active');
+}
+
 // ─── EXPORT ───
 function exportData() {
   const data = getData();
   if (data.length === 0) { alert('데이터가 없어!'); return; }
   const sorted = [...data].sort((a, b) => getTotalCost(b) - getTotalCost(a));
-  let csv = '순위,이름,등급,누적비용($),입출력,캐시,캐시율,활성일\n';
+  let csv = '순위,이름,등급,토탈,Output,세션,$/M,비용($),활성일\n';
   sorted.forEach((m, i) => {
     const t = getTier(m);
-    const io = (m.totalInput || 0) + (m.totalOutput || 0);
-    const cache = (m.totalCacheCreate || 0) + (m.totalCacheRead || 0);
-    const total = io + cache;
-    const rate = total > 0 ? Math.round((cache / total) * 100) + '%' : '-';
-    csv += `${i+1},${m.name},${t ? t.name : '-'},$${getTotalCost(m).toFixed(2)},${formatTokenCount(io)},${formatTokenCount(cache)},${rate},${m.activeDays || 0}\n`;
+    const tk = getTotalTokens(m);
+    const eff = tk > 0 ? '$' + ((getTotalCost(m) / tk) * 1_000_000).toFixed(2) : '-';
+    csv += `${i+1},${m.name},${t ? t.name : '-'},${formatTokenCount(tk)},${formatTokenCount(m.totalOutput || 0)},${m.sessions || 0},${eff},$${getTotalCost(m).toFixed(2)},${m.activeDays || 0}\n`;
   });
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
@@ -784,6 +950,7 @@ fetchLeaderboard();
 </footer>
 
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="nav.js"></script>
 <script src="auth.js"></script>
 </body>
 </html>
